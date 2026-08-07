@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panicci Content Engine</title>
+<style>
+  /* ---------- Base ---------- */
+  :root {
+    --accent: #4f8cff;
+    --rec: #ff3b30;
+    --bg: #0b0d10;
+    --panel: rgba(18, 21, 26, 0.92);
+    --text: #f2f4f8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  button, select, input, textarea { font-family: inherit; }
+  button {
+    cursor: pointer; border: none; border-radius: 10px;
+    background: #232a33; color: var(--text);
+    padding: 10px 14px; font-size: 14px; font-weight: 600;
+    transition: background .15s, transform .05s;
+  }
+  button:hover { background: #2e3742; }
+  button:active { transform: scale(0.97); }
+  button.primary { background: var(--accent); }
+  button.primary:hover { background: #6ba0ff; }
+  button.rec { background: var(--rec); }
+  button.rec:hover { background: #ff5b52; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ---------- Stage ---------- */
+  #stage { position: fixed; inset: 0; }
+  #preview {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    background: #000;
+    transform: scaleX(-1); /* mirror the live preview only */
+  }
+
+  /* ---------- Aspect-ratio framing guide ---------- */
+  #frameGuide {
+    position: absolute; inset: 0; z-index: 5;
+    display: none; pointer-events: none;
+  }
+  #frameGuide.active { display: block; }
+  #frameBox {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,0.45);  /* dim outside the frame */
+    border-radius: 2px;
+  }
+  #frameLabel {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6); color: #fff;
+    font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ---------- Teleprompter overlay ---------- */
+  #prompter {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 55%;              /* occupies upper portion; eyeline near lens */
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 82%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 82%, transparent 100%);
+    pointer-events: none;
+    display: none;
+  }
+  #prompter { z-index: 12; }
+  #prompter.active { display: block; }
+  #scroller {
+    padding-top: 40%;        /* start text lower so it reads into the focus band */
+    padding-bottom: 60vh;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.8);
+    line-height: 1.5;
+    will-change: transform;
+  }
+  #scroller.mirror { transform: scaleX(-1); }
+  #scrim {
+    position: absolute; inset: 0; z-index: 8;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.15));
+    pointer-events: none;
+    display: none;
+  }
+  #scrim.active { display: block; }
+
+  /* Focus band / reading guide */
+  #focusband {
+    position: absolute; z-index: 12;
+    top: 18%; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to right, transparent, var(--accent), transparent);
+    opacity: 0; display: none;
+    pointer-events: none;
+  }
+  #focusband.active { display: block; opacity: .7; }
+
+  /* ---------- Editor ---------- */
+  #editor {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 18px; padding: 40px;
+    background: rgba(6, 8, 11, 0.82);
+    backdrop-filter: blur(4px);
+    z-index: 30;
+  }
+  #editor h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: .3px; }
+  #editor p.hint { margin: 0; opacity: .6; font-size: 13px; }
+  #script {
+    width: min(760px, 92vw); height: 45vh;
+    resize: none; border-radius: 14px;
+    border: 1px solid #2a323d; background: #12161c; color: var(--text);
+    padding: 18px; font-size: 18px; line-height: 1.5;
+  }
+  #script:focus { outline: 2px solid var(--accent); }
+
+  /* ---------- Control bar ---------- */
+  #controls {
+    position: absolute; left: 50%; bottom: 20px;
+    transform: translateX(-50%);
+    display: flex; flex-wrap: wrap; gap: 10px 12px;
+    align-items: center; justify-content: center;
+    padding: 12px 16px; border-radius: 16px;
+    background: var(--panel);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    max-width: 94vw; z-index: 25;
+    transition: opacity .35s, transform .35s;
+  }
+  #controls.hidden { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
+  .grp { display: flex; align-items: center; gap: 7px; }
+  .grp label { font-size: 12px; opacity: .75; white-space: nowrap; }
+  select {
+    background: #1a2029; color: var(--text);
+    border: 1px solid #2a323d; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; max-width: 160px;
+  }
+  input[type=range] { width: 110px; accent-color: var(--accent); }
+  input[type=color] {
+    width: 34px; height: 30px; padding: 0; border: none;
+    background: none; border-radius: 6px; cursor: pointer;
+  }
+  .sep { width: 1px; height: 26px; background: #303842; margin: 0 2px; }
+
+  /* Recording indicator */
+  #recdot {
+    display: none; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  #recdot.active { display: inline-flex; }
+  #recdot .dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--rec); animation: blink 1s steps(2, start) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Countdown */
+  #countdown {
+    position: absolute; inset: 0; z-index: 40;
+    display: none; align-items: center; justify-content: center;
+    font-size: 22vh; font-weight: 800; color: #fff;
+    text-shadow: 0 4px 40px rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.25);
+  }
+  #countdown.active { display: flex; }
+
+  /* Playback panel */
+  #playback {
+    position: absolute; inset: 0; z-index: 50;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    gap: 14px; padding: 24px; overflow-y: auto;   /* scroll so all controls stay reachable */
+    background: rgba(6, 8, 11, 0.92); backdrop-filter: blur(4px);
+  }
+  #playback.active { display: flex; }
+  #playback::before { content: ""; flex: 1 0 auto; }   /* vertical centering when content is short */
+  #playback::after  { content: ""; flex: 1 0 auto; }
+  #playback video {
+    max-width: 90vw; max-height: 48vh;
+    border-radius: 14px; background: #000;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    flex: 0 0 auto;
+  }
+  #playback .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  #playback .meta { font-size: 13px; opacity: .6; }
+
+  /* Messages / errors */
+  #msg {
+    position: absolute; inset: 0; z-index: 60;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; padding: 40px; text-align: center;
+    background: rgba(6, 8, 11, 0.95);
+  }
+  #msg.active { display: flex; }
+  #msg h2 { margin: 0; font-size: 20px; }
+  #msg p { margin: 0; max-width: 460px; opacity: .8; line-height: 1.5; }
+
+  /* Help overlay */
+  #help {
+    position: absolute; inset: 0; z-index: 70;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(6, 8, 11, 0.9);
+  }
+  #help.active { display: flex; }
+  #help .card {
+    background: var(--panel); border-radius: 16px; padding: 26px 30px;
+    max-width: 420px; width: 90vw;
+  }
+  #help h2 { margin: 0 0 14px; font-size: 18px; }
+  #help table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  #help td { padding: 6px 4px; }
+  #help td.key { width: 90px; }
+  #help kbd {
+    background: #232a33; border: 1px solid #333c47; border-radius: 6px;
+    padding: 2px 8px; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+  }
+  #helpBtn {
+    position: absolute; top: 16px; right: 16px; z-index: 22;
+    width: 38px; height: 38px; border-radius: 50%; padding: 0;
+    font-size: 18px; background: var(--panel);
+    transition: opacity .35s;
+  }
+  #helpBtn.hidden { opacity: 0; pointer-events: none; }
+
+  /* ---------- Script progress bar ---------- */
+  #progressWrap {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+    background: rgba(255,255,255,0.12); display: none;
+  }
+  #progressWrap.active { display: block; }
+  #progressBar { height: 100%; width: 0%; background: var(--accent); transition: width .1s linear; }
+  #progressTime {
+    position: absolute; right: 10px; bottom: 8px;
+    font-size: 11px; opacity: .55; font-variant-numeric: tabular-nums;
+    display: none;
+  }
+  #progressTime.active { display: block; }
+
+  /* ---------- Marker counter ---------- */
+  #markCount {
+    display: none; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: #ffd54a;
+  }
+  #markCount.active { display: inline-flex; }
+  #markToast {
+    position: absolute; top: 26%; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.72); color: #fff; font-weight: 700; font-size: 14px;
+    padding: 8px 16px; border-radius: 24px; opacity: 0; z-index: 41;
+    transition: opacity .2s; pointer-events: none;
+  }
+  #markToast.show { opacity: 1; }
+
+  /* ---------- Multi-take session ---------- */
+  #takeLabel { font-size: 13px; font-weight: 700; opacity: .8; }
+  #sessionTray { width: min(760px, 92vw); display: none; flex-direction: column; gap: 10px; }
+  #sessionTray.active { display: flex; }
+  #takesStrip {
+    display: flex; gap: 8px; overflow-x: auto; padding: 4px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .takeChip {
+    position: relative; width: 96px; border-radius: 8px; overflow: hidden;
+    border: 2px solid transparent; background: #12161c; cursor: pointer; flex: 0 0 auto;
+  }
+  .takeChip.selected { border-color: var(--accent); }
+  .takeChip img { display: block; width: 100%; height: 56px; object-fit: cover; background:#000; }
+  .takeChip .cap {
+    font-size: 10px; padding: 3px 5px; display: flex; justify-content: space-between; gap: 4px;
+  }
+  .takeChip .cap .mk { color: #ffd54a; font-weight: 700; }
+  #sessionRow { opacity: .95; }
+  #voiceBtn.on { background: var(--accent); }
+  #voiceCaption {
+    position: absolute; bottom: 14%; left: 50%; transform: translateX(-50%);
+    max-width: 70%; text-align: center; font-size: 13px; color: #bcd0ff;
+    background: rgba(0,0,0,0.35); padding: 4px 12px; border-radius: 16px;
+    z-index: 13; display: none; pointer-events: none;
+  }
+  #voiceCaption.active { display: block; }
+
+  /* ---------- Interview mode ---------- */
+  .modeTabs { display: flex; gap: 6px; }
+  .modeTab {
+    background: #1a2029; border: 1px solid #2a323d; color: var(--text);
+    padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .modeTab.active { background: var(--accent); border-color: var(--accent); }
+  .modePane { display: none; width: min(760px, 92vw); }
+  .modePane.active { display: block; }
+
+  #qBuilder { display: flex; flex-direction: column; gap: 8px; max-height: 42vh; overflow-y: auto; padding: 2px; }
+  .qRow { display: flex; gap: 8px; align-items: center; }
+  .qRow select { flex: 0 0 auto; width: 150px; }
+  .qRow input.qtext {
+    flex: 1 1 auto; background: #12161c; color: var(--text);
+    border: 1px solid #2a323d; border-radius: 8px; padding: 9px 11px; font-size: 14px;
+  }
+  .qRow input.qtext:focus { outline: 2px solid var(--accent); }
+  .qRow .del { background: #2a1a1d; padding: 8px 11px; }
+  .qRow .drag { cursor: grab; opacity: .5; padding: 0 4px; font-size: 16px; }
+  .qBuilderBar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  /* AI generate panel */
+  #aiPanel {
+    display: none; flex-direction: column; gap: 8px;
+    border: 1px solid #2a3a55; background: rgba(79,140,255,0.06);
+    border-radius: 12px; padding: 12px; margin-bottom: 10px;
+  }
+  #aiPanel.active { display: flex; }
+  .aiRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .aiRow input[type=text] {
+    flex: 1 1 auto; background: #12161c; color: var(--text);
+    border: 1px solid #2a323d; border-radius: 8px; padding: 9px 11px; font-size: 14px;
+  }
+  .aiRow input[type=text]:focus { outline: 2px solid var(--accent); }
+  .aiOpts { font-size: 13px; opacity: .9; }
+  .aiOpts label { display: inline-flex; align-items: center; gap: 5px; }
+  .aiOpts input[type=number] { width: 56px; background:#12161c; color:var(--text); border:1px solid #2a323d; border-radius:6px; padding:5px; }
+  .aiStatus { font-size: 12px; opacity: .8; min-height: 16px; }
+  .aiStatus.err { color: #ffb199; }
+  .aiStatus.ok  { color: #a7e3b5; }
+
+  #qBulk { display: none; margin-top: 8px; }
+  #qBulk.active { display: block; }
+  #qBulk textarea {
+    width: 100%; height: 120px; resize: vertical; border-radius: 10px;
+    border: 1px solid #2a323d; background: #12161c; color: var(--text); padding: 12px; font-size: 13px;
+    font-family: ui-monospace, Menlo, monospace;
+  }
+
+  /* Type badges (shared) */
+  .typeBadge {
+    display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .3px;
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
+  }
+  .t-niche { background: rgba(79,140,255,0.22); color: #9dc0ff; }
+  .t-hot   { background: rgba(255,102,60,0.22);  color: #ffb199; }
+  .t-ou    { background: rgba(190,120,255,0.22); color: #d9b3ff; }
+  .t-intro { background: rgba(120,200,140,0.22); color: #a7e3b5; }
+  .t-cta   { background: rgba(255,213,74,0.20);  color: #ffe08a; }
+
+  /* Interview cue card (prompting) */
+  #interviewCard {
+    position: absolute; top: 8%; left: 50%; transform: translateX(-50%);
+    width: min(78%, 900px); z-index: 12; display: none;
+    text-align: center; pointer-events: none;
+  }
+  #interviewCard.active { display: block; }
+  #icQnum { font-size: 13px; font-weight: 700; opacity: .8; color:#fff; margin-bottom: 10px; text-shadow:0 2px 8px #000; }
+  #icBadge { margin-bottom: 14px; }
+  #icQuestion {
+    color: #fff; font-weight: 700; line-height: 1.35;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.85);
+  }
+  #segCount { display: none; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #9dc0ff; }
+  #segCount.active { display: inline-flex; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="preview" autoplay playsinline muted></video>
+
+  <!-- Aspect-ratio framing guide -->
+  <div id="frameGuide"><div id="frameBox"><div id="frameLabel"></div></div></div>
+
+  <div id="scrim"></div>
+  <div id="focusband"></div>
+
+  <div id="prompter">
+    <div id="scroller"></div>
+  </div>
+
+  <!-- Interview cue card -->
+  <div id="interviewCard">
+    <div id="icQnum"></div>
+    <div id="icBadge"></div>
+    <div id="icQuestion"></div>
+  </div>
+
+  <!-- Script progress -->
+  <div id="progressWrap"><div id="progressBar"></div></div>
+  <div id="progressTime"></div>
+
+  <!-- Marker toast -->
+  <div id="markToast"></div>
+
+  <!-- Voice listening indicator -->
+  <div id="voiceCaption">🎙 listening…</div>
+
+  <button id="helpBtn" title="Keyboard shortcuts (?)">?</button>
+
+  <!-- Editor -->
+  <div id="editor">
+    <h1>Panicci <span style="color:var(--accent)">Content Engine</span></h1>
+
+    <div class="modeTabs">
+      <button class="modeTab active" data-mode="script">📜 Free script</button>
+      <button class="modeTab" data-mode="interview">🎙 Interview</button>
+    </div>
+
+    <!-- Free script pane -->
+    <div class="modePane active" id="pane-script">
+      <p class="hint">Paste your script, then press Start. First run asks for camera + mic permission.</p>
+      <textarea id="script" placeholder="Paste or type your script here…">Welcome — this is your teleprompter.
+
+Replace this text with your script. Use the Start button to begin prompting, hit R to record, and adjust speed live with the up and down arrow keys.
+
+Look just below the camera lens and speak naturally. You've got this.</textarea>
+    </div>
+
+    <!-- Interview pane -->
+    <div class="modePane" id="pane-interview">
+      <p class="hint">Each question is a cue card. While recording, tap <b>Next ▶ (N / →)</b> to move on — every jump auto-marks a clean segment carrying the question + type, so I can cut each answer for IG, TikTok, Facebook &amp; LinkedIn.</p>
+      <div class="qBuilderBar" style="margin-bottom:8px;">
+        <button id="aiToggleBtn" class="primary">✨ Generate with Claude</button>
+      </div>
+      <div id="aiPanel">
+        <div class="aiRow">
+          <input id="aiNiche" type="text" placeholder="Your niche / industry (e.g. web design for local service businesses)">
+        </div>
+        <div class="aiRow">
+          <input id="aiAngle" type="text" placeholder="This week's angle or trend (optional)">
+        </div>
+        <div class="aiRow aiOpts">
+          <label>How many <input id="aiCount" type="number" min="3" max="20" value="10"></label>
+          <label><input id="aiNiches" type="checkbox" checked> Niche Q&amp;A</label>
+          <label><input id="aiHots" type="checkbox" checked> Hot takes</label>
+          <label><input id="aiOus" type="checkbox" checked> Over/Underrated</label>
+          <label><input id="aiBook" type="checkbox" checked> Intro + CTA</label>
+          <button id="aiGenBtn" class="primary">Generate ✨</button>
+        </div>
+        <div id="aiStatus" class="aiStatus"></div>
+      </div>
+      <div id="qBuilder"></div>
+      <div class="qBuilderBar">
+        <button id="addNicheBtn">＋ Niche Q&amp;A</button>
+        <button id="addHotBtn">＋ Hot take</button>
+        <button id="addOuBtn">＋ Overrated / Underrated</button>
+        <button id="bulkToggleBtn">⇪ Bulk import</button>
+        <button id="seedBtn">Load starter set</button>
+      </div>
+      <div id="qBulk">
+        <p class="hint" style="margin:6px 0;">One question per line as <code>TYPE | question</code>. TYPE = <b>NICHE</b>, <b>HOT</b>, <b>OU</b>, <b>INTRO</b>, or <b>CTA</b>. (Ask me in chat to generate a fresh set and paste it here.)</p>
+        <textarea id="qBulkText" placeholder="NICHE | What's the #1 mistake businesses make with their website?
+HOT | Overrated or underrated: putting your whole menu on the homepage?
+OU | AI website builders — overrated or underrated?"></textarea>
+        <div class="qBuilderBar"><button id="bulkImportBtn" class="primary">Import questions</button></div>
+      </div>
+    </div>
+
+    <button id="startBtn" class="primary">Start prompting ▶</button>
+  </div>
+
+  <!-- Countdown -->
+  <div id="countdown"></div>
+
+  <!-- Playback -->
+  <div id="playback">
+    <div id="takeLabel"></div>
+    <video id="playbackVid" controls playsinline></video>
+    <div class="meta" id="playbackMeta"></div>
+    <div class="row">
+      <button id="downloadBtn" class="primary">⬇ Download MP4</button>
+      <button id="metaBtn">⬇ Script data (.json)</button>
+      <button id="coverBtn">⬇ Cover frame (.png)</button>
+      <button id="reRecordBtn">＋ New take</button>
+      <button id="backToEditBtn">Back to script</button>
+    </div>
+    <p id="convertNote" style="display:none;max-width:460px;text-align:center;font-size:12px;opacity:.7;line-height:1.5;">
+      This browser recorded WebM and MP4 conversion couldn't run (offline or blocked).
+      The WebM still works — to get MP4 directly, open this in <b>Safari</b> on your Mac, or reconnect to the internet and record again.
+    </p>
+
+    <!-- Multi-take session tray -->
+    <div id="sessionTray">
+      <div id="takesStrip"></div>
+      <div class="row" id="sessionRow">
+        <button id="allVidBtn">⬇ All takes (video)</button>
+        <button id="sessionJsonBtn">⬇ Session data (.json)</button>
+        <button id="clearSessionBtn">🗑 Clear session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="msg">
+    <h2 id="msgTitle"></h2>
+    <p id="msgBody"></p>
+    <button id="msgRetry" class="primary">Retry</button>
+  </div>
+
+  <!-- Help -->
+  <div id="help">
+    <div class="card">
+      <h2>Keyboard shortcuts</h2>
+      <table>
+        <tr><td class="key"><kbd>R</kbd></td><td>Start / stop recording</td></tr>
+        <tr><td class="key"><kbd>N</kbd> / <kbd>→</kbd></td><td>Interview: next question (marks a segment)</td></tr>
+        <tr><td class="key"><kbd>←</kbd></td><td>Interview: previous question</td></tr>
+        <tr><td class="key"><kbd>Space</kbd></td><td>Script: pause / resume scroll</td></tr>
+        <tr><td class="key"><kbd>B</kbd></td><td>Drop a marker</td></tr>
+        <tr><td class="key"><kbd>1</kbd>–<kbd>4</kbd></td><td>Script: mark Hook / Point / CTA / Retake</td></tr>
+        <tr><td class="key"><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Script: scroll speed</td></tr>
+        <tr><td class="key"><kbd>V</kbd></td><td>Script: voice-tracking on/off</td></tr>
+        <tr><td class="key"><kbd>M</kbd></td><td>Toggle mirror text</td></tr>
+        <tr><td class="key"><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
+        <tr><td class="key"><kbd>Esc</kbd></td><td>Back to edit mode</td></tr>
+        <tr><td class="key"><kbd>?</kbd></td><td>Toggle this help</td></tr>
+      </table>
+      <p style="opacity:.55;font-size:12px;margin-top:16px;">Interview mode: each question is a cue card; tapping Next marks a clean Q&amp;A segment (question + type + in/out) into the .json so I cut each answer per platform. Script mode saves markers instead.</p>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <div id="recdot"><span class="dot"></span><span id="recTime">0:00</span></div>
+    <div id="markCount"><span>⚑</span><span id="markNum">0</span></div>
+    <div id="segCount"><span>▸</span><span id="segNum">Q1</span></div>
+
+    <button id="recBtn" class="rec">● Record</button>
+    <button id="playPauseBtn">⏸ Pause</button>
+    <button id="nextQBtn" title="Next question (N / →)">Next ▶</button>
+    <button id="voiceBtn" title="Prompter follows your voice (V)">🎙 Voice: Off</button>
+    <button id="markBtn" title="Drop a marker (B). While recording: 1 Hook · 2 Point · 3 CTA · 4 Retake">⚑ Mark</button>
+
+    <div class="sep"></div>
+
+    <div class="grp">
+      <label>Frame</label>
+      <select id="frameSel">
+        <option value="off">Off</option>
+        <option value="9:16">9:16 Reels/TikTok</option>
+        <option value="4:5">4:5 Feed</option>
+        <option value="1:1">1:1 Square</option>
+        <option value="16:9">16:9 YouTube</option>
+      </select>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="grp">
+      <label>Speed</label>
+      <input id="speed" type="range" min="0" max="200" value="60">
+    </div>
+    <div class="grp">
+      <label>Size</label>
+      <input id="fontSize" type="range" min="20" max="90" value="46">
+    </div>
+    <div class="grp">
+      <label>Width</label>
+      <input id="width" type="range" min="40" max="100" value="80">
+    </div>
+    <div class="grp">
+      <label>Line</label>
+      <input id="lineHeight" type="range" min="110" max="220" value="150">
+    </div>
+    <div class="grp">
+      <label>Color</label>
+      <input id="textColor" type="color" value="#ffffff">
+    </div>
+
+    <div class="sep"></div>
+
+    <button id="mirrorBtn">Mirror: Off</button>
+    <button id="topBtn">⤒ Top</button>
+
+    <div class="sep"></div>
+
+    <div class="grp">
+      <label>Cam</label>
+      <select id="camSel"></select>
+    </div>
+    <div class="grp">
+      <label>Mic</label>
+      <select id="micSel"></select>
+    </div>
+
+    <div class="sep"></div>
+
+    <button id="editBtn">✎ Edit</button>
+    <button id="fsBtn">⛶ Full</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+(() => {
+  // ---------- Element refs ----------
+  const $ = (id) => document.getElementById(id);
+  const preview   = $("preview");
+  const prompter  = $("prompter");
+  const scroller  = $("scroller");
+  const scrim     = $("scrim");
+  const focusband = $("focusband");
+  const editor    = $("editor");
+  const scriptEl  = $("script");
+  const controls  = $("controls");
+  const helpBtn   = $("helpBtn");
+
+  const startBtn  = $("startBtn");
+  const recBtn    = $("recBtn");
+  const playPauseBtn = $("playPauseBtn");
+  const mirrorBtn = $("mirrorBtn");
+  const topBtn    = $("topBtn");
+  const editBtn   = $("editBtn");
+  const fsBtn     = $("fsBtn");
+
+  const speedEl   = $("speed");
+  const fontSizeEl= $("fontSize");
+  const widthEl   = $("width");
+  const lineHeightEl = $("lineHeight");
+  const textColorEl  = $("textColor");
+
+  const camSel    = $("camSel");
+  const micSel    = $("micSel");
+
+  const recdot    = $("recdot");
+  const recTime   = $("recTime");
+  const countdown = $("countdown");
+
+  const playback  = $("playback");
+  const playbackVid = $("playbackVid");
+  const playbackMeta= $("playbackMeta");
+  const downloadBtn = $("downloadBtn");
+  const metaBtn     = $("metaBtn");
+  const coverBtn    = $("coverBtn");
+  const convertNote = $("convertNote");
+  const reRecordBtn = $("reRecordBtn");
+  const backToEditBtn = $("backToEditBtn");
+
+  const frameGuide = $("frameGuide");
+  const frameBox   = $("frameBox");
+  const frameLabel = $("frameLabel");
+  const frameSel   = $("frameSel");
+  const markBtn    = $("markBtn");
+  const markCount  = $("markCount");
+  const markNum    = $("markNum");
+  const markToast  = $("markToast");
+  const progressWrap = $("progressWrap");
+  const progressBar  = $("progressBar");
+  const progressTime = $("progressTime");
+
+  const voiceBtn     = $("voiceBtn");
+  const voiceCaption = $("voiceCaption");
+  const takeLabel    = $("takeLabel");
+  const sessionTray  = $("sessionTray");
+  const takesStrip   = $("takesStrip");
+  const allVidBtn    = $("allVidBtn");
+  const sessionJsonBtn = $("sessionJsonBtn");
+  const clearSessionBtn = $("clearSessionBtn");
+
+  // Interview mode
+  const qBuilder   = $("qBuilder");
+  const qBulk      = $("qBulk");
+  const qBulkText  = $("qBulkText");
+  const interviewCard = $("interviewCard");
+  const icQnum     = $("icQnum");
+  const icBadge    = $("icBadge");
+  const icQuestion = $("icQuestion");
+  const nextQBtn   = $("nextQBtn");
+  const segCount   = $("segCount");
+  const segNum     = $("segNum");
+
+  const msg       = $("msg");
+  const msgTitle  = $("msgTitle");
+  const msgBody   = $("msgBody");
+  const msgRetry  = $("msgRetry");
+
+  const help      = $("help");
+
+  // ---------- State ----------
+  let stream = null;
+  let recorder = null;
+  let chunks = [];
+  let recording = false;
+  let recStartTs = 0;
+  let recTimerId = null;
+  let lastBlob = null;
+  let lastUrl = null;
+  let lastExt = "mp4";
+  let lastMeta = null;
+  let ffmpeg = null;        // lazy-loaded ffmpeg.wasm instance
+  let recMimeType = "";     // mime actually used by the recorder
+  let markers = [];         // [{t, label}] segment markers for this take
+  let targetAspect = "off"; // framing guide selection
+
+  // Voice-tracking state
+  let voiceMode = false;
+  let recognition = null;
+  let scriptWords = [];     // [{span, norm}]
+  let wordIndex = 0;
+  let voiceTarget = 0;
+
+  // Multi-take session
+  let takes = [];           // [{url, blob, ext, meta, durationSec, thumbUrl}]
+  let currentTakeIdx = -1;
+
+  // Interview mode
+  let mode = "script";      // "script" | "interview"
+  let questions = [];       // [{type, text}]
+  let currentQ = 0;
+  let segments = [];        // [{n, type, question, start, end}] for the current take
+  let segOpenStart = 0;     // start time of the currently-open segment
+  const TYPES = {
+    NICHE: { key: "NICHE", label: "Niche Q&A", cls: "t-niche" },
+    HOT:   { key: "HOT",   label: "Hot Take",  cls: "t-hot" },
+    OU:    { key: "OU",    label: "Over/Underrated", cls: "t-ou" },
+    INTRO: { key: "INTRO", label: "Intro",     cls: "t-intro" },
+    CTA:   { key: "CTA",   label: "CTA",       cls: "t-cta" }
+  };
+
+  let prompting = false;
+  let scrollPos = 0;        // px scrolled
+  let paused = false;
+  let rafId = null;
+  let lastFrameTs = 0;
+  let wheelResumeTimer = null;
+
+  let currentCam = null;
+  let currentMic = null;
+
+  // ---------- Utility ----------
+  function showMsg(title, body, showRetry) {
+    msgTitle.textContent = title;
+    msgBody.textContent = body;
+    msgRetry.style.display = showRetry ? "" : "none";
+    msg.classList.add("active");
+  }
+  function hideMsg() { msg.classList.remove("active"); }
+
+  function fmtTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ":" + String(s).padStart(2, "0");
+  }
+
+  function tsStamp() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+  }
+
+  // ---------- Toast ----------
+  let toastId = null;
+  function toast(txt) {
+    markToast.textContent = txt;
+    markToast.classList.add("show");
+    clearTimeout(toastId);
+    toastId = setTimeout(() => markToast.classList.remove("show"), 1200);
+  }
+
+  // ---------- Segment markers ----------
+  function dropMarker(label) {
+    if (!recording) { toast("Start recording to drop markers"); return; }
+    const t = (performance.now() - recStartTs) / 1000;
+    markers.push({ t: Math.round(t * 100) / 100, label });
+    markNum.textContent = markers.length;
+    toast(`⚑ ${label} · ${fmtTime(t)}`);
+  }
+
+  // ---------- Aspect-ratio framing guide ----------
+  function applyFrameGuide() {
+    if (targetAspect === "off") { frameGuide.classList.remove("active"); return; }
+    const [aw, ah] = targetAspect.split(":").map(Number);
+    const maxW = window.innerWidth * 0.92, maxH = window.innerHeight * 0.92;
+    let w = maxW, h = w * ah / aw;
+    if (h > maxH) { h = maxH; w = h * aw / ah; }
+    frameBox.style.width = Math.round(w) + "px";
+    frameBox.style.height = Math.round(h) + "px";
+    frameLabel.textContent = targetAspect + " · safe frame";
+    frameGuide.classList.add("active");
+  }
+
+  // ---------- Interview mode ----------
+  const STARTER_QUESTIONS = [
+    { type: "INTRO", text: "In one line — who are you and who do you help?" },
+    { type: "NICHE", text: "What's the #1 mistake businesses make with their website?" },
+    { type: "NICHE", text: "How fast should a site load before it costs you customers?" },
+    { type: "NICHE", text: "SEO vs paid ads — where should a new business put its first dollar?" },
+    { type: "HOT",   text: "Hot take: is a slow website worse than no website?" },
+    { type: "OU",    text: "AI website builders — overrated or underrated?" },
+    { type: "OU",    text: "QR codes on business cards — overrated or underrated?" },
+    { type: "CTA",   text: "Where can people find you if they want their site to actually convert?" }
+  ];
+
+  function typeInfo(t) { return TYPES[t] || TYPES.NICHE; }
+
+  function addQuestion(type, text) {
+    questions.push({ type: type || "NICHE", text: text || "" });
+    renderQBuilder();
+  }
+
+  function renderQBuilder() {
+    qBuilder.innerHTML = "";
+    questions.forEach((q, i) => {
+      const row = document.createElement("div");
+      row.className = "qRow";
+
+      const sel = document.createElement("select");
+      Object.values(TYPES).forEach((t) => {
+        const o = document.createElement("option");
+        o.value = t.key; o.textContent = t.label;
+        if (t.key === q.type) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", () => { q.type = sel.value; });
+
+      const inp = document.createElement("input");
+      inp.className = "qtext"; inp.type = "text"; inp.value = q.text;
+      inp.placeholder = "Type your question…";
+      inp.addEventListener("input", () => { q.text = inp.value; });
+
+      const del = document.createElement("button");
+      del.className = "del"; del.textContent = "✕";
+      del.title = "Remove";
+      del.addEventListener("click", () => { questions.splice(i, 1); renderQBuilder(); });
+
+      row.appendChild(sel); row.appendChild(inp); row.appendChild(del);
+      qBuilder.appendChild(row);
+    });
+  }
+
+  function parseBulk(text) {
+    const out = [];
+    text.split(/\n+/).forEach((line) => {
+      line = line.trim();
+      if (!line) return;
+      let type = "NICHE", q = line;
+      const m = line.match(/^([A-Za-z\/&]+)\s*[|:–-]\s*(.+)$/);
+      if (m) {
+        const raw = m[1].toUpperCase().replace(/[^A-Z]/g, "");
+        if (raw.startsWith("HOT")) type = "HOT";
+        else if (raw.startsWith("OU") || raw.startsWith("OVER") || raw.startsWith("UNDER")) type = "OU";
+        else if (raw.startsWith("INTRO")) type = "INTRO";
+        else if (raw.startsWith("CTA") || raw.startsWith("OUTRO")) type = "CTA";
+        else type = "NICHE";
+        q = m[2].trim();
+      }
+      out.push({ type, text: q });
+    });
+    return out;
+  }
+
+  // ---- Cue-card display during prompting ----
+  function renderCueCard() {
+    const q = questions[currentQ];
+    if (!q) return;
+    const ti = typeInfo(q.type);
+    icQnum.textContent = `Question ${currentQ + 1} of ${questions.length}`;
+    icBadge.innerHTML = `<span class="typeBadge ${ti.cls}">${ti.label}</span>`;
+    icQuestion.textContent = q.text;
+    // Scale question text to length
+    const len = q.text.length;
+    icQuestion.style.fontSize = (len > 120 ? 30 : len > 70 ? 38 : 46) + "px";
+    segNum.textContent = "Q" + (currentQ + 1);
+  }
+
+  function openSegment(qIdx, t) {
+    const q = questions[qIdx];
+    if (!q) return;
+    segOpenStart = t;
+    segments.push({
+      n: segments.length + 1,
+      type: q.type,
+      typeLabel: typeInfo(q.type).label,
+      question: q.text,
+      start: Math.round(t * 100) / 100,
+      end: null
+    });
+  }
+  function closeSegment(t) {
+    const seg = segments[segments.length - 1];
+    if (seg && seg.end === null) seg.end = Math.round(t * 100) / 100;
+  }
+
+  function advanceQuestion(dir) {
+    if (mode !== "interview") return;
+    const next = currentQ + (dir || 1);
+    if (next < 0 || next >= questions.length) {
+      if (dir > 0) toast("Last question — hit Stop when done");
+      return;
+    }
+    // If recording, close the current segment and open the next at the same instant.
+    if (recording) {
+      const t = (performance.now() - recStartTs) / 1000;
+      closeSegment(t);
+      currentQ = next;
+      openSegment(currentQ, t);
+      toast(`▸ ${typeInfo(questions[currentQ].type).label} · Q${currentQ + 1}`);
+    } else {
+      currentQ = next;
+    }
+    renderCueCard();
+  }
+
+  // ---------- Media setup ----------
+  async function initStream(camId, micId) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showMsg("Not supported", "This browser can't access the camera. Please use a recent version of Chrome, Edge, or Safari.", false);
+      return false;
+    }
+    // Stop any existing tracks before re-requesting
+    if (stream) stream.getTracks().forEach(t => t.stop());
+
+    const constraints = {
+      video: camId ? { deviceId: { exact: camId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+                   : { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: "user" },
+      audio: micId ? { deviceId: { exact: micId } } : true
+    };
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (err) {
+      handleMediaError(err);
+      return false;
+    }
+    preview.srcObject = stream;
+
+    const vt = stream.getVideoTracks()[0];
+    const at = stream.getAudioTracks()[0];
+    currentCam = vt ? vt.getSettings().deviceId : null;
+    currentMic = at ? at.getSettings().deviceId : null;
+
+    await populateDevices();
+    hideMsg();
+    return true;
+  }
+
+  function handleMediaError(err) {
+    const name = err && err.name ? err.name : "";
+    if (name === "NotAllowedError" || name === "SecurityError") {
+      showMsg("Permission needed", "Camera and microphone access was blocked. Click the camera icon in the address bar to allow it, then Retry. (If you opened this file directly, that's fine — permissions still work.)", true);
+    } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+      showMsg("No camera or mic found", "Couldn't find a camera/microphone to use. Check that they're connected and not in use by another app, then Retry.", true);
+    } else if (name === "NotReadableError") {
+      showMsg("Device busy", "Your camera or mic is being used by another app (Zoom, FaceTime, etc.). Close it and press Retry.", true);
+    } else {
+      showMsg("Something went wrong", "Couldn't start the camera: " + (err && err.message ? err.message : name || "unknown error"), true);
+    }
+  }
+
+  async function populateDevices() {
+    let devices = [];
+    try { devices = await navigator.mediaDevices.enumerateDevices(); }
+    catch (e) { return; }
+
+    const cams = devices.filter(d => d.kind === "videoinput");
+    const mics = devices.filter(d => d.kind === "audioinput");
+
+    fillSelect(camSel, cams, currentCam, "Camera");
+    fillSelect(micSel, mics, currentMic, "Microphone");
+  }
+
+  function fillSelect(sel, list, activeId, label) {
+    sel.innerHTML = "";
+    list.forEach((d, i) => {
+      const opt = document.createElement("option");
+      opt.value = d.deviceId;
+      opt.textContent = d.label || `${label} ${i + 1}`;
+      if (d.deviceId === activeId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    if (list.length === 0) {
+      const opt = document.createElement("option");
+      opt.textContent = "None found";
+      sel.appendChild(opt);
+    }
+  }
+
+  camSel.addEventListener("change", () => initStream(camSel.value, micSel.value));
+  micSel.addEventListener("change", () => initStream(camSel.value, micSel.value));
+
+  // ---------- Recording ----------
+  function pickMimeType() {
+    // Prefer MP4 / H.264 so clips drop straight into ad-editing tools.
+    // Fall back to WebM (we transcode to MP4 afterward via ffmpeg.wasm).
+    const candidates = [
+      "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+      "video/mp4;codecs=avc1,mp4a",
+      "video/mp4;codecs=h264,aac",
+      "video/mp4",
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm;codecs=vp9",
+      "video/webm;codecs=vp8",
+      "video/webm"
+    ];
+    for (const c of candidates) {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c;
+    }
+    return "";
+  }
+
+  function startRecording() {
+    if (!stream) { showMsg("No camera", "Start the camera first.", false); return; }
+    if (!window.MediaRecorder) {
+      showMsg("Not supported", "This browser can't record video (no MediaRecorder). Please use Chrome or Edge.", false);
+      return;
+    }
+    const mimeType = pickMimeType();
+    recMimeType = mimeType;
+    convertNote.style.display = "none";
+    try {
+      recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 })
+        : new MediaRecorder(stream);
+    } catch (e) {
+      showMsg("Can't record", "Failed to start recorder: " + e.message, false);
+      return;
+    }
+
+    chunks = [];
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = onRecordingStop;
+    recorder.start();
+
+    recording = true;
+    recStartTs = performance.now();
+    markers = [];                 // fresh markers per take
+    markNum.textContent = "0";
+    markCount.classList.add("active");
+    // Interview: begin capturing segments from the current question.
+    segments = [];
+    if (mode === "interview" && questions.length) {
+      openSegment(currentQ, 0);
+      segCount.classList.add("active");
+      segNum.textContent = "Q" + (currentQ + 1);
+    }
+    recBtn.textContent = "■ Stop";
+    recdot.classList.add("active");
+    recTime.textContent = "0:00";
+    recTimerId = setInterval(() => {
+      recTime.textContent = fmtTime((performance.now() - recStartTs) / 1000);
+    }, 250);
+  }
+
+  function stopRecording() {
+    if (recorder && recording) {
+      // Close the final interview segment at the moment of stopping.
+      if (mode === "interview") closeSegment((performance.now() - recStartTs) / 1000);
+      recorder.stop();
+    }
+    recording = false;
+    recBtn.textContent = "● Record";
+    recdot.classList.remove("active");
+    markCount.classList.remove("active");
+    segCount.classList.remove("active");
+    if (recTimerId) { clearInterval(recTimerId); recTimerId = null; }
+  }
+
+  async function onRecordingStop() {
+    const type = (recorder && recorder.mimeType) || recMimeType || "video/webm";
+    let blob = new Blob(chunks, { type });
+    const durationSec = recStartTs ? (performance.now() - recStartTs) / 1000 : 0;
+
+    // Pause prompting while reviewing
+    if (prompting) stopScrollLoop();
+
+    playback.classList.add("active");
+
+    const isMp4 = type.indexOf("mp4") !== -1;
+    if (isMp4) {
+      lastExt = "mp4";
+      finalizeRecording(blob, "video/mp4", durationSec, "h264/aac (native)");
+    } else {
+      // WebM recorded — transcode to MP4 so it's ad-creative ready.
+      playbackMeta.textContent = "Converting to MP4…";
+      downloadBtn.disabled = true;
+      try {
+        const mp4Blob = await convertToMp4(blob);
+        lastExt = "mp4";
+        finalizeRecording(mp4Blob, "video/mp4", durationSec, "h264/aac (converted)");
+      } catch (err) {
+        // Conversion unavailable (offline / blocked) — keep the WebM, be honest.
+        console.warn("MP4 conversion failed:", err);
+        lastExt = "webm";
+        finalizeRecording(blob, type.split(";")[0], durationSec, "webm (MP4 convert unavailable — see note)");
+        convertNote.style.display = "block";
+      } finally {
+        downloadBtn.disabled = false;
+      }
+    }
+  }
+
+  function finalizeRecording(blob, containerLabel, durationSec, codecNote) {
+    // Build sidecar metadata Claude can use to edit into ad creatives.
+    const vt = stream && stream.getVideoTracks()[0];
+    const s = vt ? vt.getSettings() : {};
+
+    const dur = Math.round(durationSec * 100) / 100;
+
+    // Turn markers into clip suggestions (marker N -> next marker or end).
+    const takeMarkers = markers.slice();
+    const markerClips = takeMarkers.map((m, i) => ({
+      label: m.label,
+      start: m.t,
+      end: i + 1 < takeMarkers.length ? takeMarkers[i + 1].t : dur
+    }));
+
+    // Interview segments: each Q&A is a self-contained clip with full context.
+    const takeSegments = segments.map((seg) => ({
+      n: seg.n,
+      type: seg.type,
+      typeLabel: seg.typeLabel,
+      question: seg.question,
+      start: seg.start,
+      end: seg.end === null ? dur : seg.end,
+      durationSeconds: Math.round(((seg.end === null ? dur : seg.end) - seg.start) * 100) / 100
+    }));
+
+    // The clips Claude should actually cut: interview segments if present, else markers.
+    const clips = takeSegments.length ? takeSegments.map((s) => ({
+      label: `${s.typeLabel}: ${s.question}`, type: s.type, start: s.start, end: s.end
+    })) : markerClips;
+
+    // Per-platform cut targets so clips are edited like a pro, per placement.
+    const platformTargets = {
+      instagram_reels: { aspect: "9:16", idealSeconds: [15, 45], maxSeconds: 90, captions: "burn-in", safeMargins: "keep text 10% from top/bottom" },
+      tiktok:          { aspect: "9:16", idealSeconds: [15, 34], maxSeconds: 60, captions: "burn-in", note: "hook in first 1.5s" },
+      facebook:        { aspect: "9:16 or 1:1", idealSeconds: [15, 45], maxSeconds: 60, captions: "burn-in" },
+      linkedin:        { aspect: "1:1 or 16:9", idealSeconds: [30, 60], maxSeconds: 90, captions: "burn-in", tone: "professional, insight-first" }
+    };
+
+    const editingBrief = mode === "interview"
+      ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets."
+      : "Cut around the markers/suggestedClips. Add burned-in captions and export per platform using platformTargets.";
+
+    const meta = {
+      app: "Teleprompter + Recorder",
+      recordedAt: new Date().toISOString(),
+      mode: mode,
+      take: takes.length + 1,
+      file: `recording-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
+      container: lastExt,
+      codec: codecNote,
+      durationSeconds: dur,
+      resolution: (s.width && s.height) ? `${s.width}x${s.height}` : "unknown",
+      frameRate: s.frameRate ? Math.round(s.frameRate) : null,
+      targetAspect: targetAspect,      // intended crop for the ad (9:16, 1:1, …)
+      mirroredPreview: true,
+      recordedMirrored: false,
+      markers: takeMarkers,            // [{t, label}] moments you flagged live
+      segments: takeSegments,          // interview Q&A segments (empty in script mode)
+      suggestedClips: clips,           // ready-to-cut clips (segments in interview mode)
+      platformTargets,                 // how to cut for IG / TikTok / FB / LinkedIn
+      editingBrief,                    // plain-English instructions for the editor (Claude)
+      script: scriptEl.value || ""
+    };
+
+    const take = {
+      blob, url: URL.createObjectURL(blob), ext: lastExt,
+      durationSec, containerLabel, codecNote, meta, thumbUrl: null
+    };
+    takes.push(take);
+    generateThumb(take);
+    showTake(takes.length - 1);
+    sessionTray.classList.toggle("active", takes.length > 0);
+  }
+
+  // ---------- Multi-take session ----------
+  function showTake(idx) {
+    if (idx < 0 || idx >= takes.length) return;
+    currentTakeIdx = idx;
+    const t = takes[idx];
+    lastBlob = t.blob; lastUrl = t.url; lastExt = t.ext; lastMeta = t.meta;
+    playbackVid.src = t.url;
+    const kb = t.blob.size / 1024;
+    const sizeStr = kb > 1024 ? (kb / 1024).toFixed(1) + " MB" : Math.round(kb) + " KB";
+    playbackMeta.textContent = `${t.containerLabel} · ${t.codecNote} · ${sizeStr} · ${fmtTime(t.durationSec)}`;
+    const mk = t.meta.markers.length ? ` · ${t.meta.markers.length} markers` : "";
+    takeLabel.textContent = `Take ${idx + 1} of ${takes.length}${mk}`;
+    convertNote.style.display = t.ext === "webm" ? "block" : "none";
+    renderTakesStrip();
+  }
+
+  function renderTakesStrip() {
+    takesStrip.innerHTML = "";
+    takes.forEach((t, i) => {
+      const chip = document.createElement("div");
+      chip.className = "takeChip" + (i === currentTakeIdx ? " selected" : "");
+      const img = document.createElement("img");
+      if (t.thumbUrl) img.src = t.thumbUrl;
+      const cap = document.createElement("div");
+      cap.className = "cap";
+      const mkTxt = t.meta.markers.length ? "⚑" + t.meta.markers.length : "";
+      cap.innerHTML = `<span>#${i + 1} · ${fmtTime(t.durationSec)}</span><span class="mk">${mkTxt}</span>`;
+      chip.appendChild(img); chip.appendChild(cap);
+      chip.addEventListener("click", () => showTake(i));
+      takesStrip.appendChild(chip);
+    });
+  }
+
+  function generateThumb(take) {
+    const v = document.createElement("video");
+    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = take.url;
+    const grab = () => {
+      const c = document.createElement("canvas");
+      c.width = 160; c.height = 90;
+      try {
+        c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+        c.toBlob((b) => { if (b) { take.thumbUrl = URL.createObjectURL(b); renderTakesStrip(); } }, "image/jpeg", 0.7);
+      } catch (_) {}
+    };
+    v.addEventListener("loadeddata", () => { try { v.currentTime = Math.min(0.2, (v.duration || 1) / 2); } catch (_) { grab(); } });
+    v.addEventListener("seeked", grab, { once: true });
+  }
+
+  allVidBtn.addEventListener("click", async () => {
+    for (const t of takes) {
+      triggerDownload(t.url, t.meta.file);
+      await new Promise((r) => setTimeout(r, 400));  // stagger so the browser accepts each
+    }
+    toast("Downloading " + takes.length + " takes — allow multiple files if asked");
+  });
+
+  sessionJsonBtn.addEventListener("click", () => {
+    if (!takes.length) return;
+    const session = {
+      app: "Teleprompter + Recorder — session",
+      exportedAt: new Date().toISOString(),
+      takeCount: takes.length,
+      script: scriptEl.value || "",
+      takes: takes.map((t) => t.meta)
+    };
+    const blob = new Blob([JSON.stringify(session, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, `session-${tsStamp()}.json`);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  });
+
+  clearSessionBtn.addEventListener("click", () => {
+    takes.forEach((t) => { URL.revokeObjectURL(t.url); if (t.thumbUrl) URL.revokeObjectURL(t.thumbUrl); });
+    takes = []; currentTakeIdx = -1;
+    lastBlob = null; lastUrl = null; lastMeta = null;
+    sessionTray.classList.remove("active");
+    renderTakesStrip();
+    exitPrompting();
+  });
+
+  // ---------- Interview editor wiring ----------
+  document.querySelectorAll(".modeTab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      mode = tab.dataset.mode;
+      document.querySelectorAll(".modeTab").forEach((t) => t.classList.toggle("active", t === tab));
+      document.getElementById("pane-script").classList.toggle("active", mode === "script");
+      document.getElementById("pane-interview").classList.toggle("active", mode === "interview");
+      startBtn.textContent = mode === "interview" ? "Start interview ▶" : "Start prompting ▶";
+      if (mode === "interview" && questions.length === 0) { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); }
+    });
+  });
+  $("addNicheBtn").addEventListener("click", () => addQuestion("NICHE", ""));
+  $("addHotBtn").addEventListener("click", () => addQuestion("HOT", ""));
+  $("addOuBtn").addEventListener("click", () => addQuestion("OU", ""));
+  $("seedBtn").addEventListener("click", () => { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); });
+  $("bulkToggleBtn").addEventListener("click", () => qBulk.classList.toggle("active"));
+
+  // ---- Generate with Claude ----
+  const aiPanel = $("aiPanel"), aiStatus = $("aiStatus"), aiGenBtn = $("aiGenBtn");
+  $("aiToggleBtn").addEventListener("click", () => aiPanel.classList.toggle("active"));
+  function setAiStatus(txt, kind) {
+    aiStatus.textContent = txt;
+    aiStatus.className = "aiStatus" + (kind ? " " + kind : "");
+  }
+  aiGenBtn.addEventListener("click", async () => {
+    const niche = $("aiNiche").value.trim();
+    if (!niche) { setAiStatus("Tell me your niche/industry first.", "err"); return; }
+    const types = [];
+    if ($("aiBook").checked) types.push("INTRO");
+    const nCore = Math.max(1, (parseInt($("aiCount").value, 10) || 10) - ($("aiBook").checked ? 2 : 0));
+    const pool = [];
+    if ($("aiNiches").checked) pool.push("NICHE");
+    if ($("aiHots").checked) pool.push("HOT");
+    if ($("aiOus").checked) pool.push("OU");
+    if (!pool.length) pool.push("NICHE");
+    for (let i = 0; i < nCore; i++) types.push(pool[i % pool.length]);
+    if ($("aiBook").checked) types.push("CTA");
+
+    aiGenBtn.disabled = true;
+    setAiStatus("Asking Claude for a fresh set…");
+    try {
+      const resp = await fetch("/api/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          niche,
+          extra: $("aiAngle").value.trim(),
+          count: parseInt($("aiCount").value, 10) || 10,
+          types
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        if (data.error === "not_configured") {
+          setAiStatus("Not connected yet — add ANTHROPIC_API_KEY in Vercel, then redeploy. (You can still use Bulk import.)", "err");
+        } else {
+          setAiStatus(data.message || `Generation failed (${resp.status}).`, "err");
+        }
+        return;
+      }
+      if (!data.questions || !data.questions.length) { setAiStatus("Claude returned nothing usable — try again.", "err"); return; }
+      questions = data.questions.map((q) => ({ type: q.type, text: q.text }));
+      renderQBuilder();
+      setAiStatus(`✓ Generated ${questions.length} questions. Edit any of them, then Start interview.`, "ok");
+    } catch (err) {
+      // Likely running from file:// with no backend.
+      setAiStatus("Can't reach the generator here. This works once deployed — locally, use Bulk import.", "err");
+    } finally {
+      aiGenBtn.disabled = false;
+    }
+  });
+  $("bulkImportBtn").addEventListener("click", () => {
+    const parsed = parseBulk(qBulkText.value);
+    if (!parsed.length) { toast("Nothing to import"); return; }
+    questions = parsed;
+    renderQBuilder();
+    qBulk.classList.remove("active");
+    toast(`Imported ${parsed.length} questions`);
+  });
+  nextQBtn.addEventListener("click", () => advanceQuestion(1));
+
+  // ---------- ffmpeg.wasm transcode (lazy-loaded, single-threaded core) ----------
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = () => reject(new Error("load " + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function getFFmpeg() {
+    if (ffmpeg) return ffmpeg;
+    const base = "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js";
+    const utilBase = "https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js";
+    const coreBase = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+    await loadScript(base);
+    await loadScript(utilBase);
+    const { FFmpeg } = window.FFmpegWASM;
+    const { toBlobURL } = window.FFmpegUtil;
+    const inst = new FFmpeg();
+    await inst.load({
+      coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`, "text/javascript"),
+      wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, "application/wasm")
+    });
+    ffmpeg = inst;
+    return ffmpeg;
+  }
+
+  async function convertToMp4(webmBlob) {
+    const ff = await getFFmpeg();
+    const inName = "in.webm", outName = "out.mp4";
+    const buf = new Uint8Array(await webmBlob.arrayBuffer());
+    await ff.writeFile(inName, buf);
+    ff.on && ff.on("progress", ({ progress }) => {
+      if (progress >= 0 && progress <= 1)
+        playbackMeta.textContent = `Converting to MP4… ${Math.round(progress * 100)}%`;
+    });
+    // H.264 + AAC, faststart for web/editor compatibility.
+    await ff.exec([
+      "-i", inName,
+      "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
+      "-c:a", "aac", "-b:a", "160k",
+      "-movflags", "+faststart",
+      outName
+    ]);
+    const data = await ff.readFile(outName);
+    return new Blob([data.buffer], { type: "video/mp4" });
+  }
+
+  function toggleRecord() {
+    if (recording) stopRecording();
+    else startCountdownThenRecord();
+  }
+
+  // ---------- Countdown ----------
+  function startCountdownThenRecord() {
+    let n = 3;
+    countdown.textContent = n;
+    countdown.classList.add("active");
+    const iv = setInterval(() => {
+      n--;
+      if (n <= 0) {
+        clearInterval(iv);
+        countdown.classList.remove("active");
+        startRecording();
+        if (prompting) { paused = false; playPauseBtn.textContent = "⏸ Pause"; startScrollLoop(); }
+      } else {
+        countdown.textContent = n;
+      }
+    }, 1000);
+  }
+
+  // ---------- Download ----------
+  function triggerDownload(url, filename) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  downloadBtn.addEventListener("click", () => {
+    if (!lastBlob) return;
+    const base = lastMeta ? lastMeta.file.replace(/\.[^.]+$/, "") : `recording-${tsStamp()}`;
+    triggerDownload(lastUrl, `${base}.${lastExt}`);
+  });
+
+  metaBtn.addEventListener("click", () => {
+    if (!lastMeta) return;
+    const jsonBlob = new Blob([JSON.stringify(lastMeta, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(jsonBlob);
+    triggerDownload(url, lastMeta.file.replace(/\.[^.]+$/, "") + ".json");
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  });
+
+  reRecordBtn.addEventListener("click", () => {
+    playback.classList.remove("active");
+    resetScroll();
+    wordIndex = 0; voiceTarget = 0;   // reset voice position for the next take
+    if (mode === "interview") { currentQ = 0; renderCueCard(); }  // restart questions for the next take
+    if (prompting) startScrollLoop();
+  });
+  backToEditBtn.addEventListener("click", () => {
+    playback.classList.remove("active");
+    exitPrompting();
+  });
+
+  // ---------- Prompter rendering ----------
+  function renderScript() {
+    // Wrap each word in a span so voice-tracking can measure positions.
+    const text = scriptEl.value || "";
+    scroller.innerHTML = "";
+    scriptWords = [];
+    const tokens = text.split(/(\s+)/);
+    for (const tok of tokens) {
+      if (tok === "") continue;
+      if (/^\s+$/.test(tok)) { scroller.appendChild(document.createTextNode(tok)); continue; }
+      const span = document.createElement("span");
+      span.textContent = tok;
+      scroller.appendChild(span);
+      const norm = tok.toLowerCase().replace(/[^\p{L}\p{N}']/gu, "");
+      if (norm) scriptWords.push({ span, norm });
+    }
+    wordIndex = 0;
+  }
+
+  // ---------- Voice-tracking scroll ----------
+  function voiceSupported() {
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }
+  function normWords(str) {
+    return str.toLowerCase().replace(/[^\p{L}\p{N}'\s]/gu, "").split(/\s+/).filter(Boolean);
+  }
+  function scrollToWord(i) {
+    const w = scriptWords[i];
+    if (!w) return;
+    const band = prompter.clientHeight * 0.18;   // focus band position
+    voiceTarget = Math.max(0, w.span.offsetTop - band);
+  }
+  function matchWords(recWords) {
+    if (!recWords.length) return;
+    const WIN = 20;                 // look-ahead window in script
+    // Try the last recognized word, then the one before it.
+    for (const probe of [recWords[recWords.length - 1], recWords[recWords.length - 2]]) {
+      if (!probe) continue;
+      for (let off = 0; off < WIN; off++) {
+        const idx = wordIndex + off;
+        if (idx >= scriptWords.length) break;
+        if (scriptWords[idx].norm === probe) {
+          wordIndex = idx + 1;
+          scrollToWord(wordIndex);
+          return;
+        }
+      }
+    }
+  }
+  function startVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return false;
+    try {
+      recognition = new SR();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      recognition.onresult = (e) => {
+        let words = [];
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          words = words.concat(normWords(e.results[i][0].transcript));
+        }
+        matchWords(words);
+      };
+      recognition.onerror = (e) => {
+        if (e && (e.error === "not-allowed" || e.error === "service-not-allowed")) {
+          toast("Mic blocked for voice tracking");
+          disableVoice();
+        }
+      };
+      recognition.onend = () => { if (voiceMode && recognition) { try { recognition.start(); } catch (_) {} } };
+      recognition.start();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  function stopVoice() {
+    if (recognition) { recognition.onend = null; try { recognition.stop(); } catch (_) {} recognition = null; }
+  }
+  function enableVoice() {
+    if (!voiceSupported()) { toast("Voice tracking needs Chrome (or Safari)"); return; }
+    voiceMode = true;
+    wordIndex = 0;
+    voiceBtn.textContent = "🎙 Voice: On";
+    voiceBtn.classList.add("on");
+    voiceCaption.classList.add("active");
+    if (!startVoice()) { disableVoice(); toast("Couldn't start voice tracking"); }
+  }
+  function disableVoice() {
+    voiceMode = false;
+    stopVoice();
+    voiceBtn.textContent = "🎙 Voice: Off";
+    voiceBtn.classList.remove("on");
+    voiceCaption.classList.remove("active");
+  }
+  function toggleVoice() { voiceMode ? disableVoice() : enableVoice(); }
+  voiceBtn.addEventListener("click", toggleVoice);
+  function applyStyle() {
+    scroller.style.fontSize = fontSizeEl.value + "px";
+    scroller.style.lineHeight = (lineHeightEl.value / 100).toString();
+    scroller.style.color = textColorEl.value;
+    prompter.style.width = widthEl.value + "%";
+  }
+  [fontSizeEl, lineHeightEl, textColorEl].forEach(el =>
+    el.addEventListener("input", applyStyle));
+  widthEl.addEventListener("input", applyStyle);
+
+  // ---------- Scroll loop ----------
+  function startScrollLoop() {
+    if (rafId) return;
+    lastFrameTs = 0;
+    rafId = requestAnimationFrame(scrollTick);
+  }
+  function stopScrollLoop() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
+  function scrollTick(ts) {
+    if (!lastFrameTs) lastFrameTs = ts;
+    const dt = (ts - lastFrameTs) / 1000;
+    lastFrameTs = ts;
+
+    const pxPerSec = Number(speedEl.value); // 0..200
+    const max = Math.max(1, scroller.scrollHeight - prompter.clientHeight * 0.2);
+    if (voiceMode) {
+      // Ease toward the position of the last-spoken word.
+      scrollPos += (voiceTarget - scrollPos) * Math.min(1, dt * 6);
+      if (scrollPos > max) scrollPos = max;
+      scroller.style.transform = `translateY(${-scrollPos}px)`;
+    } else if (!paused) {
+      scrollPos += pxPerSec * dt;
+      if (scrollPos > max) scrollPos = max; // stop at end
+      scroller.style.transform = `translateY(${-scrollPos}px)`;
+    }
+    // Progress bar + estimated time remaining
+    const pct = Math.min(100, (scrollPos / max) * 100);
+    progressBar.style.width = pct.toFixed(1) + "%";
+    if (voiceMode) {
+      progressTime.textContent = "🎙 voice";
+    } else if (pxPerSec > 0) {
+      const remain = (max - scrollPos) / pxPerSec;
+      progressTime.textContent = paused ? "paused" : `-${fmtTime(remain)}`;
+    } else {
+      progressTime.textContent = "manual";
+    }
+    rafId = requestAnimationFrame(scrollTick);
+  }
+  function resetScroll() {
+    scrollPos = 0;
+    scroller.style.transform = "translateY(0px)";
+    progressBar.style.width = "0%";
+  }
+
+  function togglePause() {
+    paused = !paused;
+    playPauseBtn.textContent = paused ? "▶ Resume" : "⏸ Pause";
+  }
+
+  // Wheel nudges position, then auto-scroll continues
+  prompter.style.pointerEvents = "none";
+  window.addEventListener("wheel", (e) => {
+    if (!prompting) return;
+    // Only intercept when pointer is over the upper (prompter) area
+    if (e.clientY > window.innerHeight * 0.6) return;
+    scrollPos = Math.max(0, scrollPos + e.deltaY * 0.5);
+    scroller.style.transform = `translateY(${-scrollPos}px)`;
+  }, { passive: true });
+
+  // ---------- Mirror ----------
+  let mirrored = false;
+  function toggleMirror() {
+    mirrored = !mirrored;
+    scroller.classList.toggle("mirror", mirrored);
+    mirrorBtn.textContent = "Mirror: " + (mirrored ? "On" : "Off");
+  }
+  mirrorBtn.addEventListener("click", toggleMirror);
+
+  // ---------- Enter / exit prompting ----------
+  async function enterPrompting() {
+    const interview = mode === "interview";
+    if (interview) {
+      // Drop empty questions; require at least one.
+      questions = questions.filter((q) => q.text && q.text.trim());
+      if (!questions.length) { toast("Add at least one question first"); return; }
+      currentQ = 0;
+    }
+    renderScript();
+    applyStyle();
+    resetScroll();
+    // Ensure camera is running
+    if (!stream) {
+      const ok = await initStream(camSel.value || null, micSel.value || null);
+      if (!ok) return;
+    }
+    prompting = true;
+    paused = false;
+    playPauseBtn.textContent = "⏸ Pause";
+    editor.style.display = "none";
+
+    // Script-scroll UI vs interview cue-card UI
+    prompter.classList.toggle("active", !interview);
+    focusband.classList.toggle("active", !interview);
+    progressWrap.classList.toggle("active", !interview);
+    progressTime.classList.toggle("active", !interview);
+    interviewCard.classList.toggle("active", interview);
+    nextQBtn.style.display = interview ? "" : "none";
+    voiceBtn.style.display = interview ? "none" : "";  // voice-scroll is script-only
+    scrim.classList.add("active");
+    if (interview) renderCueCard();
+
+    applyFrameGuide();
+    startScrollLoop();
+  }
+  function exitPrompting() {
+    prompting = false;
+    stopScrollLoop();
+    disableVoice();
+    if (recording) stopRecording();
+    editor.style.display = "flex";
+    prompter.classList.remove("active");
+    scrim.classList.remove("active");
+    focusband.classList.remove("active");
+    progressWrap.classList.remove("active");
+    progressTime.classList.remove("active");
+    frameGuide.classList.remove("active");
+    interviewCard.classList.remove("active");
+    segCount.classList.remove("active");
+    playback.classList.remove("active");
+  }
+
+  startBtn.addEventListener("click", enterPrompting);
+  editBtn.addEventListener("click", exitPrompting);
+  recBtn.addEventListener("click", toggleRecord);
+  playPauseBtn.addEventListener("click", togglePause);
+  topBtn.addEventListener("click", resetScroll);
+  markBtn.addEventListener("click", () => dropMarker("Marker"));
+
+  // ---------- Framing guide ----------
+  frameSel.addEventListener("change", () => { targetAspect = frameSel.value; applyFrameGuide(); });
+  window.addEventListener("resize", () => { if (prompting) applyFrameGuide(); });
+
+  // ---------- Cover frame grab ----------
+  coverBtn.addEventListener("click", () => {
+    const w = playbackVid.videoWidth, h = playbackVid.videoHeight;
+    if (!w || !h) { toast("Play the clip first, then grab a frame"); return; }
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(playbackVid, 0, 0, w, h);  // recording is not mirrored
+    canvas.toBlob((b) => {
+      if (!b) return;
+      const url = URL.createObjectURL(b);
+      const base = lastMeta ? lastMeta.file.replace(/\.[^.]+$/, "") : "cover";
+      triggerDownload(url, base + "-cover.png");
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }, "image/png");
+  });
+
+  // ---------- Fullscreen ----------
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      (document.documentElement.requestFullscreen || (()=>{})).call(document.documentElement);
+    } else {
+      document.exitFullscreen();
+    }
+  }
+  fsBtn.addEventListener("click", toggleFullscreen);
+
+  // ---------- Help ----------
+  function toggleHelp() { help.classList.toggle("active"); }
+  helpBtn.addEventListener("click", toggleHelp);
+  help.addEventListener("click", (e) => { if (e.target === help) help.classList.remove("active"); });
+
+  // ---------- Retry ----------
+  msgRetry.addEventListener("click", () => initStream(camSel.value || null, micSel.value || null));
+
+  // ---------- Keyboard ----------
+  window.addEventListener("keydown", (e) => {
+    // Don't hijack typing in the script box
+    // Don't hijack typing in any form field (script box, interview questions, dropdowns).
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.tagName === "SELECT" || ae.isContentEditable)) {
+      if (e.key === "Escape") ae.blur();
+      return;
+    }
+    switch (e.key) {
+      case " ":
+        if (prompting && mode !== "interview") { e.preventDefault(); togglePause(); }
+        break;
+      case "r": case "R":
+        if (prompting) { e.preventDefault(); toggleRecord(); }
+        break;
+      case "n": case "N":
+        if (prompting && mode === "interview") { e.preventDefault(); advanceQuestion(1); }
+        break;
+      case "ArrowRight":
+        if (prompting && mode === "interview") { e.preventDefault(); advanceQuestion(1); }
+        break;
+      case "ArrowLeft":
+        if (prompting && mode === "interview") { e.preventDefault(); advanceQuestion(-1); }
+        break;
+      case "b": case "B":
+        if (prompting) { e.preventDefault(); dropMarker("Marker"); }
+        break;
+      case "1": if (prompting && mode !== "interview") dropMarker("Hook"); break;
+      case "2": if (prompting && mode !== "interview") dropMarker("Point"); break;
+      case "3": if (prompting && mode !== "interview") dropMarker("CTA"); break;
+      case "4": if (prompting && mode !== "interview") dropMarker("✕ Retake"); break;
+      case "ArrowUp":
+        if (prompting && mode !== "interview") { e.preventDefault(); speedEl.value = Math.min(200, Number(speedEl.value) + 5); }
+        break;
+      case "ArrowDown":
+        if (prompting && mode !== "interview") { e.preventDefault(); speedEl.value = Math.max(0, Number(speedEl.value) - 5); }
+        break;
+      case "Home":
+        if (prompting && mode !== "interview") { e.preventDefault(); resetScroll(); }
+        break;
+      case "m": case "M":
+        if (prompting) toggleMirror();
+        break;
+      case "v": case "V":
+        if (prompting) toggleVoice();
+        break;
+      case "f": case "F":
+        toggleFullscreen();
+        break;
+      case "Escape":
+        if (help.classList.contains("active")) help.classList.remove("active");
+        else if (playback.classList.contains("active")) playback.classList.remove("active");
+        else if (prompting) exitPrompting();
+        break;
+      case "?":
+        toggleHelp();
+        break;
+    }
+  });
+
+  // ---------- Auto-hide controls ----------
+  let hideTimer = null;
+  function showControls() {
+    controls.classList.remove("hidden");
+    helpBtn.classList.remove("hidden");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (prompting) {
+        controls.classList.add("hidden");
+        helpBtn.classList.add("hidden");
+      }
+    }, 3000);
+  }
+  window.addEventListener("mousemove", showControls);
+  window.addEventListener("touchstart", showControls, { passive: true });
+  showControls();
+
+  // ---------- Refresh device labels when they change ----------
+  if (navigator.mediaDevices) {
+    navigator.mediaDevices.addEventListener &&
+      navigator.mediaDevices.addEventListener("devicechange", populateDevices);
+  }
+
+  // ---------- Warm up: request permission early so device labels populate ----------
+  // We wait for the user's first Start click to avoid a surprise permission prompt,
+  // but if they interact with a device dropdown first, initStream handles it.
+  window.addEventListener("beforeunload", () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (lastUrl) URL.revokeObjectURL(lastUrl);
+  });
+})();
+</script>
+</body>
+</html>
