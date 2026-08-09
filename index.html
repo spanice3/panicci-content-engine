@@ -350,6 +350,53 @@
   .t-ou    { background: rgba(190,120,255,0.22); color: #d9b3ff; }
   .t-intro { background: rgba(120,200,140,0.22); color: #a7e3b5; }
   .t-cta   { background: rgba(255,213,74,0.20);  color: #ffe08a; }
+  .formatTag {
+    display: inline-block; font-size: 11px; font-weight: 600; opacity: .75;
+    margin-left: 6px; padding: 2px 8px; border-radius: 20px;
+    background: rgba(255,255,255,0.08); color: var(--text);
+  }
+  .qRow .formatTag { flex: 0 0 auto; white-space: nowrap; }
+  #icFormat {
+    font-size: 13px; font-weight: 600; opacity: .85; color: #bcd0ff;
+    margin-top: 4px; text-shadow: 0 2px 8px #000;
+  }
+
+  /* ---------- Performance panel ---------- */
+  #perfBtn {
+    position: absolute; top: 62px; right: 16px; z-index: 22;
+    width: 38px; height: 38px; border-radius: 50%; padding: 0;
+    font-size: 16px; background: var(--panel);
+    transition: opacity .35s;
+  }
+  #perfBtn.hidden { opacity: 0; pointer-events: none; }
+  #perfPanel {
+    position: absolute; inset: 0; z-index: 71;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(6, 8, 11, 0.92);
+  }
+  #perfPanel.active { display: flex; }
+  #perfPanel .card {
+    background: var(--panel); border-radius: 16px; padding: 24px 28px;
+    max-width: 520px; width: 92vw; max-height: 84vh; overflow-y: auto;
+  }
+  #perfPanel h2 { margin: 0 0 4px; font-size: 18px; }
+  #perfPanel p.hint { margin: 0 0 14px; opacity: .6; font-size: 12px; line-height: 1.5; }
+  .perfTabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .perfTab {
+    background: #1a2029; border: 1px solid #2a323d; color: var(--text);
+    padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .perfTab.active { background: var(--accent); border-color: var(--accent); }
+  .perfField { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .perfField label { font-size: 12px; opacity: .75; }
+  .perfField input, .perfField select, .perfField textarea {
+    background: #12161c; color: var(--text); border: 1px solid #2a323d;
+    border-radius: 8px; padding: 9px 11px; font-size: 14px;
+  }
+  #perfLbBody { display: flex; flex-direction: column; gap: 8px; }
+  .lbRow { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 8px 10px; background: #12161c; border-radius: 8px; }
+  .lbRow .name { font-weight: 700; }
+  .lbRow .stat { opacity: .75; font-variant-numeric: tabular-nums; }
 
   /* Interview cue card (prompting) */
   #interviewCard {
@@ -387,6 +434,7 @@
     <div id="icQnum"></div>
     <div id="icBadge"></div>
     <div id="icQuestion"></div>
+    <div id="icFormat"></div>
   </div>
 
   <!-- Script progress -->
@@ -400,6 +448,7 @@
   <div id="voiceCaption">🎙 listening…</div>
 
   <button id="helpBtn" title="Keyboard shortcuts (?)">?</button>
+  <button id="perfBtn" title="Format performance: log results / see leaderboard">📊</button>
 
   <!-- Editor -->
   <div id="editor">
@@ -520,6 +569,73 @@ OU | AI website builders — overrated or underrated?"></textarea>
         <tr><td class="key"><kbd>?</kbd></td><td>Toggle this help</td></tr>
       </table>
       <p style="opacity:.55;font-size:12px;margin-top:16px;">Interview mode: each question is a cue card; tapping Next marks a clean Q&amp;A segment (question + type + in/out) into the .json so I cut each answer per platform. Script mode saves markers instead.</p>
+    </div>
+  </div>
+
+  <!-- Format performance: log a posted clip's results, or check what's winning -->
+  <div id="perfPanel">
+    <div class="card">
+      <h2>Format performance</h2>
+      <p class="hint">This studio's own posted-clip data — logged here — is what makes format picks in ✨ Generate with Claude get sharper over time instead of guessing forever. Log a result once a clip has been up a few days; check the leaderboard before your next shoot.</p>
+      <div class="perfTabs">
+        <button class="perfTab active" data-perftab="log">＋ Log a result</button>
+        <button class="perfTab" data-perftab="leaderboard">🏆 Leaderboard</button>
+      </div>
+
+      <div id="perfLogPane">
+        <div class="perfField">
+          <label>Format used</label>
+          <select id="perfFormat"></select>
+        </div>
+        <div class="perfField">
+          <label>Niche / industry</label>
+          <input id="perfNiche" type="text" placeholder="e.g. web design for local service businesses">
+        </div>
+        <div class="perfField">
+          <label>Client (optional)</label>
+          <input id="perfClient" type="text" placeholder="e.g. Acme Roofing">
+        </div>
+        <div class="perfField">
+          <label>Platform</label>
+          <select id="perfPlatform">
+            <option value="instagram_reels">Instagram Reels</option>
+            <option value="tiktok">TikTok</option>
+            <option value="facebook">Facebook</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="youtube_shorts">YouTube Shorts</option>
+          </select>
+        </div>
+        <div class="perfField">
+          <label>Views so far</label>
+          <input id="perfViews" type="number" min="0" placeholder="e.g. 42000">
+        </div>
+        <div class="perfField">
+          <label>Average watch-through % (optional, from platform insights)</label>
+          <input id="perfWatch" type="number" min="0" max="100" placeholder="e.g. 63">
+        </div>
+        <div class="perfField">
+          <label>Notes (optional)</label>
+          <textarea id="perfNotes" rows="2" placeholder="Anything worth remembering — what worked, what to try next time"></textarea>
+        </div>
+        <div class="qBuilderBar">
+          <button id="perfSubmitBtn" class="primary">Log result</button>
+          <button id="perfCloseBtn">Close</button>
+        </div>
+        <div id="perfStatus" class="aiStatus"></div>
+      </div>
+
+      <div id="perfLbPane" style="display:none;">
+        <div class="perfField">
+          <label>Niche (leave blank for studio-wide)</label>
+          <input id="perfLbNiche" type="text" placeholder="e.g. web design for local service businesses">
+        </div>
+        <div class="qBuilderBar" style="margin-bottom:10px;">
+          <button id="perfLbLoadBtn" class="primary">Refresh leaderboard</button>
+          <button id="perfCloseBtn2">Close</button>
+        </div>
+        <div id="perfLbBody"></div>
+        <div id="perfLbStatus" class="aiStatus"></div>
+      </div>
     </div>
   </div>
 
@@ -680,6 +796,25 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
   const help      = $("help");
 
+  // Format performance panel
+  const perfBtn      = $("perfBtn");
+  const perfPanel    = $("perfPanel");
+  const perfLogPane  = $("perfLogPane");
+  const perfLbPane   = $("perfLbPane");
+  const perfFormat   = $("perfFormat");
+  const perfNiche    = $("perfNiche");
+  const perfClient   = $("perfClient");
+  const perfPlatform = $("perfPlatform");
+  const perfViews    = $("perfViews");
+  const perfWatch    = $("perfWatch");
+  const perfNotes    = $("perfNotes");
+  const perfSubmitBtn= $("perfSubmitBtn");
+  const perfStatus   = $("perfStatus");
+  const perfLbNiche  = $("perfLbNiche");
+  const perfLbLoadBtn= $("perfLbLoadBtn");
+  const perfLbBody   = $("perfLbBody");
+  const perfLbStatus = $("perfLbStatus");
+
   // ---------- State ----------
   let stream = null;
   let recorder = null;
@@ -720,6 +855,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
     INTRO: { key: "INTRO", label: "Intro",     cls: "t-intro" },
     CTA:   { key: "CTA",   label: "CTA",       cls: "t-cta" }
   };
+  let formatLibrary = null; // [{id, name, ...}] loaded from /api/formats, cached per session
+  function formatById(id) { return (formatLibrary || []).find((f) => f.id === id) || null; }
 
   let prompting = false;
   let scrollPos = 0;        // px scrolled
@@ -785,20 +922,20 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
   // ---------- Interview mode ----------
   const STARTER_QUESTIONS = [
-    { type: "INTRO", text: "In one line — who are you and who do you help?" },
-    { type: "NICHE", text: "What's the #1 mistake businesses make with their website?" },
-    { type: "NICHE", text: "How fast should a site load before it costs you customers?" },
-    { type: "NICHE", text: "SEO vs paid ads — where should a new business put its first dollar?" },
-    { type: "HOT",   text: "Hot take: is a slow website worse than no website?" },
-    { type: "OU",    text: "AI website builders — overrated or underrated?" },
-    { type: "OU",    text: "QR codes on business cards — overrated or underrated?" },
-    { type: "CTA",   text: "Where can people find you if they want their site to actually convert?" }
+    { type: "INTRO", text: "In one line — who are you and who do you help?", format: "founder-origin" },
+    { type: "NICHE", text: "What's the #1 mistake businesses make with their website?", format: "expensive-mistake" },
+    { type: "NICHE", text: "How fast should a site load before it costs you customers?", format: "numbers-dont-lie" },
+    { type: "NICHE", text: "SEO vs paid ads — where should a new business put its first dollar?", format: "myth-vs-reality" },
+    { type: "HOT",   text: "Hot take: is a slow website worse than no website?", format: "hot-take" },
+    { type: "OU",    text: "AI website builders — overrated or underrated?", format: "overrated-underrated-industry" },
+    { type: "OU",    text: "QR codes on business cards — overrated or underrated?", format: "overrated-underrated-industry" },
+    { type: "CTA",   text: "Where can people find you if they want their site to actually convert?", format: "direct-cta" }
   ];
 
   function typeInfo(t) { return TYPES[t] || TYPES.NICHE; }
 
-  function addQuestion(type, text) {
-    questions.push({ type: type || "NICHE", text: text || "" });
+  function addQuestion(type, text, format) {
+    questions.push({ type: type || "NICHE", text: text || "", format: format || null });
     renderQBuilder();
   }
 
@@ -827,7 +964,16 @@ OU | AI website builders — overrated or underrated?"></textarea>
       del.title = "Remove";
       del.addEventListener("click", () => { questions.splice(i, 1); renderQBuilder(); });
 
-      row.appendChild(sel); row.appendChild(inp); row.appendChild(del);
+      row.appendChild(sel); row.appendChild(inp);
+      const fmt = q.format ? formatById(q.format) : null;
+      if (fmt) {
+        const tag = document.createElement("span");
+        tag.className = "formatTag";
+        tag.title = fmt.whyItWorks;
+        tag.textContent = fmt.name;
+        row.appendChild(tag);
+      }
+      row.appendChild(del);
       qBuilder.appendChild(row);
     });
   }
@@ -864,18 +1010,23 @@ OU | AI website builders — overrated or underrated?"></textarea>
     // Scale question text to length
     const len = q.text.length;
     icQuestion.style.fontSize = (len > 120 ? 30 : len > 70 ? 38 : 46) + "px";
+    const fmt = q.format ? formatById(q.format) : null;
+    icFormat.textContent = fmt ? `▸ Filming: ${fmt.name}` : "";
     segNum.textContent = "Q" + (currentQ + 1);
   }
 
   function openSegment(qIdx, t) {
     const q = questions[qIdx];
     if (!q) return;
+    const fmt = q.format ? formatById(q.format) : null;
     segOpenStart = t;
     segments.push({
       n: segments.length + 1,
       type: q.type,
       typeLabel: typeInfo(q.type).label,
       question: q.text,
+      format: q.format || null,
+      formatName: fmt ? fmt.name : null,
       start: Math.round(t * 100) / 100,
       end: null
     });
@@ -1115,6 +1266,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
       type: seg.type,
       typeLabel: seg.typeLabel,
       question: seg.question,
+      format: seg.format,
+      formatName: seg.formatName,
       start: seg.start,
       end: seg.end === null ? dur : seg.end,
       durationSeconds: Math.round(((seg.end === null ? dur : seg.end) - seg.start) * 100) / 100
@@ -1122,7 +1275,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
     // The clips Claude should actually cut: interview segments if present, else markers.
     const clips = takeSegments.length ? takeSegments.map((s) => ({
-      label: `${s.typeLabel}: ${s.question}`, type: s.type, start: s.start, end: s.end
+      label: `${s.typeLabel}: ${s.question}`, type: s.type, format: s.format, formatName: s.formatName, start: s.start, end: s.end
     })) : markerClips;
 
     // Per-platform cut targets so clips are edited like a pro, per placement.
@@ -1134,7 +1287,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     };
 
     const editingBrief = mode === "interview"
-      ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets."
+      ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. segment.formatName names the proven format this answer was built on (see /api/formats) — cut and caption in that format's spirit (e.g. hold the reveal on Hook-Reveal formats, keep the first line as pure hook on Storytelling). Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets. After each clip has been up a few days, log its views in the 📊 panel — that's what makes next shoot's ✨ Generate with Claude picks sharper."
       : "Cut around the markers/suggestedClips. Add burned-in captions and export per platform using platformTargets.";
 
     const meta = {
@@ -1258,6 +1411,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       document.getElementById("pane-interview").classList.toggle("active", mode === "interview");
       startBtn.textContent = mode === "interview" ? "Start interview ▶" : "Start prompting ▶";
       if (mode === "interview" && questions.length === 0) { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); }
+      if (mode === "interview") loadFormatLibrary().then(renderQBuilder);
     });
   });
   $("addNicheBtn").addEventListener("click", () => addQuestion("NICHE", ""));
@@ -1310,9 +1464,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
         return;
       }
       if (!data.questions || !data.questions.length) { setAiStatus("Claude returned nothing usable — try again.", "err"); return; }
-      questions = data.questions.map((q) => ({ type: q.type, text: q.text }));
+      questions = data.questions.map((q) => ({ type: q.type, text: q.text, format: q.format || null }));
       renderQBuilder();
-      setAiStatus(`✓ Generated ${questions.length} questions. Edit any of them, then Start interview.`, "ok");
+      const tagged = questions.filter((q) => q.format).length;
+      setAiStatus(`✓ Generated ${questions.length} questions (${tagged} tagged to a proven format). Edit any of them, then Start interview.`, "ok");
     } catch (err) {
       // Likely running from file:// with no backend.
       setAiStatus("Can't reach the generator here. This works once deployed — locally, use Bulk import.", "err");
@@ -1709,6 +1864,121 @@ OU | AI website builders — overrated or underrated?"></textarea>
   helpBtn.addEventListener("click", toggleHelp);
   help.addEventListener("click", (e) => { if (e.target === help) help.classList.remove("active"); });
 
+  // ---------- Format performance panel ----------
+  async function loadFormatLibrary() {
+    if (formatLibrary) return formatLibrary;
+    try {
+      const resp = await fetch("/api/formats");
+      const data = await resp.json();
+      formatLibrary = Array.isArray(data.formats) ? data.formats : [];
+    } catch (_) {
+      formatLibrary = [];
+    }
+    perfFormat.innerHTML = "";
+    formatLibrary.forEach((f) => {
+      const opt = document.createElement("option");
+      opt.value = f.id;
+      opt.textContent = f.name + (f.perf ? ` — avg ${f.perf.avgViews.toLocaleString()} views (${f.perf.postCount} logged)` : "");
+      perfFormat.appendChild(opt);
+    });
+    return formatLibrary;
+  }
+
+  function setPerfTab(tab) {
+    document.querySelectorAll(".perfTab").forEach((b) => b.classList.toggle("active", b.dataset.perftab === tab));
+    perfLogPane.style.display = tab === "log" ? "" : "none";
+    perfLbPane.style.display = tab === "leaderboard" ? "" : "none";
+    if (tab === "leaderboard" && !perfLbBody.childElementCount) loadLeaderboard();
+  }
+  document.querySelectorAll(".perfTab").forEach((b) => b.addEventListener("click", () => setPerfTab(b.dataset.perftab)));
+
+  async function openPerfPanel() {
+    await loadFormatLibrary();
+    // Pre-fill from the most recent take's niche/format when we have one.
+    if (lastMeta && lastMeta.segments && lastMeta.segments.length && lastMeta.segments[0].format) {
+      perfFormat.value = lastMeta.segments[0].format;
+    }
+    perfStatus.textContent = "";
+    setPerfTab("log");
+    perfPanel.classList.add("active");
+  }
+  function closePerfPanel() { perfPanel.classList.remove("active"); }
+  perfBtn.addEventListener("click", openPerfPanel);
+  $("perfCloseBtn").addEventListener("click", closePerfPanel);
+  $("perfCloseBtn2").addEventListener("click", closePerfPanel);
+  perfPanel.addEventListener("click", (e) => { if (e.target === perfPanel) closePerfPanel(); });
+
+  perfSubmitBtn.addEventListener("click", async () => {
+    const views = parseInt(perfViews.value, 10);
+    if (!perfNiche.value.trim()) { perfStatus.textContent = "Add the niche this clip was for."; perfStatus.className = "aiStatus err"; return; }
+    if (!Number.isFinite(views) || views < 0) { perfStatus.textContent = "Add a view count."; perfStatus.className = "aiStatus err"; return; }
+    perfSubmitBtn.disabled = true;
+    perfStatus.textContent = "Logging…"; perfStatus.className = "aiStatus";
+    try {
+      const resp = await fetch("/api/log-performance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          formatId: perfFormat.value,
+          niche: perfNiche.value.trim(),
+          client: perfClient.value.trim(),
+          platform: perfPlatform.value,
+          views,
+          watchThroughPct: perfWatch.value ? Number(perfWatch.value) : null,
+          notes: perfNotes.value.trim()
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        perfStatus.textContent = data.error === "not_configured"
+          ? "Not connected yet — ask Claude to finish wiring the Supabase env vars in Vercel."
+          : (data.message || "Couldn't log that — try again.");
+        perfStatus.className = "aiStatus err";
+        return;
+      }
+      perfStatus.textContent = "✓ Logged. Next niche generation will factor this in.";
+      perfStatus.className = "aiStatus ok";
+      perfViews.value = ""; perfWatch.value = ""; perfNotes.value = "";
+    } catch (_) {
+      perfStatus.textContent = "Can't reach the logger here — works once deployed.";
+      perfStatus.className = "aiStatus err";
+    } finally {
+      perfSubmitBtn.disabled = false;
+    }
+  });
+
+  async function loadLeaderboard() {
+    perfLbBody.innerHTML = "";
+    perfLbStatus.textContent = "Loading…";
+    try {
+      const niche = perfLbNiche.value.trim();
+      const url = "/api/format-leaderboard" + (niche ? `?niche=${encodeURIComponent(niche)}` : "");
+      const resp = await fetch(url);
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        perfLbStatus.textContent = data.error === "not_configured"
+          ? "Not connected yet — ask Claude to finish wiring the Supabase env vars in Vercel."
+          : (data.message || "Couldn't load the leaderboard.");
+        return;
+      }
+      if (!data.leaderboard || !data.leaderboard.length) {
+        perfLbStatus.textContent = "No results logged yet — log a few clips above to start building this.";
+        return;
+      }
+      perfLbStatus.textContent = "";
+      data.leaderboard.forEach((row) => {
+        const div = document.createElement("div");
+        div.className = "lbRow";
+        const watch = row.avgWatchThroughPct != null ? ` · ${row.avgWatchThroughPct}% avg watch-through` : "";
+        div.innerHTML = `<span class="name">${row.formatName || row.formatId}</span><span class="stat">${row.avgViews.toLocaleString()} avg views${watch} · ${row.postCount} logged</span>`;
+        perfLbBody.appendChild(div);
+      });
+    } catch (_) {
+      perfLbStatus.textContent = "Can't reach the leaderboard here — works once deployed.";
+    }
+  }
+  perfLbLoadBtn.addEventListener("click", loadLeaderboard);
+
   // ---------- Retry ----------
   msgRetry.addEventListener("click", () => initStream(camSel.value || null, micSel.value || null));
 
@@ -1778,11 +2048,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
   function showControls() {
     controls.classList.remove("hidden");
     helpBtn.classList.remove("hidden");
+    perfBtn.classList.remove("hidden");
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
       if (prompting) {
         controls.classList.add("hidden");
         helpBtn.classList.add("hidden");
+        perfBtn.classList.add("hidden");
       }
     }, 3000);
   }

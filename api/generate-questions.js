@@ -1,6 +1,14 @@
 // Panicci Content Engine — Claude-powered interview question generator.
 // Runs as a Vercel serverless function. Holds the API key server-side so it is
 // never exposed to the browser. POST { niche, count, types, brandVoice, extra }.
+//
+// Format-aware: every question is grounded in a specific proven format from
+// lib/formats.js (not a generic "write a hot take" prompt) and, once the
+// performance feedback loop has data for this niche, biased toward the formats
+// that have actually driven views for it — see lib/performance-store.js.
+
+const { forTypes, byId } = require("../lib/formats");
+const { topFormatsForNiche } = require("../lib/performance-store");
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 // Overridable via env; "-latest" aliases track the current model automatically.
@@ -49,11 +57,35 @@ module.exports = async (req, res) => {
   const typeList = types.join(", ");
   const guide = Object.entries(TYPE_GUIDE).map(([k, v]) => `- ${k}: ${v}`).join("\n");
 
+  // Candidate formats: every format that fits at least one requested type.
+  const candidates = forTypes(types);
+  const formatCatalog = candidates
+    .map((f) => `- ${f.id} (${f.name}, for ${f.bestTypes.join("/")}): ${f.whyItWorks}`)
+    .join("\n");
+
+  // If the studio's own posted-clip data shows winners for this niche, nudge toward them.
+  let perfNote = "";
+  try {
+    const top = await topFormatsForNiche(niche, 5);
+    if (top.length) {
+      const named = top.map((t) => byId(t.formatId)).filter(Boolean);
+      if (named.length) {
+        perfNote = "\nThis studio's own posted-clip data shows these formats have driven the most views for THIS niche: "
+          + named.map((f) => f.id).join(", ")
+          + ". Prefer them when they're a natural fit — but don't force one that doesn't suit the question.";
+      }
+    }
+  } catch (_) {
+    // No performance data yet — proceed on format library alone.
+  }
+
   const system = [
     "You write short, punchy on-camera interview questions for a founder to answer for social video (Instagram, TikTok, Facebook, LinkedIn).",
     "Each question must be answerable in 15–45 seconds and phrased for spoken delivery.",
+    "Ground every question in ONE proven short-form format from the catalog below — do not invent questions unmoored from a format. Viral and high-authority content follows a small set of repeatable patterns; your job is to match the right pattern to this niche, not free-write.",
+    "Format catalog:\n" + formatCatalog + perfNote,
     "Return STRICT JSON only — no prose, no code fences.",
-    "Shape: {\"questions\":[{\"type\":\"NICHE\",\"text\":\"...\"}]}",
+    "Shape: {\"questions\":[{\"type\":\"NICHE\",\"format\":\"<format id from the catalog>\",\"text\":\"...\"}]}",
     "Allowed type values: NICHE, HOT, OU, INTRO, CTA.",
     "Type meanings:\n" + guide
   ].join("\n");
@@ -65,6 +97,7 @@ module.exports = async (req, res) => {
     `Produce exactly ${count} questions.`,
     `Use this ordered mix of types where possible: ${typeList}.`,
     "Make the HOT and OU ones genuinely scroll-stopping and current. Keep NICHE ones specific and value-first.",
+    "Vary the formats used — don't lean on the same one or two formats for every question.",
     "Return the JSON object now."
   ].filter(Boolean).join("\n");
 
@@ -78,7 +111,7 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1500,
+        max_tokens: 1800,
         system,
         messages: [{ role: "user", content: user }]
       })
@@ -116,10 +149,15 @@ function parseQuestions(text) {
   const arr = obj && Array.isArray(obj.questions) ? obj.questions : (Array.isArray(obj) ? obj : []);
   const ok = ["NICHE", "HOT", "OU", "INTRO", "CTA"];
   return arr
-    .map((q) => ({
-      type: ok.includes((q.type || "").toString().toUpperCase()) ? q.type.toUpperCase() : "NICHE",
-      text: (q.text || q.question || "").toString().trim()
-    }))
+    .map((q) => {
+      const format = byId((q.format || "").toString().trim());
+      return {
+        type: ok.includes((q.type || "").toString().toUpperCase()) ? q.type.toUpperCase() : "NICHE",
+        text: (q.text || q.question || "").toString().trim(),
+        format: format ? format.id : null,
+        formatName: format ? format.name : null
+      };
+    })
     .filter((q) => q.text)
     .slice(0, 20);
 }
