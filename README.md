@@ -44,14 +44,21 @@ Config schema (all optional except `name` + `questions`):
   GSC/ranking/review stats (pulled Aug 2026 — refresh before re-sending links)
 - `/partner` — generic PV partner testimonial for clients without a custom page yet
 
-## Recording → Blob flow
+## Recording → Blob flow (one take per question)
 1. Client enters name + email (required — Start is gated on it).
-2. Records takes with the eyeline cue-card flow; each Next-press marks a Q&A segment.
-3. **📤 Send my video** uploads the take straight from the browser to Vercel Blob
-   (client upload — no serverless body limit; multipart for big files), plus a
-   `.meta.json` cut sheet: person, questions, segment in/out points, editing brief.
-4. Files land at `testimonials/<client-slug>/<date>-<person>/take-N.*` with a
-   random suffix. Browse them in Vercel → Storage → Blob.
+2. **Each question is its own recording**: Record → Stop → review that answer →
+   Next question ▶ (or ↻ Redo on the spot, or ⏭ Skip). Videos stay in the native
+   recording format (Safari = MP4, Chrome/Edge = WebM) — no in-browser transcode,
+   so the question-to-question flow is instant.
+3. After the last question, the **"That's a wrap" review** shows every answer as a
+   chip (tap to watch, redo, or fill in a skipped one), then **📤 Send my answers**
+   uploads everything straight from the browser to Vercel Blob with a **progress
+   bar + estimated time remaining** (client upload — no serverless body limit;
+   multipart for big files).
+4. Each answer lands with a `.meta.json` cut sheet (person, question, timings,
+   editing brief), plus one `session.meta.json` summary linking every video URL:
+   `testimonials/<client-slug>/<date>-<person>/qNN-<type>.*` (random suffix).
+   Browse them in Vercel → Storage → Blob.
 
 `api/upload-testimonial.js` refuses tokens without a valid name + email and only
 allows the `testimonials/` prefix. Note: Blob URLs are public-but-unguessable, and

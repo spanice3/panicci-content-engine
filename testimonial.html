@@ -434,7 +434,19 @@
   body.client #qBulk,
   body.client #metaBtn,
   body.client #coverBtn,
-  body.client #sessionJsonBtn { display: none !important; }
+  body.client #sessionJsonBtn,
+  body.client #reRecordBtn,
+  body.client #backToEditBtn,
+  body.client #playPauseBtn,
+  body.client #voiceBtn,
+  body.client #markBtn,
+  body.client #mirrorBtn,
+  body.client #topBtn,
+  body.client .grp:has(> #speed),
+  body.client .grp:has(> #fontSize),
+  body.client .grp:has(> #width),
+  body.client .grp:has(> #lineHeight),
+  body.client .grp:has(> #textColor) { display: none !important; }
   body:not(.client) #brandHead,
   body:not(.client) #clientSteps,
   body:not(.client) #editorFoot { display: none; }
@@ -450,10 +462,34 @@
   #whoForm input.bad { border-color: var(--rec); outline: 2px solid rgba(255,59,48,0.55); }
   #whoForm .whoHint { margin: 0; font-size: 11.5px; opacity: .55; text-align: center; }
 
-  /* ---------- Upload status ---------- */
+  /* ---------- Upload status + progress ---------- */
   #sendStatus { font-size: 13px; min-height: 18px; text-align: center; max-width: 480px; line-height: 1.5; }
   #sendStatus.ok  { color: #a7e3b5; }
   #sendStatus.err { color: #ffb199; }
+  #sendProgress {
+    width: min(480px, 86vw); height: 8px; border-radius: 6px;
+    background: rgba(255,255,255,0.12); overflow: hidden; display: none; flex: 0 0 auto;
+  }
+  #sendProgress.active { display: block; }
+  #sendProgressFill {
+    height: 100%; width: 0%; background: var(--accent);
+    border-radius: 6px; transition: width .25s ease;
+  }
+
+  /* ---------- Per-question review ---------- */
+  #reviewHead { display: none; text-align: center; max-width: 560px; }
+  #reviewHead h2 { margin: 0 0 8px; font-size: 24px; }
+  #reviewHead p { margin: 0; font-size: 14px; opacity: .8; line-height: 1.5; }
+  #playback.review #takeLabel,
+  #playback.review #playbackVid,
+  #playback.review #playbackMeta,
+  #playback.review #answerRow { display: none; }
+  #playback.review #reviewHead { display: block; }
+  #playback:not(.review) #sessionTray { display: none; }
+  .takeChip.skipped { opacity: .55; border-style: dashed; border-color: #3a4450; }
+  .takeChip.skipped img { background: #171c23; }
+  .takeChip.sentChip { border-color: #3f7d55; }
+  .takeChip .cap .mk.sent { color: #a7e3b5; }
 
   /* ---------- Boot screen (config loading / not found) ---------- */
   #bootScreen {
@@ -517,8 +553,8 @@
       <p id="stepsIntro"><b>Thanks for sharing your story!</b> You'll answer a few quick questions on camera — just talk naturally, about 30–60 seconds each. No script to memorize.</p>
       <ol>
         <li>Enter your <b>name and email</b> below, tap <b>Start</b>, and allow camera + microphone.</li>
-        <li>Look at the <b style="color:var(--accent)">glowing dot</b> (that's the camera) and answer the question on screen.</li>
-        <li>Tap <b>Next ▶</b> for the following question. When you're done, tap <b>📤 Send my video</b> — it comes straight to us. That's it!</li>
+        <li>One question at a time: tap <b>● Record</b>, look at the <b style="color:var(--accent)">glowing dot</b> (that's the camera), answer, then tap <b>■ Stop</b>.</li>
+        <li>Happy with it? Tap <b>Next question ▶</b> — or redo it on the spot. After the last one, tap <b>📤 Send my answers</b> and you're done!</li>
       </ol>
     </div>
 
@@ -592,35 +628,35 @@ OU | AI website builders — overrated or underrated?"></textarea>
   <!-- Countdown -->
   <div id="countdown"></div>
 
-  <!-- Playback -->
+  <!-- Playback: single-answer review, or the final "that's a wrap" review -->
   <div id="playback">
+    <div id="reviewHead"></div>
     <div id="takeLabel"></div>
     <video id="playbackVid" controls playsinline></video>
     <div class="meta" id="playbackMeta"></div>
-    <div class="row">
-      <button id="sendBtn" class="primary">📤 Send my video</button>
+    <div class="row" id="answerRow">
+      <button id="nextBtn" class="primary">Next question ▶</button>
+      <button id="redoBtn">↻ Redo this answer</button>
       <button id="downloadBtn">⬇ Save a copy</button>
       <button id="metaBtn">⬇ Script data (.json)</button>
       <button id="coverBtn">⬇ Cover frame (.png)</button>
       <button id="reRecordBtn">＋ New take</button>
       <button id="backToEditBtn">Back to start</button>
     </div>
-    <div id="sendStatus"></div>
-    <p id="convertNote" style="display:none;max-width:460px;text-align:center;font-size:12px;opacity:.7;line-height:1.5;">
-      This browser recorded WebM and MP4 conversion couldn't run (offline or blocked).
-      The WebM still works — to get MP4 directly, open this in <b>Safari</b> on your Mac, or reconnect to the internet and record again.
-    </p>
 
-    <!-- Multi-take session tray -->
+    <!-- Answer chips + send controls (final review) -->
     <div id="sessionTray">
       <div id="takesStrip"></div>
       <div class="row" id="sessionRow">
-        <button id="sendAllBtn">📤 Send all takes</button>
-        <button id="allVidBtn">⬇ Save all takes</button>
+        <button id="sendAllBtn" class="primary">📤 Send my answers</button>
+        <button id="allVidBtn">⬇ Save all</button>
         <button id="sessionJsonBtn">⬇ Session data (.json)</button>
-        <button id="clearSessionBtn">🗑 Clear session</button>
+        <button id="clearSessionBtn">↺ Start over</button>
       </div>
     </div>
+
+    <div id="sendProgress"><div id="sendProgressFill"></div></div>
+    <div id="sendStatus"></div>
   </div>
 
   <!-- Messages -->
@@ -803,9 +839,11 @@ OU | AI website builders — overrated or underrated?"></textarea>
   const downloadBtn = $("downloadBtn");
   const metaBtn     = $("metaBtn");
   const coverBtn    = $("coverBtn");
-  const convertNote = $("convertNote");
   const reRecordBtn = $("reRecordBtn");
   const backToEditBtn = $("backToEditBtn");
+  const nextBtn   = $("nextBtn");
+  const redoBtn   = $("redoBtn");
+  const reviewHead = $("reviewHead");
 
   const frameGuide = $("frameGuide");
   const frameBox   = $("frameBox");
@@ -863,9 +901,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
   const footClient = $("footClient");
   const whoName    = $("whoName");
   const whoEmail   = $("whoEmail");
-  const sendBtn    = $("sendBtn");
   const sendAllBtn = $("sendAllBtn");
   const sendStatus = $("sendStatus");
+  const sendProgress = $("sendProgress");
+  const sendProgressFill = $("sendProgressFill");
   const bootScreen = $("bootScreen");
   const bootTitle  = $("bootTitle");
   const bootBody   = $("bootBody");
@@ -881,7 +920,6 @@ OU | AI website builders — overrated or underrated?"></textarea>
   let lastUrl = null;
   let lastExt = "mp4";
   let lastMeta = null;
-  let ffmpeg = null;        // lazy-loaded ffmpeg.wasm instance
   let recMimeType = "";     // mime actually used by the recorder
   let markers = [];         // [{t, label}] segment markers for this take
   let targetAspect = "off"; // framing guide selection
@@ -895,16 +933,18 @@ OU | AI website builders — overrated or underrated?"></textarea>
   let wordIndex = 0;
   let voiceTarget = 0;
 
-  // Multi-take session
-  let takes = [];           // [{url, blob, ext, meta, durationSec, thumbUrl}]
-  let currentTakeIdx = -1;
+  // Per-question answers: one recording per question.
+  // answers[qIdx] = {blob,url,ext,meta,durationSec,thumbUrl,sent,sentUrl} | null (skipped) | undefined (not reached)
+  let answers = [];
+  let viewQ = -1;           // which question's answer the playback panel is showing
+  let reviewMode = false;   // the final "that's a wrap" review screen is up
+  let reviewVisited = false;// review screen has been seen at least once
+  let redoReturn = null;    // "review" when a redo/record was launched from the review screen
 
   // Interview mode
   let mode = "interview";   // testimonial studio runs in interview mode
   let questions = [];       // [{type, text}]
   let currentQ = 0;
-  let segments = [];        // [{n, type, question, start, end}] for the current take
-  let segOpenStart = 0;     // start time of the currently-open segment
   let TYPES = {};           // built from the client config's questions
 
   // Client config (fetched from /clients/<slug>.json) + the person recording
@@ -1214,42 +1254,31 @@ OU | AI website builders — overrated or underrated?"></textarea>
     segNum.textContent = "Q" + (currentQ + 1);
   }
 
-  function openSegment(qIdx, t) {
-    const q = questions[qIdx];
-    if (!q) return;
-    segOpenStart = t;
-    segments.push({
-      n: segments.length + 1,
-      type: q.type,
-      typeLabel: typeInfo(q.type).label,
-      question: q.text,
-      start: Math.round(t * 100) / 100,
-      end: null
-    });
-  }
-  function closeSegment(t) {
-    const seg = segments[segments.length - 1];
-    if (seg && seg.end === null) seg.end = Math.round(t * 100) / 100;
+  // ---- Per-question flow: each answer is its own take ----
+  function answeredCount() { return answers.filter(Boolean).length; }
+  function sessionDone() { return questions.length > 0 && questions.every((_, i) => answers[i] !== undefined); }
+  function firstOpenQuestion() { return questions.findIndex((_, i) => answers[i] === undefined); }
+  function recLabel() { return mode === "interview" ? "● Record answer" : "● Record"; }
+
+  function gotoQuestion(idx) {
+    currentQ = Math.max(0, Math.min(questions.length - 1, idx));
+    reviewMode = false;
+    playback.classList.remove("active", "review");
+    renderCueCard();
   }
 
-  function advanceQuestion(dir) {
-    if (mode !== "interview") return;
-    const next = currentQ + (dir || 1);
-    if (next < 0 || next >= questions.length) {
-      if (dir > 0) toast("Last question — hit Stop when done");
-      return;
-    }
-    // If recording, close the current segment and open the next at the same instant.
-    if (recording) {
-      const t = (performance.now() - recStartTs) / 1000;
-      closeSegment(t);
-      currentQ = next;
-      openSegment(currentQ, t);
-      toast(`▸ ${typeInfo(questions[currentQ].type).label} · Q${currentQ + 1}`);
-    } else {
-      currentQ = next;
-    }
-    renderCueCard();
+  function skipQuestion() {
+    if (recording || mode !== "interview") return;
+    if (answers[currentQ] === undefined) answers[currentQ] = null;  // mark skipped; a recorded answer is never discarded here
+    afterQuestion();
+  }
+
+  // Where to go once the current question is answered, skipped, or redone.
+  function afterQuestion() {
+    if (redoReturn === "review" || sessionDone()) { redoReturn = null; showReview(); return; }
+    const next = firstOpenQuestion();
+    if (next === -1) { showReview(); return; }
+    gotoQuestion(next);
   }
 
   // ---------- Media setup ----------
@@ -1331,8 +1360,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
   // ---------- Recording ----------
   function pickMimeType() {
-    // Prefer MP4 / H.264 so clips drop straight into ad-editing tools.
-    // Fall back to WebM (we transcode to MP4 afterward via ffmpeg.wasm).
+    // Prefer MP4 / H.264 (Safari) so clips drop straight into ad-editing tools;
+    // Chrome/Edge fall back to WebM, which uploads and edits fine.
     const candidates = [
       "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
       "video/mp4;codecs=avc1,mp4a",
@@ -1358,7 +1387,6 @@ OU | AI website builders — overrated or underrated?"></textarea>
     }
     const mimeType = pickMimeType();
     recMimeType = mimeType;
-    convertNote.style.display = "none";
     try {
       recorder = mimeType
         ? new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 })
@@ -1378,12 +1406,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
     markers = [];                 // fresh markers per take
     markNum.textContent = "0";
     markCount.classList.add("active");
-    // Interview: begin capturing segments from the current question.
-    segments = [];
     if (mode === "interview" && questions.length) {
-      openSegment(currentQ, 0);
       segCount.classList.add("active");
       segNum.textContent = "Q" + (currentQ + 1);
+      nextQBtn.style.display = "none";   // no skipping mid-answer
     }
     recBtn.textContent = "■ Stop";
     recdot.classList.add("active");
@@ -1394,83 +1420,36 @@ OU | AI website builders — overrated or underrated?"></textarea>
   }
 
   function stopRecording() {
-    if (recorder && recording) {
-      // Close the final interview segment at the moment of stopping.
-      if (mode === "interview") closeSegment((performance.now() - recStartTs) / 1000);
-      recorder.stop();
-    }
+    if (recorder && recording) recorder.stop();
     recording = false;
-    recBtn.textContent = "● Record";
+    recBtn.textContent = recLabel();
     recdot.classList.remove("active");
     markCount.classList.remove("active");
     segCount.classList.remove("active");
+    if (mode === "interview") nextQBtn.style.display = "";
     if (recTimerId) { clearInterval(recTimerId); recTimerId = null; }
   }
 
   async function onRecordingStop() {
+    // Keep the native container — no in-browser transcode between questions.
+    // Safari records MP4 directly; Chrome/Edge record WebM, which edits fine.
     const type = (recorder && recorder.mimeType) || recMimeType || "video/webm";
-    let blob = new Blob(chunks, { type });
+    const blob = new Blob(chunks, { type });
     const durationSec = recStartTs ? (performance.now() - recStartTs) / 1000 : 0;
-
-    // Pause prompting while reviewing
     if (prompting) stopScrollLoop();
-
-    playback.classList.add("active");
-
-    const isMp4 = type.indexOf("mp4") !== -1;
-    if (isMp4) {
-      lastExt = "mp4";
-      finalizeRecording(blob, "video/mp4", durationSec, "h264/aac (native)");
-    } else {
-      // WebM recorded — transcode to MP4 so it's ad-creative ready.
-      playbackMeta.textContent = "Converting to MP4…";
-      downloadBtn.disabled = true;
-      try {
-        const mp4Blob = await convertToMp4(blob);
-        lastExt = "mp4";
-        finalizeRecording(mp4Blob, "video/mp4", durationSec, "h264/aac (converted)");
-      } catch (err) {
-        // Conversion unavailable (offline / blocked) — keep the WebM, be honest.
-        console.warn("MP4 conversion failed:", err);
-        lastExt = "webm";
-        finalizeRecording(blob, type.split(";")[0], durationSec, "webm (MP4 convert unavailable — see note)");
-        convertNote.style.display = "block";
-      } finally {
-        downloadBtn.disabled = false;
-      }
-    }
+    lastExt = type.indexOf("mp4") !== -1 ? "mp4" : "webm";
+    const codecNote = lastExt === "mp4" ? "h264/aac (native)" : "vp8/vp9+opus (native)";
+    finalizeAnswer(blob, "video/" + lastExt, durationSec, codecNote);
   }
 
-  function finalizeRecording(blob, containerLabel, durationSec, codecNote) {
+  function finalizeAnswer(blob, containerLabel, durationSec, codecNote) {
     // Build sidecar metadata Claude can use to edit into ad creatives.
     const vt = stream && stream.getVideoTracks()[0];
     const s = vt ? vt.getSettings() : {};
-
     const dur = Math.round(durationSec * 100) / 100;
-
-    // Turn markers into clip suggestions (marker N -> next marker or end).
-    const takeMarkers = markers.slice();
-    const markerClips = takeMarkers.map((m, i) => ({
-      label: m.label,
-      start: m.t,
-      end: i + 1 < takeMarkers.length ? takeMarkers[i + 1].t : dur
-    }));
-
-    // Interview segments: each Q&A is a self-contained clip with full context.
-    const takeSegments = segments.map((seg) => ({
-      n: seg.n,
-      type: seg.type,
-      typeLabel: seg.typeLabel,
-      question: seg.question,
-      start: seg.start,
-      end: seg.end === null ? dur : seg.end,
-      durationSeconds: Math.round(((seg.end === null ? dur : seg.end) - seg.start) * 100) / 100
-    }));
-
-    // The clips Claude should actually cut: interview segments if present, else markers.
-    const clips = takeSegments.length ? takeSegments.map((s) => ({
-      label: `${s.typeLabel}: ${s.question}`, type: s.type, start: s.start, end: s.end
-    })) : markerClips;
+    const q = questions[currentQ] || { type: "Q", text: "" };
+    const ti = typeInfo(q.type);
+    const qn = currentQ + 1;
 
     // Per-platform cut targets so clips are edited like a pro, per placement.
     const platformTargets = {
@@ -1481,7 +1460,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     };
 
     const editingBrief = (config && config.editingBrief) ||
-      ("CLIENT TESTIMONIAL for " + ((config && config.name) || "the client") + ". Produce (1) a full-length testimonial from the whole take, and (2) one standalone clip per segment. segment.question is the context; the answer is the usable soundbite. The strongest ad clips are usually the objection-buster, transformation, recommendation, and one-liner answers. Trim dead air at each segment's start/end, add burned-in captions, keep the speaker centered, and export one file per platform per segment using platformTargets (IG/TikTok/FB/LinkedIn).");
+      ("CLIENT TESTIMONIAL for " + ((config && config.name) || "the client") + ". Each file is one question's answer — segments[0].question is the context; the answer is the usable soundbite. Produce a full-length testimonial from the whole session plus one standalone clip per answer. The strongest ad clips are usually the objection-buster, transformation, recommendation, and one-liner answers. Trim dead air at each answer's start/end, add burned-in captions, keep the speaker centered, and export per platform using platformTargets (IG/TikTok/FB/LinkedIn).");
 
     const meta = {
       app: "Panicci Testimonial Studio",
@@ -1489,9 +1468,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       clientSlug: clientSlug,
       person: { name: person.name, email: person.email },
       recordedAt: new Date().toISOString(),
-      mode: mode,
-      take: takes.length + 1,
-      file: `${filePrefix()}-testimonial-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
+      mode: "interview-per-question",
+      question: { n: qn, of: questions.length, type: q.type, typeLabel: ti.label, text: q.text },
+      file: `${filePrefix()}-testimonial-q${String(qn).padStart(2, "0")}-${tsStamp()}.${lastExt}`,
       container: lastExt,
       codec: codecNote,
       durationSeconds: dur,
@@ -1500,90 +1479,130 @@ OU | AI website builders — overrated or underrated?"></textarea>
       targetAspect: targetAspect,      // intended crop for the ad (9:16, 1:1, …)
       mirroredPreview: true,
       recordedMirrored: false,
-      markers: takeMarkers,            // [{t, label}] moments you flagged live
-      segments: takeSegments,          // interview Q&A segments (empty in script mode)
-      suggestedClips: clips,           // ready-to-cut clips (segments in interview mode)
+      markers: markers.slice(),        // [{t, label}] moments flagged live
+      // One self-contained segment per file keeps the downstream cut pipeline unchanged.
+      segments: [{ n: 1, type: q.type, typeLabel: ti.label, question: q.text, start: 0, end: dur, durationSeconds: dur }],
       platformTargets,                 // how to cut for IG / TikTok / FB / LinkedIn
-      editingBrief,                    // plain-English instructions for the editor (Claude)
-      script: scriptEl.value || ""
+      editingBrief                     // plain-English instructions for the editor (Claude)
     };
 
-    const take = {
+    const old = answers[currentQ];
+    if (old) { URL.revokeObjectURL(old.url); if (old.thumbUrl) URL.revokeObjectURL(old.thumbUrl); }
+    const ans = {
       blob, url: URL.createObjectURL(blob), ext: lastExt,
-      durationSec, containerLabel, codecNote, meta, thumbUrl: null
+      durationSec, containerLabel, codecNote, meta, thumbUrl: null, sent: false, sentUrl: null
     };
-    takes.push(take);
-    generateThumb(take);
-    showTake(takes.length - 1);
-    sessionTray.classList.toggle("active", takes.length > 0);
+    answers[currentQ] = ans;
+    generateThumb(ans);
+    showAnswer(currentQ);
   }
 
-  // ---------- Multi-take session ----------
-  function showTake(idx) {
-    if (idx < 0 || idx >= takes.length) return;
-    currentTakeIdx = idx;
-    const t = takes[idx];
-    lastBlob = t.blob; lastUrl = t.url; lastExt = t.ext; lastMeta = t.meta;
-    playbackVid.src = t.url;
-    const kb = t.blob.size / 1024;
+  // ---------- Answer review + final "that's a wrap" review ----------
+  function showAnswer(qIdx) {
+    const a = answers[qIdx];
+    if (!a) return;
+    viewQ = qIdx;
+    reviewMode = false;
+    lastBlob = a.blob; lastUrl = a.url; lastExt = a.ext; lastMeta = a.meta;
+    playbackVid.src = a.url;
+    const kb = a.blob.size / 1024;
     const sizeStr = kb > 1024 ? (kb / 1024).toFixed(1) + " MB" : Math.round(kb) + " KB";
-    playbackMeta.textContent = `${t.containerLabel} · ${t.codecNote} · ${sizeStr} · ${fmtTime(t.durationSec)}`;
-    const mk = t.meta.markers.length ? ` · ${t.meta.markers.length} markers` : "";
-    takeLabel.textContent = `Take ${idx + 1} of ${takes.length}${mk}`;
-    convertNote.style.display = t.ext === "webm" ? "block" : "none";
-    renderTakesStrip();
-    updateSendUi();
+    const ti = typeInfo(questions[qIdx] ? questions[qIdx].type : "Q");
+    takeLabel.textContent = `Question ${qIdx + 1} of ${questions.length} · ${ti.label}`;
+    playbackMeta.textContent = `${fmtTime(a.durationSec)} · ${sizeStr}`;
+    const goesToReview = redoReturn === "review" || sessionDone();
+    nextBtn.textContent = goesToReview
+      ? (reviewVisited ? "✓ Back to review" : "Finish ✓")
+      : "Next question ▶";
+    setSendStatus("");
+    sendProgress.classList.remove("active");
+    playback.classList.remove("review");
+    playback.classList.add("active");
   }
 
-  function renderTakesStrip() {
+  function showReview() {
+    reviewMode = true;
+    reviewVisited = true;
+    redoReturn = null;
+    viewQ = -1;
+    const n = answeredCount();
+    const skipped = questions.length - n;
+    const first = person.name ? ", " + person.name.split(/\s+/)[0] : "";
+    reviewHead.innerHTML =
+      `<h2>That's a wrap${first}! 🎬</h2>` +
+      `<p>${n} answer${n === 1 ? "" : "s"} recorded${skipped ? ` · ${skipped} skipped` : ""}. ` +
+      `Tap any answer to watch or redo it — then send them over.</p>`;
+    renderChips();
+    updateSendUi();
+    playback.classList.add("active", "review");
+  }
+
+  function renderChips() {
     takesStrip.innerHTML = "";
-    takes.forEach((t, i) => {
+    questions.forEach((q, i) => {
+      const a = answers[i];
       const chip = document.createElement("div");
-      chip.className = "takeChip" + (i === currentTakeIdx ? " selected" : "");
+      chip.className = "takeChip" + (a ? (a.sent ? " sentChip" : "") : " skipped");
       const img = document.createElement("img");
-      if (t.thumbUrl) img.src = t.thumbUrl;
+      if (a && a.thumbUrl) img.src = a.thumbUrl;
       const cap = document.createElement("div");
       cap.className = "cap";
-      const mkTxt = t.meta.markers.length ? "⚑" + t.meta.markers.length : "";
-      cap.innerHTML = `<span>#${i + 1} · ${fmtTime(t.durationSec)}</span><span class="mk">${mkTxt}</span>`;
+      cap.innerHTML = `<span>Q${i + 1} · ${a ? fmtTime(a.durationSec) : "skipped"}</span>` +
+        `<span class="mk${a && a.sent ? " sent" : ""}">${a && a.sent ? "✓" : ""}</span>`;
       chip.appendChild(img); chip.appendChild(cap);
-      chip.addEventListener("click", () => showTake(i));
+      chip.addEventListener("click", () => {
+        if (sendBusy) return;
+        redoReturn = "review";
+        if (a) showAnswer(i);
+        else { gotoQuestion(i); toast("Hit Record when you're ready"); }
+      });
       takesStrip.appendChild(chip);
     });
+    sessionTray.classList.add("active");
   }
 
-  function generateThumb(take) {
+  function generateThumb(ans) {
     const v = document.createElement("video");
-    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = take.url;
+    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = ans.url;
     const grab = () => {
       const c = document.createElement("canvas");
       c.width = 160; c.height = 90;
       try {
         c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
-        c.toBlob((b) => { if (b) { take.thumbUrl = URL.createObjectURL(b); renderTakesStrip(); } }, "image/jpeg", 0.7);
+        c.toBlob((b) => { if (b) { ans.thumbUrl = URL.createObjectURL(b); if (reviewMode) renderChips(); } }, "image/jpeg", 0.7);
       } catch (_) {}
     };
     v.addEventListener("loadeddata", () => { try { v.currentTime = Math.min(0.2, (v.duration || 1) / 2); } catch (_) { grab(); } });
     v.addEventListener("seeked", grab, { once: true });
   }
 
+  nextBtn.addEventListener("click", afterQuestion);
+
+  redoBtn.addEventListener("click", () => {
+    if (viewQ < 0) return;
+    if (reviewVisited) redoReturn = "review";
+    gotoQuestion(viewQ);      // the old answer stays until a new recording replaces it
+    toast("Same question — hit Record when you're ready");
+  });
+
   allVidBtn.addEventListener("click", async () => {
-    for (const t of takes) {
-      triggerDownload(t.url, t.meta.file);
+    const list = answers.filter(Boolean);
+    for (const a of list) {
+      triggerDownload(a.url, a.meta.file);
       await new Promise((r) => setTimeout(r, 400));  // stagger so the browser accepts each
     }
-    toast("Downloading " + takes.length + " takes — allow multiple files if asked");
+    toast(`Saving ${list.length} answer${list.length === 1 ? "" : "s"} — allow multiple files if asked`);
   });
 
   sessionJsonBtn.addEventListener("click", () => {
-    if (!takes.length) return;
+    if (!answeredCount()) return;
     const session = {
       app: "Panicci Testimonial Studio — session",
       client: (config && config.name) || clientSlug,
       person: { name: person.name, email: person.email },
       exportedAt: new Date().toISOString(),
-      takeCount: takes.length,
-      takes: takes.map((t) => t.meta)
+      answerCount: answeredCount(),
+      answers: answers.filter(Boolean).map((a) => a.meta)
     };
     const blob = new Blob([JSON.stringify(session, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1592,11 +1611,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
   });
 
   clearSessionBtn.addEventListener("click", () => {
-    takes.forEach((t) => { URL.revokeObjectURL(t.url); if (t.thumbUrl) URL.revokeObjectURL(t.thumbUrl); });
-    takes = []; currentTakeIdx = -1;
+    if (!window.confirm("Start over? This deletes every recorded answer on this device.")) return;
+    answers.forEach((a) => { if (a) { URL.revokeObjectURL(a.url); if (a.thumbUrl) URL.revokeObjectURL(a.thumbUrl); } });
+    answers = []; viewQ = -1; reviewMode = false; reviewVisited = false; redoReturn = null;
     lastBlob = null; lastUrl = null; lastMeta = null;
+    currentQ = 0;
     sessionTray.classList.remove("active");
-    renderTakesStrip();
+    playback.classList.remove("active", "review");
     exitPrompting();
   });
 
@@ -1679,55 +1700,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     qBulk.classList.remove("active");
     toast(`Imported ${parsed.length} questions`);
   });
-  nextQBtn.addEventListener("click", () => advanceQuestion(1));
-
-  // ---------- ffmpeg.wasm transcode (lazy-loaded, single-threaded core) ----------
-  function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = src; s.onload = resolve; s.onerror = () => reject(new Error("load " + src));
-      document.head.appendChild(s);
-    });
-  }
-
-  async function getFFmpeg() {
-    if (ffmpeg) return ffmpeg;
-    const base = "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js";
-    const utilBase = "https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js";
-    const coreBase = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
-    await loadScript(base);
-    await loadScript(utilBase);
-    const { FFmpeg } = window.FFmpegWASM;
-    const { toBlobURL } = window.FFmpegUtil;
-    const inst = new FFmpeg();
-    await inst.load({
-      coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`, "text/javascript"),
-      wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, "application/wasm")
-    });
-    ffmpeg = inst;
-    return ffmpeg;
-  }
-
-  async function convertToMp4(webmBlob) {
-    const ff = await getFFmpeg();
-    const inName = "in.webm", outName = "out.mp4";
-    const buf = new Uint8Array(await webmBlob.arrayBuffer());
-    await ff.writeFile(inName, buf);
-    ff.on && ff.on("progress", ({ progress }) => {
-      if (progress >= 0 && progress <= 1)
-        playbackMeta.textContent = `Converting to MP4… ${Math.round(progress * 100)}%`;
-    });
-    // H.264 + AAC, faststart for web/editor compatibility.
-    await ff.exec([
-      "-i", inName,
-      "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
-      "-c:a", "aac", "-b:a", "160k",
-      "-movflags", "+faststart",
-      outName
-    ]);
-    const data = await ff.readFile(outName);
-    return new Blob([data.buffer], { type: "video/mp4" });
-  }
+  nextQBtn.addEventListener("click", skipQuestion);
 
   function toggleRecord() {
     if (recording) stopRecording();
@@ -1812,90 +1785,144 @@ OU | AI website builders — overrated or underrated?"></textarea>
     return "Upload didn't go through (" + (m || "network error") + "). Try again, or tap “Save a copy” and email us the file.";
   }
 
-  async function sendTake(idx, label) {
-    const t = takes[idx];
-    if (!t || t.sent) return;
-    const upload = await loadUploader();
-    const base = `testimonials/${clientSlug}/${sessionStamp}-${slugify(person.name)}/take-${idx + 1}`;
-    const clientPayload = JSON.stringify({
+  let sendBusy = false;
+
+  function fmtEta(sec) {
+    if (!isFinite(sec) || sec < 0) return "";
+    if (sec < 8) return "almost done";
+    if (sec < 90) return "about " + Math.max(5, Math.round(sec / 5) * 5) + " seconds left";
+    const min = Math.round(sec / 60);
+    return "about " + min + " minute" + (min === 1 ? "" : "s") + " left";
+  }
+
+  function setProgress(frac) {
+    sendProgress.classList.add("active");
+    sendProgressFill.style.width = Math.min(100, Math.max(0, frac * 100)).toFixed(1) + "%";
+  }
+
+  function identityPayload(extra) {
+    return JSON.stringify(Object.assign({
       client: (config && config.name) || clientSlug,
       clientSlug,
       name: person.name,
-      email: person.email,
-      take: idx + 1,
-      durationSeconds: Math.round(t.durationSec)
-    });
-    const video = await upload(`${base}.${t.ext}`, t.blob, {
+      email: person.email
+    }, extra || {}));
+  }
+
+  function sessionBase() {
+    return `testimonials/${clientSlug}/${sessionStamp}-${slugify(person.name)}`;
+  }
+
+  async function sendAnswer(qIdx, upload, onBytes) {
+    const a = answers[qIdx];
+    if (!a || a.sent) return;
+    const qn = String(qIdx + 1).padStart(2, "0");
+    const qType = ((questions[qIdx] && questions[qIdx].type) || "q").toLowerCase();
+    const base = `${sessionBase()}/q${qn}-${qType}`;
+    const clientPayload = identityPayload({ question: qIdx + 1, durationSeconds: Math.round(a.durationSec) });
+    const video = await upload(`${base}.${a.ext}`, a.blob, {
       access: "public",
       handleUploadUrl: "/api/upload-testimonial",
       clientPayload,
-      multipart: t.blob.size > 8 * 1024 * 1024,
-      onUploadProgress: (p) => setSendStatus(`Uploading ${label || "your video"}… ${Math.round(p.percentage)}%`)
+      multipart: a.blob.size > 8 * 1024 * 1024,
+      onUploadProgress: (p) => onBytes(p.loaded)
     });
-    // Ship the cut-sheet metadata (who, questions, segment timings) alongside the video.
-    const metaOut = Object.assign({}, t.meta, {
+    // Ship the cut-sheet metadata (who, question, timings) alongside the video.
+    const metaOut = Object.assign({}, a.meta, {
       person: { name: person.name, email: person.email },
       videoUrl: video.url,
       videoPathname: video.pathname
     });
-    const metaBlob = new Blob([JSON.stringify(metaOut, null, 2)], { type: "application/json" });
     try {
-      await upload(`${base}.meta.json`, metaBlob, {
-        access: "public", handleUploadUrl: "/api/upload-testimonial", clientPayload
-      });
+      await upload(`${base}.meta.json`, new Blob([JSON.stringify(metaOut, null, 2)], { type: "application/json" }),
+        { access: "public", handleUploadUrl: "/api/upload-testimonial", clientPayload });
     } catch (_) {}  // the video landing safely is what matters
-    t.sent = true;
-    t.sentUrl = video.url;
+    a.sent = true;
+    a.sentUrl = video.url;
   }
 
   function updateSendUi() {
-    const t = takes[currentTakeIdx];
-    const sent = !!(t && t.sent);
-    sendBtn.disabled = sent;
-    sendBtn.textContent = sent ? "✓ Sent — thank you!" : "📤 Send my video";
-    setSendStatus(sent ? "This take is in — add another with “＋ New take”, or you're all done. 🎉" : "", sent ? "ok" : "");
+    const list = answers.filter(Boolean);
+    const unsent = list.filter((a) => !a.sent);
+    const allSent = list.length > 0 && unsent.length === 0;
+    sendAllBtn.disabled = sendBusy || list.length === 0 || allSent;
+    sendAllBtn.textContent = allSent
+      ? "✓ Sent — thank you!"
+      : `📤 Send my answer${list.length === 1 ? "" : "s"}` +
+        (unsent.length && unsent.length < list.length ? ` (${unsent.length} left)` : "");
+    if (allSent) {
+      setProgress(1);
+      setSendStatus(`All ${list.length} answer${list.length === 1 ? " is" : "s are"} delivered — you're all set. Thank you! 🎉`, "ok");
+    }
   }
 
-  sendBtn.addEventListener("click", async () => {
-    if (currentTakeIdx < 0 || !takes[currentTakeIdx]) return;
-    sendBtn.disabled = true;
-    setSendStatus("Getting your video ready…");
+  sendAllBtn.addEventListener("click", async () => {
+    const jobs = answers.map((a, i) => ({ a, i })).filter((x) => x.a && !x.a.sent);
+    if (!jobs.length || sendBusy) return;
+    sendBusy = true;
+    sendAllBtn.disabled = true;
+    setSendStatus("Connecting…");
     try {
-      await sendTake(currentTakeIdx, "your video");
-      updateSendUi();
+      const upload = await loadUploader();
+      const totalBytes = jobs.reduce((s, x) => s + x.a.blob.size, 0);
+      const startTs = performance.now();
+      let doneBytes = 0;
+      for (let k = 0; k < jobs.length; k++) {
+        const { a, i } = jobs[k];
+        await sendAnswer(i, upload, (loaded) => {
+          const sent = doneBytes + Math.min(loaded, a.blob.size);
+          const frac = totalBytes ? sent / totalBytes : 0;
+          setProgress(frac);
+          const elapsed = (performance.now() - startTs) / 1000;
+          const speed = elapsed > 1.5 ? sent / elapsed : 0;   // bytes/sec — give it a beat to settle
+          const eta = speed > 0 ? (totalBytes - sent) / speed : NaN;
+          const etaTxt = fmtEta(eta);
+          setSendStatus(`Sending answer ${k + 1} of ${jobs.length} — ${Math.round(frac * 100)}%${etaTxt ? " · " + etaTxt : ""}`);
+        });
+        doneBytes += a.blob.size;
+        setProgress(totalBytes ? doneBytes / totalBytes : 1);
+        if (reviewMode) renderChips();
+      }
+      // One session summary so every recording + contact lands in a single file.
+      try {
+        const summary = {
+          app: "Panicci Testimonial Studio — session",
+          client: (config && config.name) || clientSlug,
+          clientSlug,
+          person: { name: person.name, email: person.email },
+          sentAt: new Date().toISOString(),
+          questionCount: questions.length,
+          answers: questions.map((q, i) => {
+            const a = answers[i];
+            return a
+              ? { question: i + 1, text: q.text, durationSeconds: Math.round(a.durationSec), videoUrl: a.sentUrl }
+              : { question: i + 1, text: q.text, skipped: true };
+          })
+        };
+        await upload(`${sessionBase()}/session.meta.json`,
+          new Blob([JSON.stringify(summary, null, 2)], { type: "application/json" }),
+          { access: "public", handleUploadUrl: "/api/upload-testimonial", clientPayload: identityPayload() });
+      } catch (_) {}
     } catch (err) {
       console.warn("send failed:", err);
       setSendStatus(friendlySendError(err), "err");
-      sendBtn.disabled = false;
-    }
-  });
-
-  sendAllBtn.addEventListener("click", async () => {
-    if (!takes.length) return;
-    sendAllBtn.disabled = true;
-    sendBtn.disabled = true;
-    try {
-      for (let i = 0; i < takes.length; i++) await sendTake(i, `take ${i + 1} of ${takes.length}`);
-      setSendStatus(`✓ All ${takes.length} take${takes.length > 1 ? "s are" : " is"} in — thank you!`, "ok");
-      updateSendUi();
-    } catch (err) {
-      console.warn("send-all failed:", err);
-      setSendStatus(friendlySendError(err), "err");
-      sendBtn.disabled = false;
+      sendProgress.classList.remove("active");
     } finally {
-      sendAllBtn.disabled = false;
+      sendBusy = false;
+      updateSendUi();
+      if (reviewMode) renderChips();
     }
   });
 
   reRecordBtn.addEventListener("click", () => {
-    playback.classList.remove("active");
+    playback.classList.remove("active", "review");
     resetScroll();
     wordIndex = 0; voiceTarget = 0;   // reset voice position for the next take
-    if (mode === "interview") { currentQ = 0; renderCueCard(); }  // restart questions for the next take
+    if (mode === "interview") renderCueCard();
     if (prompting) startScrollLoop();
   });
   backToEditBtn.addEventListener("click", () => {
-    playback.classList.remove("active");
+    playback.classList.remove("active", "review");
     exitPrompting();
   });
 
@@ -2104,7 +2131,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       // Drop empty questions; require at least one.
       questions = questions.filter((q) => q.text && q.text.trim());
       if (!questions.length) { toast("Add at least one question first"); return; }
-      currentQ = 0;
+      // Resume at the first unanswered question.
+      const open = firstOpenQuestion();
+      currentQ = open === -1 ? 0 : open;
     }
     renderScript();
     applyStyle();
@@ -2125,15 +2154,22 @@ OU | AI website builders — overrated or underrated?"></textarea>
     progressWrap.classList.toggle("active", !interview);
     progressTime.classList.toggle("active", !interview);
     interviewCard.classList.toggle("active", interview);
-    nextQBtn.style.display = interview ? "" : "none";
+    nextQBtn.style.display = interview && !recording ? "" : "none";
     voiceBtn.style.display = interview ? "none" : "";  // voice-scroll is script-only
     scrim.classList.add("active");
-    if (interview) renderCueCard();
+    if (interview) {
+      nextQBtn.textContent = "⏭ Skip question";
+      nextQBtn.title = "Skip this question (N)";
+      recBtn.textContent = recording ? "■ Stop" : recLabel();
+      renderCueCard();
+    }
 
     applyFrameGuide();
     applyCamLine();
     lensDot.classList.toggle("active", eyeline);
     startScrollLoop();
+    // Coming back with every question already answered/skipped → straight to review.
+    if (interview && sessionDone() && answeredCount()) showReview();
   }
   function exitPrompting() {
     prompting = false;
@@ -2150,7 +2186,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     interviewCard.classList.remove("active");
     segCount.classList.remove("active");
     lensDot.classList.remove("active");
-    playback.classList.remove("active");
+    playback.classList.remove("active", "review");
   }
 
   startBtn.addEventListener("click", enterPrompting);
@@ -2212,16 +2248,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
         if (prompting && mode !== "interview") { e.preventDefault(); togglePause(); }
         break;
       case "r": case "R":
-        if (prompting) { e.preventDefault(); toggleRecord(); }
+        if (prompting && !playback.classList.contains("active")) { e.preventDefault(); toggleRecord(); }
         break;
-      case "n": case "N":
-        if (prompting && mode === "interview") { e.preventDefault(); advanceQuestion(1); }
-        break;
-      case "ArrowRight":
-        if (prompting && mode === "interview") { e.preventDefault(); advanceQuestion(1); }
-        break;
-      case "ArrowLeft":
-        if (prompting && mode === "interview") { e.preventDefault(); advanceQuestion(-1); }
+      case "n": case "N": case "ArrowRight":
+        if (mode !== "interview") break;
+        e.preventDefault();
+        if (playback.classList.contains("active") && !playback.classList.contains("review")) afterQuestion();
+        else if (prompting && !recording) skipQuestion();
         break;
       case "b": case "B":
         if (prompting) { e.preventDefault(); dropMarker("Marker"); }
@@ -2289,9 +2322,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
   // ---------- Warm up: request permission early so device labels populate ----------
   // We wait for the user's first Start click to avoid a surprise permission prompt,
   // but if they interact with a device dropdown first, initStream handles it.
-  window.addEventListener("beforeunload", () => {
+  window.addEventListener("beforeunload", (e) => {
+    // Recorded answers that haven't been sent live only in this tab — warn first.
+    if (answers.some((a) => a && !a.sent)) { e.preventDefault(); e.returnValue = ""; }
     if (stream) stream.getTracks().forEach(t => t.stop());
-    if (lastUrl) URL.revokeObjectURL(lastUrl);
   });
 
   // ---------- Boot: resolve client slug → fetch config → init studio ----------
