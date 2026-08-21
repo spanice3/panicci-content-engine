@@ -1,0 +1,19 @@
+{
+  "name": "Chicali Tacos",
+  "shortName": "Chicali-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each — and yes, the numbers in these questions are your real numbers.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your role at Chicali Tacos, and what makes your tacos worth crossing Las Vegas for." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before Panicci Ventures, what did your online presence look like — and what was that costing you in customers?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "Why did you trust Sammy and Panicci Ventures with your website and your Google presence?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "What does Panicci Ventures actually handle for you — the website, Google Business Profile, reviews, showing up in local search?" },
+    { "type": "REVIEWS",  "label": "Reviews",            "text": "Real numbers: you're sitting at a 4.8-star average on Google, and every single review has a personal reply. How much of that do you have to think about yourself?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — are new faces walking in saying they found you on Google?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from what you expected from a marketing guy — communication, speed, no lock-in contracts?" },
+    { "type": "MOMENT",   "label": "Moment",             "text": "Is there a moment that made you think “okay, this is actually working” — a busy day, a customer story, an order spike?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another local food spot that's amazing at what they do but invisible online?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner of Chicali Tacos (Las Vegas). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. REVIEWS, MOMENT, and SAMMY are the hero clips; RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

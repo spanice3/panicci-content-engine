@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panicci Content Engine</title>
+<title>Panicci Testimonial Studio</title>
+<meta name="robots" content="noindex">
 <style>
   /* ---------- Base ---------- */
   :root {
@@ -385,11 +386,17 @@
     display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .3px;
     padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
   }
-  .t-niche { background: rgba(79,140,255,0.22); color: #9dc0ff; }
-  .t-hot   { background: rgba(255,102,60,0.22);  color: #ffb199; }
-  .t-ou    { background: rgba(190,120,255,0.22); color: #d9b3ff; }
-  .t-intro { background: rgba(120,200,140,0.22); color: #a7e3b5; }
-  .t-cta   { background: rgba(255,213,74,0.20);  color: #ffe08a; }
+  /* Rotating palette — classes are assigned to question types in order of first appearance */
+  .t-c1  { background: rgba(120,200,140,0.22); color: #a7e3b5; }
+  .t-c2  { background: rgba(255,180,74,0.20);  color: #ffd79a; }
+  .t-c3  { background: rgba(255,102,60,0.22);  color: #ffb199; }
+  .t-c4  { background: rgba(79,140,255,0.22);  color: #9dc0ff; }
+  .t-c5  { background: rgba(90,200,200,0.20);  color: #a6e6e6; }
+  .t-c6  { background: rgba(190,120,255,0.22); color: #d9b3ff; }
+  .t-c7  { background: rgba(150,170,190,0.22); color: #cdd8e6; }
+  .t-c8  { background: rgba(255,213,74,0.20);  color: #ffe08a; }
+  .t-c9  { background: rgba(255,120,170,0.20); color: #ffb0cf; }
+  .t-c10 { background: rgba(79,140,255,0.30);  color: #cfe0ff; }
 
   /* Interview cue card (prompting) */
   #interviewCard {
@@ -406,6 +413,64 @@
   }
   #segCount { display: none; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #9dc0ff; }
   #segCount.active { display: inline-flex; }
+
+  /* ---------- Client testimonial mode ---------- */
+  #brandHead { text-align: center; }
+  #brandHead h1 { margin: 0; font-size: 26px; letter-spacing: .3px; }
+  #brandHead .sub { color: var(--accent); font-weight: 700; font-size: 12px; margin-top: 5px; letter-spacing: .5px; text-transform: uppercase; }
+  #clientSteps { max-width: 560px; font-size: 14px; line-height: 1.55; opacity: .95; }
+  #clientSteps p { margin: 0 0 10px; }
+  #clientSteps ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  #qListLabel { align-self: flex-start; }
+  .qView { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; padding: 7px 2px; border-bottom: 1px solid #1c2430; }
+  .qView:last-child { border-bottom: none; }
+  .qView .n { color: var(--accent); font-weight: 800; min-width: 18px; }
+  .qView .qt { flex: 1; line-height: 1.4; }
+  #editorFoot { font-size: 11px; opacity: .5; margin-top: 2px; text-align: center; }
+  body.client .modeTabs,
+  body.client #pane-script,
+  body.client #pane-interview .qBuilderBar,
+  body.client #aiPanel,
+  body.client #qBulk,
+  body.client #metaBtn,
+  body.client #coverBtn,
+  body.client #sessionJsonBtn { display: none !important; }
+  body:not(.client) #brandHead,
+  body:not(.client) #clientSteps,
+  body:not(.client) #editorFoot { display: none; }
+
+  /* ---------- Who is this from? (name + email gate) ---------- */
+  #whoForm { width: min(560px, 92vw); display: flex; flex-direction: column; gap: 6px; }
+  #whoForm .wrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  #whoForm input {
+    flex: 1 1 200px; background: #12161c; color: var(--text);
+    border: 1px solid #2a323d; border-radius: 10px; padding: 12px 14px; font-size: 15px; min-width: 0;
+  }
+  #whoForm input:focus { outline: 2px solid var(--accent); }
+  #whoForm input.bad { border-color: var(--rec); outline: 2px solid rgba(255,59,48,0.55); }
+  #whoForm .whoHint { margin: 0; font-size: 11.5px; opacity: .55; text-align: center; }
+
+  /* ---------- Upload status ---------- */
+  #sendStatus { font-size: 13px; min-height: 18px; text-align: center; max-width: 480px; line-height: 1.5; }
+  #sendStatus.ok  { color: #a7e3b5; }
+  #sendStatus.err { color: #ffb199; }
+
+  /* ---------- Boot screen (config loading / not found) ---------- */
+  #bootScreen {
+    position: absolute; inset: 0; z-index: 90;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px; padding: 40px; text-align: center;
+    background: var(--bg);
+  }
+  #bootScreen.gone { display: none; }
+  #bootScreen h2 { margin: 0; font-size: 20px; }
+  #bootScreen p { margin: 0; max-width: 460px; opacity: .75; line-height: 1.6; font-size: 14px; }
+  #bootScreen .pulse {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid var(--accent); opacity: .8;
+    animation: lenspulse 1.4s ease-in-out infinite;
+  }
 </style>
 </head>
 <body>
@@ -444,7 +509,18 @@
 
   <!-- Editor -->
   <div id="editor">
-    <h1>Panicci <span style="color:var(--accent)">Content Engine</span></h1>
+    <div id="brandHead">
+      <h1 id="brandName"></h1>
+      <div class="sub" id="brandSub">Share Your Story — Video Testimonial</div>
+    </div>
+    <div id="clientSteps">
+      <p id="stepsIntro"><b>Thanks for sharing your story!</b> You'll answer a few quick questions on camera — just talk naturally, about 30–60 seconds each. No script to memorize.</p>
+      <ol>
+        <li>Enter your <b>name and email</b> below, tap <b>Start</b>, and allow camera + microphone.</li>
+        <li>Look at the <b style="color:var(--accent)">glowing dot</b> (that's the camera) and answer the question on screen.</li>
+        <li>Tap <b>Next ▶</b> for the following question. When you're done, tap <b>📤 Send my video</b> — it comes straight to us. That's it!</li>
+      </ol>
+    </div>
 
     <div class="modeTabs">
       <button class="modeTab active" data-mode="script">📜 Free script</button>
@@ -463,7 +539,7 @@ Look just below the camera lens and speak naturally. You've got this.</textarea>
 
     <!-- Interview pane -->
     <div class="modePane" id="pane-interview">
-      <p class="hint">Each question is a cue card. While recording, tap <b>Next ▶ (N / →)</b> to move on — every jump auto-marks a clean segment carrying the question + type, so I can cut each answer for IG, TikTok, Facebook &amp; LinkedIn.</p>
+      <p class="hint" id="qListLabel">Here's what we'll cover — 10 quick questions:</p>
       <div class="qBuilderBar" style="margin-bottom:8px;">
         <button id="aiToggleBtn" class="primary">✨ Generate with Claude</button>
       </div>
@@ -501,7 +577,16 @@ OU | AI website builders — overrated or underrated?"></textarea>
       </div>
     </div>
 
-    <button id="startBtn" class="primary">Start prompting ▶</button>
+    <div id="whoForm">
+      <div class="wrow">
+        <input id="whoName" type="text" autocomplete="name" placeholder="Your name">
+        <input id="whoEmail" type="email" autocomplete="email" placeholder="Your email">
+      </div>
+      <p class="whoHint">So we know who this awesome video came from — never shared, never spammed.</p>
+    </div>
+
+    <button id="startBtn" class="primary">Start my testimonial ▶</button>
+    <div id="editorFoot"><span id="footClient"></span>Testimonial Studio — powered by Panicci Ventures</div>
   </div>
 
   <!-- Countdown -->
@@ -513,12 +598,14 @@ OU | AI website builders — overrated or underrated?"></textarea>
     <video id="playbackVid" controls playsinline></video>
     <div class="meta" id="playbackMeta"></div>
     <div class="row">
-      <button id="downloadBtn" class="primary">⬇ Download MP4</button>
+      <button id="sendBtn" class="primary">📤 Send my video</button>
+      <button id="downloadBtn">⬇ Save a copy</button>
       <button id="metaBtn">⬇ Script data (.json)</button>
       <button id="coverBtn">⬇ Cover frame (.png)</button>
       <button id="reRecordBtn">＋ New take</button>
-      <button id="backToEditBtn">Back to script</button>
+      <button id="backToEditBtn">Back to start</button>
     </div>
+    <div id="sendStatus"></div>
     <p id="convertNote" style="display:none;max-width:460px;text-align:center;font-size:12px;opacity:.7;line-height:1.5;">
       This browser recorded WebM and MP4 conversion couldn't run (offline or blocked).
       The WebM still works — to get MP4 directly, open this in <b>Safari</b> on your Mac, or reconnect to the internet and record again.
@@ -528,7 +615,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
     <div id="sessionTray">
       <div id="takesStrip"></div>
       <div class="row" id="sessionRow">
-        <button id="allVidBtn">⬇ All takes (video)</button>
+        <button id="sendAllBtn">📤 Send all takes</button>
+        <button id="allVidBtn">⬇ Save all takes</button>
         <button id="sessionJsonBtn">⬇ Session data (.json)</button>
         <button id="clearSessionBtn">🗑 Clear session</button>
       </div>
@@ -540,6 +628,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
     <h2 id="msgTitle"></h2>
     <p id="msgBody"></p>
     <button id="msgRetry" class="primary">Retry</button>
+  </div>
+
+  <!-- Boot: config loading / not found -->
+  <div id="bootScreen">
+    <div class="pulse"></div>
+    <h2 id="bootTitle">Setting up your studio…</h2>
+    <p id="bootBody"></p>
   </div>
 
   <!-- Help -->
@@ -761,6 +856,20 @@ OU | AI website builders — overrated or underrated?"></textarea>
   const presetClose  = $("presetClose");
   const presetMsg    = $("presetMsg");
 
+  // Client-config UI + upload
+  const brandName  = $("brandName");
+  const brandSub   = $("brandSub");
+  const stepsIntro = $("stepsIntro");
+  const footClient = $("footClient");
+  const whoName    = $("whoName");
+  const whoEmail   = $("whoEmail");
+  const sendBtn    = $("sendBtn");
+  const sendAllBtn = $("sendAllBtn");
+  const sendStatus = $("sendStatus");
+  const bootScreen = $("bootScreen");
+  const bootTitle  = $("bootTitle");
+  const bootBody   = $("bootBody");
+
   // ---------- State ----------
   let stream = null;
   let recorder = null;
@@ -776,8 +885,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
   let recMimeType = "";     // mime actually used by the recorder
   let markers = [];         // [{t, label}] segment markers for this take
   let targetAspect = "off"; // framing guide selection
-  let eyeline = false;      // pull text under the lens for eye contact
-  let camLine = 18;         // reading-line height (% from top) — align to the camera
+  let eyeline = true;       // testimonial studio defaults to eye-contact mode
+  let camLine = 8;          // reading-line height (% from top) — align to the camera
 
   // Voice-tracking state
   let voiceMode = false;
@@ -791,18 +900,18 @@ OU | AI website builders — overrated or underrated?"></textarea>
   let currentTakeIdx = -1;
 
   // Interview mode
-  let mode = "script";      // "script" | "interview"
+  let mode = "interview";   // testimonial studio runs in interview mode
   let questions = [];       // [{type, text}]
   let currentQ = 0;
   let segments = [];        // [{n, type, question, start, end}] for the current take
   let segOpenStart = 0;     // start time of the currently-open segment
-  const TYPES = {
-    NICHE: { key: "NICHE", label: "Niche Q&A", cls: "t-niche" },
-    HOT:   { key: "HOT",   label: "Hot Take",  cls: "t-hot" },
-    OU:    { key: "OU",    label: "Over/Underrated", cls: "t-ou" },
-    INTRO: { key: "INTRO", label: "Intro",     cls: "t-intro" },
-    CTA:   { key: "CTA",   label: "CTA",       cls: "t-cta" }
-  };
+  let TYPES = {};           // built from the client config's questions
+
+  // Client config (fetched from /clients/<slug>.json) + the person recording
+  let config = null;
+  let clientSlug = "";
+  let person = { name: "", email: "" };
+  let sessionStamp = "";    // one folder per recording session in the Blob store
 
   let prompting = false;
   let scrollPos = 0;        // px scrolled
@@ -833,6 +942,16 @@ OU | AI website builders — overrated or underrated?"></textarea>
     const d = new Date();
     const p = (n) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+  }
+
+  function slugify(s) {
+    return (s || "").toString().toLowerCase().normalize("NFKD")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "anon";
+  }
+
+  function filePrefix() {
+    return ((config && (config.shortName || config.name)) || clientSlug || "client")
+      .toString().replace(/[^A-Za-z0-9]+/g, "");
   }
 
   // ---------- Toast ----------
@@ -987,27 +1106,51 @@ OU | AI website builders — overrated or underrated?"></textarea>
     if (last && presets[last]) applySettings(presets[last]);
   })();
 
-  // ---------- Interview mode ----------
-  const STARTER_QUESTIONS = [
-    { type: "INTRO", text: "In one line — who are you and who do you help?" },
-    { type: "NICHE", text: "What's the #1 mistake businesses make with their website?" },
-    { type: "NICHE", text: "How fast should a site load before it costs you customers?" },
-    { type: "NICHE", text: "SEO vs paid ads — where should a new business put its first dollar?" },
-    { type: "HOT",   text: "Hot take: is a slow website worse than no website?" },
-    { type: "OU",    text: "AI website builders — overrated or underrated?" },
-    { type: "OU",    text: "QR codes on business cards — overrated or underrated?" },
-    { type: "CTA",   text: "Where can people find you if they want their site to actually convert?" }
-  ];
+  // ---------- Testimonial questions (from the client config) ----------
+  let STARTER_QUESTIONS = [];   // filled from /clients/<slug>.json at boot
 
-  function typeInfo(t) { return TYPES[t] || TYPES.NICHE; }
+  // Build the TYPES map from the config's questions — badge colors rotate
+  // through the palette in order of each type's first appearance.
+  const BADGE_PALETTE = ["t-c1","t-c2","t-c3","t-c4","t-c5","t-c6","t-c7","t-c8","t-c9","t-c10"];
+  function buildTypes(qs) {
+    const map = {};
+    let i = 0;
+    (qs || []).forEach((q) => {
+      const key = ((q.type || "Q") + "").toUpperCase();
+      if (!map[key]) {
+        map[key] = {
+          key,
+          label: q.label || key.charAt(0) + key.slice(1).toLowerCase(),
+          cls: BADGE_PALETTE[i++ % BADGE_PALETTE.length]
+        };
+      }
+    });
+    return map;
+  }
+
+  function typeInfo(t) {
+    return TYPES[t] || Object.values(TYPES)[0] || { key: "Q", label: "Question", cls: "t-c1" };
+  }
 
   function addQuestion(type, text) {
-    questions.push({ type: type || "NICHE", text: text || "" });
+    questions.push({ type: type || "INTRO", text: text || "" });
     renderQBuilder();
   }
 
   function renderQBuilder() {
     qBuilder.innerHTML = "";
+    // Client testimonial mode: show a clean read-only list, not editable rows.
+    if (document.body.classList.contains("client")) {
+      questions.forEach((q, i) => {
+        const ti = typeInfo(q.type);
+        const row = document.createElement("div");
+        row.className = "qView";
+        row.innerHTML = `<span class="n">${i + 1}</span>` +
+          `<span class="qt"><span class="typeBadge ${ti.cls}" style="margin-right:8px">${ti.label}</span>${q.text}</span>`;
+        qBuilder.appendChild(row);
+      });
+      return;
+    }
     questions.forEach((q, i) => {
       const row = document.createElement("div");
       row.className = "qRow";
@@ -1337,16 +1480,18 @@ OU | AI website builders — overrated or underrated?"></textarea>
       linkedin:        { aspect: "1:1 or 16:9", idealSeconds: [30, 60], maxSeconds: 90, captions: "burn-in", tone: "professional, insight-first" }
     };
 
-    const editingBrief = mode === "interview"
-      ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets."
-      : "Cut around the markers/suggestedClips. Add burned-in captions and export per platform using platformTargets.";
+    const editingBrief = (config && config.editingBrief) ||
+      ("CLIENT TESTIMONIAL for " + ((config && config.name) || "the client") + ". Produce (1) a full-length testimonial from the whole take, and (2) one standalone clip per segment. segment.question is the context; the answer is the usable soundbite. The strongest ad clips are usually the objection-buster, transformation, recommendation, and one-liner answers. Trim dead air at each segment's start/end, add burned-in captions, keep the speaker centered, and export one file per platform per segment using platformTargets (IG/TikTok/FB/LinkedIn).");
 
     const meta = {
-      app: "Teleprompter + Recorder",
+      app: "Panicci Testimonial Studio",
+      client: (config && config.name) || clientSlug,
+      clientSlug: clientSlug,
+      person: { name: person.name, email: person.email },
       recordedAt: new Date().toISOString(),
       mode: mode,
       take: takes.length + 1,
-      file: `recording-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
+      file: `${filePrefix()}-testimonial-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
       container: lastExt,
       codec: codecNote,
       durationSeconds: dur,
@@ -1387,6 +1532,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     takeLabel.textContent = `Take ${idx + 1} of ${takes.length}${mk}`;
     convertNote.style.display = t.ext === "webm" ? "block" : "none";
     renderTakesStrip();
+    updateSendUi();
   }
 
   function renderTakesStrip() {
@@ -1432,15 +1578,16 @@ OU | AI website builders — overrated or underrated?"></textarea>
   sessionJsonBtn.addEventListener("click", () => {
     if (!takes.length) return;
     const session = {
-      app: "Teleprompter + Recorder — session",
+      app: "Panicci Testimonial Studio — session",
+      client: (config && config.name) || clientSlug,
+      person: { name: person.name, email: person.email },
       exportedAt: new Date().toISOString(),
       takeCount: takes.length,
-      script: scriptEl.value || "",
       takes: takes.map((t) => t.meta)
     };
     const blob = new Blob([JSON.stringify(session, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    triggerDownload(url, `session-${tsStamp()}.json`);
+    triggerDownload(url, `${filePrefix()}-testimonial-session-${tsStamp()}.json`);
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   });
 
@@ -1627,6 +1774,117 @@ OU | AI website builders — overrated or underrated?"></textarea>
     const url = URL.createObjectURL(jsonBlob);
     triggerDownload(url, lastMeta.file.replace(/\.[^.]+$/, "") + ".json");
     setTimeout(() => URL.revokeObjectURL(url), 2000);
+  });
+
+  // ---------- Send to the Panicci Blob store (Vercel Blob client upload) ----------
+  // The browser uploads straight to Blob storage; /api/upload-testimonial only
+  // mints a scoped token (and requires name + email), so big videos never hit
+  // the serverless body limit.
+  let uploaderPromise = null;
+  function loadUploader() {
+    if (!uploaderPromise) {
+      uploaderPromise = (async () => {
+        const urls = [
+          "https://esm.sh/@vercel/blob@2.8.0/client",
+          "https://cdn.jsdelivr.net/npm/@vercel/blob@2.8.0/client/+esm"
+        ];
+        for (const u of urls) {
+          try { const m = await import(u); if (m && m.upload) return m.upload; } catch (_) {}
+        }
+        throw new Error("uploader_unavailable");
+      })();
+      uploaderPromise.catch(() => { uploaderPromise = null; });  // let a later click retry
+    }
+    return uploaderPromise;
+  }
+
+  function setSendStatus(txt, kind) {
+    sendStatus.textContent = txt || "";
+    sendStatus.className = kind || "";
+  }
+
+  function friendlySendError(err) {
+    const m = (err && err.message) || "";
+    if (m === "uploader_unavailable")
+      return "Couldn't load the uploader — check your internet and try again, or tap “Save a copy” and email us the file.";
+    if (/not_configured|BLOB_READ_WRITE_TOKEN/i.test(m))
+      return "Uploads aren't switched on yet on our end — tap “Save a copy” and email us the file while we sort it.";
+    return "Upload didn't go through (" + (m || "network error") + "). Try again, or tap “Save a copy” and email us the file.";
+  }
+
+  async function sendTake(idx, label) {
+    const t = takes[idx];
+    if (!t || t.sent) return;
+    const upload = await loadUploader();
+    const base = `testimonials/${clientSlug}/${sessionStamp}-${slugify(person.name)}/take-${idx + 1}`;
+    const clientPayload = JSON.stringify({
+      client: (config && config.name) || clientSlug,
+      clientSlug,
+      name: person.name,
+      email: person.email,
+      take: idx + 1,
+      durationSeconds: Math.round(t.durationSec)
+    });
+    const video = await upload(`${base}.${t.ext}`, t.blob, {
+      access: "public",
+      handleUploadUrl: "/api/upload-testimonial",
+      clientPayload,
+      multipart: t.blob.size > 8 * 1024 * 1024,
+      onUploadProgress: (p) => setSendStatus(`Uploading ${label || "your video"}… ${Math.round(p.percentage)}%`)
+    });
+    // Ship the cut-sheet metadata (who, questions, segment timings) alongside the video.
+    const metaOut = Object.assign({}, t.meta, {
+      person: { name: person.name, email: person.email },
+      videoUrl: video.url,
+      videoPathname: video.pathname
+    });
+    const metaBlob = new Blob([JSON.stringify(metaOut, null, 2)], { type: "application/json" });
+    try {
+      await upload(`${base}.meta.json`, metaBlob, {
+        access: "public", handleUploadUrl: "/api/upload-testimonial", clientPayload
+      });
+    } catch (_) {}  // the video landing safely is what matters
+    t.sent = true;
+    t.sentUrl = video.url;
+  }
+
+  function updateSendUi() {
+    const t = takes[currentTakeIdx];
+    const sent = !!(t && t.sent);
+    sendBtn.disabled = sent;
+    sendBtn.textContent = sent ? "✓ Sent — thank you!" : "📤 Send my video";
+    setSendStatus(sent ? "This take is in — add another with “＋ New take”, or you're all done. 🎉" : "", sent ? "ok" : "");
+  }
+
+  sendBtn.addEventListener("click", async () => {
+    if (currentTakeIdx < 0 || !takes[currentTakeIdx]) return;
+    sendBtn.disabled = true;
+    setSendStatus("Getting your video ready…");
+    try {
+      await sendTake(currentTakeIdx, "your video");
+      updateSendUi();
+    } catch (err) {
+      console.warn("send failed:", err);
+      setSendStatus(friendlySendError(err), "err");
+      sendBtn.disabled = false;
+    }
+  });
+
+  sendAllBtn.addEventListener("click", async () => {
+    if (!takes.length) return;
+    sendAllBtn.disabled = true;
+    sendBtn.disabled = true;
+    try {
+      for (let i = 0; i < takes.length; i++) await sendTake(i, `take ${i + 1} of ${takes.length}`);
+      setSendStatus(`✓ All ${takes.length} take${takes.length > 1 ? "s are" : " is"} in — thank you!`, "ok");
+      updateSendUi();
+    } catch (err) {
+      console.warn("send-all failed:", err);
+      setSendStatus(friendlySendError(err), "err");
+      sendBtn.disabled = false;
+    } finally {
+      sendAllBtn.disabled = false;
+    }
   });
 
   reRecordBtn.addEventListener("click", () => {
@@ -1818,8 +2076,29 @@ OU | AI website builders — overrated or underrated?"></textarea>
   }
   mirrorBtn.addEventListener("click", toggleMirror);
 
+  // ---------- Identity gate (name + email before recording) ----------
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function captureIdentity() {
+    const name = (whoName.value || "").trim();
+    const email = (whoEmail.value || "").trim();
+    const nameOk = name.length >= 2;
+    const emailOk = EMAIL_RE.test(email);
+    whoName.classList.toggle("bad", !nameOk);
+    whoEmail.classList.toggle("bad", !emailOk);
+    if (!nameOk || !emailOk) {
+      toast(!nameOk ? "Add your name first — so we know who this is from" : "That email doesn't look right — mind checking it?");
+      (!nameOk ? whoName : whoEmail).focus();
+      return false;
+    }
+    person = { name, email };
+    return true;
+  }
+  whoName.addEventListener("input", () => whoName.classList.remove("bad"));
+  whoEmail.addEventListener("input", () => whoEmail.classList.remove("bad"));
+
   // ---------- Enter / exit prompting ----------
   async function enterPrompting() {
+    if (!captureIdentity()) return;
     const interview = mode === "interview";
     if (interview) {
       // Drop empty questions; require at least one.
@@ -2014,6 +2293,69 @@ OU | AI website builders — overrated or underrated?"></textarea>
     if (stream) stream.getTracks().forEach(t => t.stop());
     if (lastUrl) URL.revokeObjectURL(lastUrl);
   });
+
+  // ---------- Boot: resolve client slug → fetch config → init studio ----------
+  function bootFail(title, body) {
+    const p = bootScreen.querySelector(".pulse");
+    if (p) p.style.display = "none";
+    bootTitle.textContent = title;
+    bootBody.textContent = body;
+  }
+
+  function applyConfig() {
+    document.title = config.name + " · Video Testimonial";
+    brandName.textContent = config.name;
+    brandSub.textContent = config.tagline || "Share Your Story — Video Testimonial";
+    footClient.textContent = config.name + " · ";
+    if (config.accent) document.documentElement.style.setProperty("--accent", config.accent);
+    const n = config.questions.length;
+    // Config files are authored by us in this repo, so introHtml is trusted markup.
+    stepsIntro.innerHTML = config.introHtml ||
+      `<b>Thanks for sharing your story!</b> You'll answer ${n} quick question${n === 1 ? "" : "s"} on camera — just talk naturally, about 30–60 seconds each. No script to memorize.`;
+    const qLabel = $("qListLabel");
+    if (qLabel) qLabel.textContent = `Here's what we'll cover — ${n} quick question${n === 1 ? "" : "s"}:`;
+    if (config.startLabel) startBtn.textContent = config.startLabel;
+  }
+
+  (async function boot() {
+    const params = new URLSearchParams(location.search);
+    const pathSlug = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, "")).replace(/\.html?$/i, "");
+    clientSlug = slugify(params.get("client") || pathSlug);
+    if (!clientSlug || clientSlug === "anon" || clientSlug === "testimonial") {
+      bootFail("Hmm — this link is missing its studio name",
+        "A studio link looks like studio.panicciventures.com/your-business-name. Double-check the link you were sent, or reach out and we'll send you a fresh one.");
+      return;
+    }
+    try {
+      const r = await fetch(`/clients/${clientSlug}.json`, { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      config = await r.json();
+      if (!config || !Array.isArray(config.questions) || !config.questions.length || !config.name) throw new Error("bad config");
+    } catch (err) {
+      bootFail("We couldn't find this studio",
+        "The link may have a typo, or this page hasn't been set up yet. Double-check the link you were sent, or reach out and we'll get you recording in no time.");
+      return;
+    }
+
+    sessionStamp = tsStamp();
+    TYPES = buildTypes(config.questions);
+    STARTER_QUESTIONS = config.questions.map((q) => ({ type: ((q.type || "Q") + "").toUpperCase(), text: q.text }));
+    applyConfig();
+
+    document.body.classList.add("client");
+    mode = "interview";
+    questions = STARTER_QUESTIONS.map((q) => ({ ...q }));
+    document.querySelectorAll(".modeTab").forEach((t) => t.classList.toggle("active", t.dataset.mode === "interview"));
+    document.getElementById("pane-script").classList.remove("active");
+    document.getElementById("pane-interview").classList.add("active");
+    renderQBuilder();
+    // Default to eye-contact (eyeline) mode so testimonials look into the lens.
+    camLineEl.value = camLine;
+    stage.classList.add("eyeline");
+    eyelineBtn.classList.add("on");
+    applyCamLine();
+    bootScreen.classList.add("gone");
+  })();
 })();
 </script>
 </body>

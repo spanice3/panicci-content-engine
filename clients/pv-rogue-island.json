@@ -1,0 +1,20 @@
+{
+  "name": "Rogue Island Local Kitchen & Bar",
+  "shortName": "RogueIsland-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each — and yes, the numbers in these questions are your real numbers.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your role at Rogue Island, and what makes the restaurant a Providence staple." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before we started working together, how did people find Rogue Island online — and what was falling through the cracks?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "Restaurants get pitched by marketers constantly. Why did you hand your online presence to Sammy and Panicci Ventures?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "What does Panicci Ventures run for you behind the scenes — the website, search, Google Business Profile, review responses?" },
+    { "type": "NUMBERS",  "label": "The Numbers",        "text": "Real numbers: Google clicks to your site more than doubled in a year — 13,900 to over 35,000, up 154% — and you showed up in searches over a million times. Did you know it was that big?" },
+    { "type": "RANKINGS", "label": "Rankings",           "text": "When someone in Providence searches “best brunch” or “bottomless mimosas,” Rogue Island is in the top five results. How much of a packed brunch service do you credit to search?" },
+    { "type": "REVIEWS",  "label": "Reviews",            "text": "1,208 Google reviews — and every single one of them has an answer. What does that do for a restaurant's reputation, and how much of it lands on your desk?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — and which result honestly surprised you the most?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other agencies you've dealt with — communication, speed, month-to-month with no lock-in?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another restaurant owner who's great in the kitchen but invisible on Google?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner/GM of Rogue Island Local Kitchen & Bar (rogueislandgroup.com). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. The NUMBERS, RANKINGS, and REVIEWS answers are the hero clips (real stats + reaction); RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

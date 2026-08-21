@@ -1,0 +1,20 @@
+{
+  "name": "Desert Dog Offroad Adventures",
+  "shortName": "DesertDog-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each — and yes, the numbers in these questions are your real numbers.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your role at Desert Dog Offroad Adventures, and what you do out in the Arizona desert." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before Panicci Ventures, how were people finding your tours — and what wasn't working about it?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "There's no shortage of marketing agencies pitching tour operators. Why Sammy — and why has it stuck?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "Walk us through what Panicci Ventures handles for you — the website, search, Google Business Profile, reviews, reporting." },
+    { "type": "NUMBERS",  "label": "The Numbers",        "text": "Real numbers: your site was seen on Google over 880,000 times in the last 12 months — three and a half times the year before — and clicks are up 76%. Did you realize it was that much?" },
+    { "type": "RANKINGS", "label": "Rankings",           "text": "You're #1 on Google for “Scottsdale off road,” #2 for “dune buggies Phoenix,” and top-10 for a whole list of tour searches. What do bookings look like when rankings move like that?" },
+    { "type": "REVIEWS",  "label": "Reviews",            "text": "1,084 Google reviews, a 4.9 average, and every single one gets a reply. What does that kind of reputation do for a tour business?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — and which result honestly surprised you the most?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other agencies you've tried — communication, speed, month-to-month with no lock-in?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another tour or adventure operator who's pouring money into ads but can't be found on Google?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner of Desert Dog Offroad Adventures (azadventures.com). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. The NUMBERS, RANKINGS, and REVIEWS answers are the hero clips (real stats + reaction); RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

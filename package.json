@@ -1,7 +1,10 @@
 {
   "name": "panicci-content-engine",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Panicci Ventures Content Engine — interview teleprompter + recorder with Claude-powered question generation.",
-  "engines": { "node": ">=18" }
+  "description": "Panicci Ventures Content Engine — interview teleprompter + recorder, client testimonial studios, and direct-to-Blob video capture.",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
+  }
 }

@@ -1,0 +1,19 @@
+{
+  "name": "Panicci Ventures",
+  "shortName": "PV-Partner",
+  "tagline": "Partner Story — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each. No script to memorize.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your business, and what you do." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before Panicci Ventures, what did your online presence look like — and what was that costing you?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "Why did you choose Sammy and Panicci Ventures to reach your online visibility goals?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "What does Panicci Ventures actually handle for you day to day — website, search, Google Business Profile, reviews, content?" },
+    { "type": "GROWTH",   "label": "Growth",             "text": "How has your business grown since we started — rankings, calls, bookings, walk-ins, revenue? Share the win you're proudest of." },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — and which result honestly surprised you the most?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other agencies or marketers — communication, speed, month-to-month with no lock-in?" },
+    { "type": "MOMENT",   "label": "Moment",             "text": "Is there a specific moment that made you think “okay, this is actually working”?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another business owner who's great at what they do but invisible online?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures (generic — any client without a personalized page yet). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. GROWTH, MOMENT, and SAMMY are the hero clips; RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Roadworthy Title & Registration",
+  "shortName": "Roadworthy-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each. No script to memorize.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your role at Roadworthy Title & Registration, and the problems you solve for vehicle owners." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before Panicci Ventures, what did your online presence look like — and what pushed you to finally invest in it?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "Title and registration is a trust business. Why hand your website and search visibility to Sammy and Panicci Ventures?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "Walk us through what Panicci Ventures built and runs for you — the new site, and the searches we're now tracking that your customers actually type." },
+    { "type": "BUILD",    "label": "The Build",          "text": "You just launched a brand-new site with us — from the first call to going live, what was that process actually like?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's already working — calls, form fills, customers mentioning they found you online?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other agencies you've talked to — communication, speed, month-to-month with no lock-in?" },
+    { "type": "GOALS",    "label": "The Goal",           "text": "Twelve months from now, what does winning on Google look like for Roadworthy — and how confident are you about getting there?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another service business owner sitting on the fence about getting serious online?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner of Roadworthy Title & Registration (roadworthytitle.com — new engagement, launch-phase story). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. BUILD, SAMMY, and GOALS are the hero clips; RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

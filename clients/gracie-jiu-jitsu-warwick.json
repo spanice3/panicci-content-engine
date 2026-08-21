@@ -1,0 +1,18 @@
+{
+  "name": "Gracie Jiu-Jitsu Warwick",
+  "shortName": "GJJW",
+  "tagline": "Share Your Story — Video Testimonial",
+  "questions": [
+    { "type": "INTRO",  "label": "Intro",          "text": "Tell us your name, and how long you've been training at Gracie Jiu-Jitsu Warwick." },
+    { "type": "BEFORE", "label": "Before",         "text": "What was going on in your life before you started — what finally made you walk in the door?" },
+    { "type": "HES",    "label": "Hesitation",     "text": "Was anything holding you back before your first class? What would you tell someone feeling that same hesitation right now?" },
+    { "type": "WHY",    "label": "Why GJJW",       "text": "Why did you choose Gracie Jiu-Jitsu Warwick over other gyms or martial arts?" },
+    { "type": "EXP",    "label": "Experience",     "text": "What's it actually like here day to day — the instructors, the training, the people on the mat?" },
+    { "type": "RESULT", "label": "Transformation", "text": "How has training here changed you — your confidence, your body, your headspace?" },
+    { "type": "DEF",    "label": "Self-Defense",   "text": "Do you feel more capable of protecting yourself or your family? Tell us about that." },
+    { "type": "MOMENT", "label": "Moment",         "text": "Is there a specific moment, win, or breakthrough at GJJW that sticks with you?" },
+    { "type": "RECO",   "label": "Recommend",      "text": "Who would you tell to come train at GJJW — and what would you say to get them on the mat?" },
+    { "type": "ONE",    "label": "One-liner",      "text": "Finish this sentence: “Gracie Jiu-Jitsu Warwick is…”" }
+  ],
+  "editingBrief": "CLIENT TESTIMONIAL for Gracie Jiu-Jitsu Warwick. Produce (1) a full-length testimonial from the whole take, and (2) one standalone clip per segment. segment.question is the context; the answer is the usable soundbite. Best clips for ads: HES (objection-buster), RESULT (transformation), RECO (recommendation), ONE (one-liner). Trim dead air at each segment's start/end, add burned-in captions, keep the speaker centered, and export one file per platform per segment using platformTargets (IG/TikTok/FB/LinkedIn)."
+}

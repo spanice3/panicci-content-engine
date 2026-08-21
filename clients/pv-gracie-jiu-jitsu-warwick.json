@@ -1,0 +1,20 @@
+{
+  "name": "Gracie Jiu-Jitsu Warwick",
+  "shortName": "GJJW-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each — and yes, the numbers in these questions are your real numbers.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your role at Gracie Jiu-Jitsu Warwick, and how long you've been running the academy." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before we started working together, what did your online presence look like — and what was that costing you in new students?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "When you decided to get serious about showing up on Google, why trust Sammy and Panicci Ventures with it?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "What does Panicci Ventures actually take off your plate day to day — the website, Google Business Profile, reviews, content?" },
+    { "type": "NUMBERS",  "label": "The Numbers",        "text": "Real numbers: in the last 12 months your site showed up in Google searches over 35,000 times — from a standing start the year before. Where do you feel that inside the gym?" },
+    { "type": "RANKINGS", "label": "Rankings",           "text": "You're #1 on Google when someone near Warwick searches “BJJ near me” — and #1 for “jiu-jitsu Warwick RI.” When did you first notice new students saying they found you on Google?" },
+    { "type": "REVIEWS",  "label": "Reviews",            "text": "Your profile shows 111 Google reviews, a 4.96 average, and every single one has a reply. How much of that do you have to think about yourself?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — and which result honestly surprised you the most?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other agencies or marketers you've dealt with — communication, speed, no lock-in contracts?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another gym or academy owner whose business is invisible on Google right now?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner of Gracie Jiu-Jitsu Warwick. Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. The NUMBERS, RANKINGS, and REVIEWS answers are the hero clips (real stats + reaction); RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

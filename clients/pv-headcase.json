@@ -1,0 +1,19 @@
+{
+  "name": "Headcase Kustom Art Studio",
+  "shortName": "Headcase-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each — and yes, the numbers in these questions are your real numbers.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, what Headcase Kustom Art Studio is, and the kind of work that comes out of your Las Vegas shop." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before Panicci Ventures, how did people find your work — and what was staying word-of-mouth-only costing you?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "Custom art is a visual business with a personal brand. Why trust Sammy and Panicci Ventures to build your online presence?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "What does Panicci Ventures handle for you — the website, Google Business Profile, showing up when Vegas searches for custom art?" },
+    { "type": "NUMBERS",  "label": "The Numbers",        "text": "Real numbers: across the Las Vegas searches we track, you're already averaging a top-10 spot in the local map results. What's changed since your studio became findable?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — and which result honestly surprised you the most?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other marketers — communication, speed, no lock-in contracts?" },
+    { "type": "MOMENT",   "label": "Moment",             "text": "Is there a commission or a customer that came in straight from Google that sticks with you?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another artist or custom shop that's brilliant at the craft but invisible online?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner of Headcase Kustom Art Studio (Las Vegas). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. NUMBERS, MOMENT, and SAMMY are the hero clips; RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}

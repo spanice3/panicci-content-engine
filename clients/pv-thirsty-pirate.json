@@ -1,0 +1,19 @@
+{
+  "name": "The Thirsty Pirate",
+  "shortName": "ThirstyPirate-PV",
+  "tagline": "Your Story with Panicci Ventures — Video Testimonial",
+  "introHtml": "<b>Thanks for doing this — it means a lot.</b> A few quick questions about our work together. Just talk naturally, 30–60 seconds each — and yes, the numbers in these questions are your real numbers.",
+  "questions": [
+    { "type": "INTRO",    "label": "Intro",              "text": "Introduce yourself — your name, your role at The Thirsty Pirate, and what the vibe is like on the water in Sint Maarten." },
+    { "type": "BEFORE",   "label": "Before",             "text": "Before Panicci Ventures, how did travelers find The Thirsty Pirate — and how much business were you leaving to chance?" },
+    { "type": "WHY",      "label": "Why Sammy",          "text": "You're running a bar in the Caribbean and your web guy is in Las Vegas. Why Sammy — and why does that work?" },
+    { "type": "SERVICES", "label": "What We Handle",     "text": "What does Panicci Ventures handle for you — the website, Google presence, being findable to tourists planning their trip?" },
+    { "type": "NUMBERS",  "label": "The Numbers",        "text": "Real numbers: when travelers search for you, you're showing up on page one of Google — average position under 9 — with visitors finding you from the US and Canada before they even land. Do guests walk in saying they found you online?" },
+    { "type": "WORKING",  "label": "What's Working",     "text": "What's working best right now — and which result honestly surprised you the most?" },
+    { "type": "SAMMY",    "label": "Working with Sammy", "text": "How is working with Sammy different from other marketers — communication across time zones, speed, no lock-in contracts?" },
+    { "type": "MOMENT",   "label": "Moment",             "text": "Is there a moment that made you think “this is working” — a table of tourists who found you on Google, a booked-out day?" },
+    { "type": "RECO",     "label": "Recommend",          "text": "What would you tell another bar or tourism business that depends on travelers finding them online?" },
+    { "type": "ONE",      "label": "One-liner",          "text": "Finish this sentence: “Working with Sammy P is…”" }
+  ],
+  "editingBrief": "PARTNER TESTIMONIAL for Panicci Ventures, spoken by the owner of The Thirsty Pirate (Philipsburg, Sint Maarten — thirstypiratesxm.com). Goal: case-study proof for panicciventures.com and pitch decks. Produce a full-length cut plus one clip per segment. NUMBERS, MOMENT, and SAMMY are the hero clips; RECO and ONE are the ad closers. Trim dead air, burn in captions, keep the speaker centered, export per platformTargets."
+}
