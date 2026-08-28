@@ -44,9 +44,10 @@ module.exports = async (req, res) => {
     "Write for the spoken word: plain, natural sentences, easy to read aloud, no tongue-twisters.",
     "Open with a scroll-stopping hook in the first line, deliver real value in the middle, and close with a clear call to action.",
     "Do NOT include stage directions, camera notes, speaker labels, headings, timestamps, markdown, or emojis — return only the words to be spoken.",
-    "Separate beats with a blank line so the text scrolls cleanly on a teleprompter.",
+    "Use line breaks and blank lines deliberately as pacing: put each sentence or short phrase on its own line, and insert a blank line wherever the speaker should take a natural pause or breath. Longer pauses can use two blank lines. Preserve this whitespace exactly.",
     "Return STRICT JSON only — no prose, no code fences.",
-    "Shape: {\"script\":\"line one\\n\\nline two\"}"
+    "In the JSON, encode every line break as \\n (so a blank-line pause is \\n\\n). Keep all intended spacing.",
+    "Shape: {\"script\":\"First hook line.\\n\\nNext beat.\\n\\nThen the value.\"}"
   ].join("\n");
 
   const user = [
