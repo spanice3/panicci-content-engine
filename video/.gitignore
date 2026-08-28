@@ -1,0 +1,6 @@
+.build/
+out/
+*.mp4
+*.wav
+*.part*.mp4
+__pycache__/
