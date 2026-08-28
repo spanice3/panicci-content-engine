@@ -353,12 +353,12 @@
   .qRow .drag { cursor: grab; opacity: .5; padding: 0 4px; font-size: 16px; }
   .qBuilderBar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
   /* AI generate panel */
-  #aiPanel {
+  #aiPanel, #scriptAiPanel {
     display: none; flex-direction: column; gap: 8px;
     border: 1px solid #2a3a55; background: rgba(79,140,255,0.06);
     border-radius: 12px; padding: 12px; margin-bottom: 10px;
   }
-  #aiPanel.active { display: flex; }
+  #aiPanel.active, #scriptAiPanel.active { display: flex; }
   .aiRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .aiRow input[type=text] {
     flex: 1 1 auto; background: #12161c; color: var(--text);
@@ -368,6 +368,7 @@
   .aiOpts { font-size: 13px; opacity: .9; }
   .aiOpts label { display: inline-flex; align-items: center; gap: 5px; }
   .aiOpts input[type=number] { width: 56px; background:#12161c; color:var(--text); border:1px solid #2a323d; border-radius:6px; padding:5px; }
+  .aiOpts select { background:#12161c; color:var(--text); border:1px solid #2a323d; border-radius:6px; padding:5px 6px; font-size:13px; }
   .aiStatus { font-size: 12px; opacity: .8; min-height: 16px; }
   .aiStatus.err { color: #ffb199; }
   .aiStatus.ok  { color: #a7e3b5; }
@@ -538,6 +539,34 @@
     <!-- Free script pane -->
     <div class="modePane active" id="pane-script">
       <p class="hint">Paste your script, then press Start. First run asks for camera + mic permission.</p>
+      <div class="qBuilderBar" style="margin-bottom:8px;">
+        <button id="scriptAiToggleBtn" class="primary">✨ Generate with Claude</button>
+      </div>
+      <div id="scriptAiPanel">
+        <div class="aiRow">
+          <input id="scriptTopic" type="text" placeholder="Topic or idea (e.g. why local businesses need a fast website)">
+        </div>
+        <div class="aiRow aiOpts">
+          <label>Length
+            <select id="scriptSeconds">
+              <option value="30">~30s</option>
+              <option value="60" selected>~60s</option>
+              <option value="90">~90s</option>
+              <option value="120">~2 min</option>
+            </select>
+          </label>
+          <label>Tone
+            <select id="scriptTone">
+              <option value="confident and friendly" selected>Confident &amp; friendly</option>
+              <option value="energetic and punchy">Energetic &amp; punchy</option>
+              <option value="calm and authoritative">Calm &amp; authoritative</option>
+              <option value="warm and conversational">Warm &amp; conversational</option>
+            </select>
+          </label>
+          <button id="scriptGenBtn" class="primary">Generate ✨</button>
+        </div>
+        <div id="scriptAiStatus" class="aiStatus"></div>
+      </div>
       <textarea id="script" placeholder="Paste or type your script here…">Welcome — this is your teleprompter.
 
 Replace this text with your script. Use the Start button to begin prompting, hit R to record, and adjust speed live with the up and down arrow keys.
@@ -1608,6 +1637,48 @@ OU | AI website builders — overrated or underrated?"></textarea>
       aiGenBtn.disabled = false;
     }
   });
+  // ---- Generate teleprompter script with Claude ----
+  const scriptAiPanel = $("scriptAiPanel"), scriptAiStatus = $("scriptAiStatus"), scriptGenBtn = $("scriptGenBtn");
+  $("scriptAiToggleBtn").addEventListener("click", () => scriptAiPanel.classList.toggle("active"));
+  function setScriptAiStatus(txt, kind) {
+    scriptAiStatus.textContent = txt;
+    scriptAiStatus.className = "aiStatus" + (kind ? " " + kind : "");
+  }
+  scriptGenBtn.addEventListener("click", async () => {
+    const topic = $("scriptTopic").value.trim();
+    if (!topic) { setScriptAiStatus("Give me a topic or idea first.", "err"); return; }
+    scriptGenBtn.disabled = true;
+    setScriptAiStatus("Asking Claude to write your script…");
+    try {
+      const resp = await fetch("/api/generate-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          tone: $("scriptTone").value,
+          seconds: parseInt($("scriptSeconds").value, 10) || 60
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        if (data.error === "not_configured") {
+          setScriptAiStatus("Not connected yet — add ANTHROPIC_API_KEY in Vercel, then redeploy. (You can still type or paste a script.)", "err");
+        } else {
+          setScriptAiStatus(data.message || `Generation failed (${resp.status}).`, "err");
+        }
+        return;
+      }
+      if (!data.script) { setScriptAiStatus("Claude returned nothing usable — try again.", "err"); return; }
+      scriptEl.value = data.script;
+      setScriptAiStatus("✓ Script ready. Edit anything you like, then Start prompting.", "ok");
+    } catch (err) {
+      // Likely running from file:// with no backend.
+      setScriptAiStatus("Can't reach the generator here. This works once deployed — locally, type or paste a script.", "err");
+    } finally {
+      scriptGenBtn.disabled = false;
+    }
+  });
+
   $("bulkImportBtn").addEventListener("click", () => {
     const parsed = parseBulk(qBulkText.value);
     if (!parsed.length) { toast("Nothing to import"); return; }

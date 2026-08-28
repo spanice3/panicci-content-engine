@@ -3,7 +3,9 @@
 Two tools on one Vercel project (`studio.panicciventures.com`):
 
 1. **Teleprompter + recorder** (`/`) — Sammy's interview-style content rig with
-   setting presets, eyeline mode, and Claude-powered question generation.
+   setting presets, eyeline mode, Claude-powered question generation, and a
+   Generate-with-Claude button that writes a full teleprompter script from a
+   topic/idea.
 2. **Testimonial studios** (`/<client-slug>/`) — client-facing recording pages that
    capture **name + email**, walk the speaker through a personalized question set,
    and upload the video **directly to Vercel Blob** (no downloads, no email attachments).
@@ -13,7 +15,8 @@ Two tools on one Vercel project (`studio.panicciventures.com`):
 index.html                  # the teleprompter/recorder app (presets + eyeline)
 testimonial.html            # ONE shared testimonial engine — config-driven
 clients/<slug>.json         # per-client config: name, tagline, questions, editing brief
-api/generate-questions.js   # serverless proxy → Anthropic Messages API
+api/generate-questions.js   # serverless proxy → Anthropic Messages API (interview questions)
+api/generate-script.js      # serverless proxy → Anthropic Messages API (teleprompter script)
 api/upload-testimonial.js   # mints scoped Vercel Blob client-upload tokens
 vercel.json                 # cleanUrls + /:client → testimonial.html rewrite
 ```
@@ -68,7 +71,7 @@ the `.meta.json` includes the person's email — don't share meta URLs.
 Push to `main` → auto-deploys to `studio.panicciventures.com`.
 
 Environment (Project → Settings → Environment Variables):
-- `ANTHROPIC_API_KEY` — required for question generation (`ANTHROPIC_MODEL` optional)
+- `ANTHROPIC_API_KEY` — required for question + script generation (`ANTHROPIC_MODEL` optional)
 - `BLOB_READ_WRITE_TOKEN` — **added automatically** when you connect a Blob store:
   **Vercel → Storage → Create Database → Blob → connect to `panicci-content-engine`**,
   then redeploy. Until then the send button shows a friendly "not switched on yet"
