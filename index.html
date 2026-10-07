@@ -1008,6 +1008,36 @@ OU | AI website builders — overrated or underrated?"></textarea>
   function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (_) { return false; } }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (_) {} }
 
+  // ---- API token for /api/generate-* (shared secret, see README) ----
+  // Pass once via ?token=... (saved to this browser), or enter when prompted.
+  const API_TOKEN_KEY = "pce_api_token";
+  (function captureTokenFromUrl() {
+    try {
+      const p = new URLSearchParams(location.search);
+      const t = p.get("token");
+      if (t) {
+        lsSet(API_TOKEN_KEY, t.trim());
+        p.delete("token");
+        const qs = p.toString();
+        history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+      }
+    } catch (_) {}
+  })();
+  function getApiToken() {
+    let t = lsGet(API_TOKEN_KEY);
+    if (!t) {
+      t = (window.prompt("Enter the Content Engine access token to use AI generation:") || "").trim();
+      if (t) lsSet(API_TOKEN_KEY, t);
+    }
+    return t || "";
+  }
+  function authHeaders() {
+    const t = getApiToken();
+    const h = { "Content-Type": "application/json" };
+    if (t) h["Authorization"] = "Bearer " + t;
+    return h;
+  }
+
   function loadPresets() {
     presets = {};
     const raw = lsGet(PRESET_KEY);
@@ -1610,7 +1640,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     try {
       const resp = await fetch("/api/generate-questions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({
           niche,
           extra: $("aiAngle").value.trim(),
@@ -1620,7 +1650,12 @@ OU | AI website builders — overrated or underrated?"></textarea>
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        if (data.error === "not_configured") {
+        if (resp.status === 401) {
+          lsDel(API_TOKEN_KEY);
+          setAiStatus("Access token missing or wrong — click Generate again to re-enter it.", "err");
+        } else if (data.error === "auth_not_configured") {
+          setAiStatus("Server token not set — add CONTENT_ENGINE_API_TOKEN in Vercel, then redeploy.", "err");
+        } else if (data.error === "not_configured") {
           setAiStatus("Not connected yet — add ANTHROPIC_API_KEY in Vercel, then redeploy. (You can still use Bulk import.)", "err");
         } else {
           setAiStatus(data.message || `Generation failed (${resp.status}).`, "err");
@@ -1653,7 +1688,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     try {
       const resp = await fetch("/api/generate-script", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({
           topic,
           tone: $("scriptTone").value,
@@ -1662,7 +1697,12 @@ OU | AI website builders — overrated or underrated?"></textarea>
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        if (data.error === "not_configured") {
+        if (resp.status === 401) {
+          lsDel(API_TOKEN_KEY);
+          setScriptAiStatus("Access token missing or wrong — click Generate again to re-enter it.", "err");
+        } else if (data.error === "auth_not_configured") {
+          setScriptAiStatus("Server token not set — add CONTENT_ENGINE_API_TOKEN in Vercel, then redeploy.", "err");
+        } else if (data.error === "not_configured") {
           setScriptAiStatus("Not connected yet — add ANTHROPIC_API_KEY in Vercel, then redeploy. (You can still type or paste a script.)", "err");
         } else {
           setScriptAiStatus(data.message || `Generation failed (${resp.status}).`, "err");

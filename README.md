@@ -72,10 +72,40 @@ Push to `main` → auto-deploys to `studio.panicciventures.com`.
 
 Environment (Project → Settings → Environment Variables):
 - `ANTHROPIC_API_KEY` — required for question + script generation (`ANTHROPIC_MODEL` optional)
+- `CONTENT_ENGINE_API_TOKEN` — **required** shared secret for `/api/generate-questions`
+  and `/api/generate-script`. Generate one with `openssl rand -hex 32`. If unset, those
+  routes fail closed with a 500 (`auth_not_configured`).
 - `BLOB_READ_WRITE_TOKEN` — **added automatically** when you connect a Blob store:
   **Vercel → Storage → Create Database → Blob → connect to `panicci-content-engine`**,
   then redeploy. Until then the send button shows a friendly "not switched on yet"
   message and clients can still download their video.
+
+## API auth (generate-questions / generate-script)
+Both Claude routes require the shared secret on every POST:
+
+```
+Authorization: Bearer <CONTENT_ENGINE_API_TOKEN>
+# or
+x-api-token: <CONTENT_ENGINE_API_TOKEN>
+```
+
+Missing/wrong token → `401 {"error":"unauthorized"}`. CORS preflight (`OPTIONS`) is
+unauthenticated and allows the `Authorization` and `x-api-token` headers.
+
+```bash
+curl -X POST https://studio.panicciventures.com/api/generate-script \
+  -H "Authorization: Bearer $CONTENT_ENGINE_API_TOKEN" \
+  -H "Content-Type: application/json" -d '{"topic":"Why local SEO matters"}'
+```
+
+In the browser (index.html / testimonial.html) the token is entered once via a prompt
+or by opening the page with `?token=...`; it is saved in that browser's localStorage
+and the param is stripped from the URL. A 401 clears it so you can re-enter it.
+
+**Caveat:** a token that lives in a browser is not truly secret — anyone you give it
+to (or who can read their browser) can call the API. It stops anonymous abuse of the
+public URLs. For stronger protection, use Vercel Deployment Protection / Password
+Protection on the studio, or move generation behind a server-side login.
 
 ## Cost
 Recording is fully client-side. Question generation is pennies per click.
