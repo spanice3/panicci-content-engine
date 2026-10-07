@@ -1584,6 +1584,18 @@ OU | AI website builders — overrated or underrated?"></textarea>
   $("seedBtn").addEventListener("click", () => { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); });
   $("bulkToggleBtn").addEventListener("click", () => qBulk.classList.toggle("active"));
 
+  // ---- Access token for the Claude endpoints (stored on this device only) ----
+  async function engineFetch(url, opts) {
+    const send = () => fetch(url, Object.assign({}, opts, {
+      headers: Object.assign({}, opts.headers, { "x-engine-token": localStorage.getItem("engineToken") || "" })
+    }));
+    let resp = await send();
+    if (resp.status === 401) {
+      const t = prompt("Enter the Content Engine access token:");
+      if (t) { localStorage.setItem("engineToken", t.trim()); resp = await send(); }
+    }
+    return resp;
+  }
   // ---- Generate with Claude ----
   const aiPanel = $("aiPanel"), aiStatus = $("aiStatus"), aiGenBtn = $("aiGenBtn");
   $("aiToggleBtn").addEventListener("click", () => aiPanel.classList.toggle("active"));
@@ -1608,7 +1620,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     aiGenBtn.disabled = true;
     setAiStatus("Asking Claude for a fresh set…");
     try {
-      const resp = await fetch("/api/generate-questions", {
+      const resp = await engineFetch("/api/generate-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1651,7 +1663,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     scriptGenBtn.disabled = true;
     setScriptAiStatus("Asking Claude to write your script…");
     try {
-      const resp = await fetch("/api/generate-script", {
+      const resp = await engineFetch("/api/generate-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
