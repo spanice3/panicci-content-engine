@@ -2,6 +2,8 @@
 // Runs as a Vercel serverless function. Holds the API key server-side so it is
 // never exposed to the browser. POST { niche, count, types, brandVoice, extra }.
 
+const requireToken = require("./_auth");
+
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 // Overridable via env; "-latest" aliases track the current model automatically.
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-latest";
@@ -15,12 +17,12 @@ const TYPE_GUIDE = {
 };
 
 module.exports = async (req, res) => {
-  // CORS (same-origin in prod; permissive so it also works if embedded).
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  // Same-origin only: no Access-Control-Allow-Origin, so other sites cannot call this.
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-engine-token");
   if (req.method === "OPTIONS") { res.status(204).end(); return; }
   if (req.method !== "POST") { res.status(405).json({ error: "Use POST" }); return; }
+  if (!requireToken(req, res)) return;
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
