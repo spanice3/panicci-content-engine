@@ -399,6 +399,12 @@
 
   /* ---------- 50·5·3 ad builder ---------- */
   #pane-ads .hint b { color: #fff; }
+  .mxReady { border: 1px solid #2a3a55; background: rgba(79,140,255,0.08); border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+  .mxReadyTitle { font-weight: 800; font-size: 15px; }
+  .mxReadyMeta { font-size: 12px; opacity: .75; margin-top: 3px; line-height: 1.5; }
+  .mxLiveLbl { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; opacity: .9; margin-left: auto; }
+  #mxCustom { display: none; }
+  #mxCustom.active { display: block; }
   .mxPlanCols { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
   .mxPlanCols label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; opacity: .9; }
   .mxPlanCols textarea, .mxField textarea {
@@ -655,7 +661,17 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
     <!-- 50·5·3 ad builder pane -->
     <div class="modePane" id="pane-ads">
-      <p class="hint"><b>Hormozi 50·5·3:</b> film 50 hooks, 5 meats, 3 CTAs in one sitting, then stitch them into every combo. The shoot runs in four blocks — <b>Discovery</b> (we open on today's topic in your niche — you talk it through), <b>Interview</b> (deeper questions — your answers become the meats), <b>Hooks</b> (read each line, hit N), <b>CTAs</b> (read, hit N). After you stop, hit <b>🎯 Find hooks · meats · CTAs</b> and Claude ranks what actually landed.</p>
+      <p class="hint"><b>Hormozi 50·5·3:</b> 50 hooks, 5 meats, 3 CTAs in one sitting. Load the Panicci set, hit Start, and go — <b>Discovery</b> (talk it through), <b>Interview</b> (your answers become the meats), <b>Hooks</b> (read, hit N), <b>CTAs</b> (read, hit N). When you stop, hit <b>🎯 Find hooks · meats · CTAs</b>.</p>
+      <div class="mxReady" id="mxReady">
+        <div class="mxReadyTitle" id="mxReadyTitle">No shoot loaded</div>
+        <div class="mxReadyMeta" id="mxReadyMeta"></div>
+        <div class="row" style="justify-content:flex-start;gap:8px;margin-top:8px;">
+          <button id="mxLoadPvBtn" class="primary">⚡ Load Panicci Ventures 50·5·3</button>
+          <button id="mxCustomBtn">Customize / build a new set</button>
+          <label class="mxLiveLbl" title="Chrome/Edge: captures what you say so Claude can find the hooks, meats and CTAs right after you stop"><input id="mxLive" type="checkbox" checked> Live transcript</label>
+        </div>
+      </div>
+      <div id="mxCustom">
       <div class="aiRow mxField" style="flex-direction:column;align-items:stretch;">
         <input id="mxNiche" type="text" placeholder="Niche / industry (e.g. SEO · AEO · GEO for Las Vegas home-service businesses)">
         <input id="mxTopic" type="text" placeholder="This session's topic (e.g. why ChatGPT recommends your competitor and not you)">
@@ -668,7 +684,6 @@ OU | AI website builders — overrated or underrated?"></textarea>
         <label>Hooks <input id="mxNH" type="number" min="5" max="60" value="50"></label>
         <label>Meats <input id="mxNM" type="number" min="1" max="8" value="5"></label>
         <label>CTAs <input id="mxNC" type="number" min="1" max="5" value="3"></label>
-        <label title="Chrome/Edge: captures what you say so Claude can find the hooks, meats and CTAs right after you stop"><input id="mxLive" type="checkbox" checked> Live transcript</label>
         <button id="mxPlanBtn" class="primary">Build shoot list ✨</button>
       </div>
       <div id="mxPlanStatus" class="aiStatus"></div>
@@ -677,6 +692,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
         <label>① Interview → meats <span class="mxCount" id="mxCountQ"></span><textarea id="mxQs" placeholder="One question per line"></textarea></label>
         <label>② Hooks to read <span class="mxCount" id="mxCountH"></span><textarea id="mxHooks" placeholder="One hook per line"></textarea></label>
         <label>③ CTAs to read <span class="mxCount" id="mxCountC"></span><textarea id="mxCtas" placeholder="One CTA per line"></textarea></label>
+      </div>
       </div>
     </div>
 
@@ -1689,6 +1705,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
       document.getElementById("pane-interview").classList.toggle("active", next === "interview");
       document.getElementById("pane-ads").classList.toggle("active", adsMode);
       startBtn.textContent = adsMode ? "Start 50·5·3 shoot ▶" : mode === "interview" ? "Start interview ▶" : "Start prompting ▶";
+      if (adsMode && !lines(mxHooks).length && !lsGet(MX_KEY)) loadPanicciPreset();
+      renderReady();
       if (next === "interview" && questions.length === 0) { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); }
     });
   });
@@ -1826,6 +1844,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     $("mxCountQ").textContent = `(${lines(mxQs).length})`;
     $("mxCountH").textContent = `(${lines(mxHooks).length})`;
     $("mxCountC").textContent = `(${lines(mxCtas).length})`;
+    renderReady();
   }
   function saveMx() {
     const o = {};
@@ -1833,6 +1852,46 @@ OU | AI website builders — overrated or underrated?"></textarea>
     lsSet(MX_KEY, JSON.stringify(o));
     updateMxCounts();
   }
+  const mxCustom = $("mxCustom"), mxReadyTitle = $("mxReadyTitle"), mxReadyMeta = $("mxReadyMeta");
+  const MX_NAME_KEY = "pce_553_name_v1";
+  function renderReady() {
+    const d = lines(mxDisc).length, q = lines(mxQs).length, h = lines(mxHooks).length, c = lines(mxCtas).length;
+    const loaded = d + q + h + c > 0;
+    const name = lsGet(MX_NAME_KEY) || "Custom set";
+    mxReadyTitle.textContent = loaded ? `✓ ${name} — ready to record` : "No shoot loaded";
+    mxReadyMeta.textContent = loaded
+      ? `${d} discovery · ${q} interview · ${h} hooks · ${c} CTAs · ${d + q + h + c} segments, roughly ${Math.round((d + q) * 1.2 + (h + c) * 0.3)} min on camera${$("mxTopic").value ? " · Topic: " + $("mxTopic").value : ""}`
+      : "Load the Panicci Ventures set to start recording right away, or build your own below.";
+    startBtn.disabled = adsMode && !loaded;
+  }
+  function applyPreset(pre) {
+    const fill = (id, v) => { $(id).value = v == null ? "" : (Array.isArray(v) ? v.join("\n") : String(v)); };
+    fill("mxNiche", pre.niche); fill("mxTopic", pre.topic); fill("mxOffer", pre.offer);
+    fill("mxAudience", pre.audience); fill("mxProof", pre.proof); fill("mxCta", pre.cta);
+    fill("mxDisc", pre.discovery); fill("mxQs", pre.interview); fill("mxHooks", pre.hooks); fill("mxCtas", pre.ctas);
+    if (pre.hooks) $("mxNH").value = Math.max(5, Math.min(60, pre.hooks.length));
+    lsSet(MX_NAME_KEY, pre.name || "Custom set");
+    saveMx();
+  }
+  async function loadPanicciPreset() {
+    const had = lines(mxDisc).length + lines(mxQs).length + lines(mxHooks).length + lines(mxCtas).length;
+    const name = lsGet(MX_NAME_KEY) || "";
+    if (had && !/Panicci/.test(name) && !confirm("Replace the current shoot list with the Panicci Ventures set?")) return;
+    $("mxLoadPvBtn").disabled = true;
+    try {
+      const r = await fetch("presets/panicci-553.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      applyPreset(await r.json());
+      mxCustom.classList.remove("active");
+      toast("Panicci Ventures 50·5·3 loaded — hit Start");
+    } catch (_) {
+      toast("Couldn't load the preset (works once deployed)");
+    } finally {
+      $("mxLoadPvBtn").disabled = false;
+    }
+  }
+  $("mxLoadPvBtn").addEventListener("click", loadPanicciPreset);
+  $("mxCustomBtn").addEventListener("click", () => mxCustom.classList.toggle("active"));
   (function restoreMx() {
     try {
       const o = JSON.parse(lsGet(MX_KEY) || "null");
@@ -1840,7 +1899,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     } catch (_) {}
     updateMxCounts();
   })();
-  MX_FIELDS.forEach((id) => $(id).addEventListener("input", saveMx));
+  MX_FIELDS.forEach((id) => $(id).addEventListener("input", () => { lsSet(MX_NAME_KEY, "Custom set"); saveMx(); }));
 
   // Shoot order: discovery on the topic first (warms you up), then interview, hooks, CTAs.
   function adsShootList() {
@@ -1886,6 +1945,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       mxQs.value = (data.interview || []).map((q) => q.text).join("\n");
       mxHooks.value = (data.hooks || []).map((h) => h.text).join("\n");
       mxCtas.value = (data.ctas || []).map((c) => c.text).join("\n");
+      lsSet(MX_NAME_KEY, "Custom set");
       saveMx();
       setMxStatus(`✓ ${(data.discovery || []).length} discovery · ${data.interview.length} interview questions · ${data.hooks.length} hooks · ${data.ctas.length} CTAs. Edit anything, then Start.`, "ok");
     } catch (_) {
