@@ -3,8 +3,8 @@
 // never exposed to the browser. POST { niche, count, types, brandVoice, extra }.
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-// Overridable via env; "-latest" aliases track the current model automatically.
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-latest";
+// Overridable via env (ANTHROPIC_MODEL).
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
 const TYPE_GUIDE = {
   NICHE: "a specific, useful industry question the expert can answer with real value (no fluff).",

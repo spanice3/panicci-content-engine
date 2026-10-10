@@ -3,8 +3,8 @@
 // never exposed to the browser. POST { topic, tone, seconds, brandVoice, extra }.
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-// Overridable via env; "-latest" aliases track the current model automatically.
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-3-5-sonnet-latest";
+// Overridable via env (ANTHROPIC_MODEL).
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
 module.exports = async (req, res) => {
   // CORS (same-origin in prod; permissive so it also works if embedded).

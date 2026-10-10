@@ -392,6 +392,42 @@
   .t-ou    { background: rgba(190,120,255,0.22); color: #d9b3ff; }
   .t-intro { background: rgba(120,200,140,0.22); color: #a7e3b5; }
   .t-cta   { background: rgba(255,213,74,0.20);  color: #ffe08a; }
+  .t-hook  { background: rgba(255,102,60,0.26);  color: #ffc2a8; }
+  .t-meat  { background: rgba(79,140,255,0.26);  color: #b5d0ff; }
+  .t-adcta { background: rgba(120,200,140,0.24); color: #b9ecc5; }
+
+  /* ---------- 50·5·3 ad builder ---------- */
+  #pane-ads .hint b { color: #fff; }
+  .mxPlanCols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .mxPlanCols label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; opacity: .9; }
+  .mxPlanCols textarea, .mxField textarea {
+    width: 100%; height: 170px; resize: vertical; border-radius: 10px;
+    border: 1px solid #2a323d; background: #12161c; color: var(--text); padding: 10px; font-size: 13px; line-height: 1.45;
+  }
+  .mxField textarea { height: 64px; }
+  .mxCount { font-weight: 600; opacity: .6; }
+  #mxFindBtn { display: none; }
+  #mxFindBtn.show { display: inline-block; }
+  #mxBoard { display: none; width: min(1100px, 94vw); margin-top: 6px; }
+  #mxBoard.active { display: block; }
+  .mxSummary { text-align: center; font-size: 14px; margin: 4px 0 10px; }
+  .mxSummary b { color: var(--accent); font-size: 18px; }
+  .mxCols { display: grid; grid-template-columns: 1.3fr 1fr .8fr; gap: 10px; }
+  .mxCol { background: rgba(18,22,28,0.92); border: 1px solid #2a323d; border-radius: 12px; padding: 10px; max-height: 40vh; overflow-y: auto; }
+  .mxCol h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .3px; display: flex; justify-content: space-between; }
+  .mxItem { display: flex; gap: 8px; align-items: flex-start; padding: 7px 4px; border-top: 1px solid #1f2630; font-size: 13px; line-height: 1.4; }
+  .mxItem.off { opacity: .35; text-decoration: line-through; }
+  .mxScore { flex: 0 0 auto; min-width: 26px; text-align: center; font-weight: 800; border-radius: 6px; padding: 1px 4px; background: #1f2b3d; color: #9dc0ff; }
+  .mxScore.hi { background: rgba(120,200,140,0.25); color: #a7e3b5; }
+  .mxBody { flex: 1 1 auto; }
+  .mxSub { font-size: 11px; opacity: .6; margin-top: 2px; }
+  .mxItem button { padding: 3px 8px; font-size: 12px; }
+  .mxPlan { margin-top: 10px; background: rgba(18,22,28,0.92); border: 1px solid #2a323d; border-radius: 12px; padding: 10px 14px; font-size: 13px; line-height: 1.5; }
+  .mxPlan ol { margin: 6px 0 0 18px; padding: 0; }
+  .mxReshoot { color: #ffb199; font-size: 12px; margin-top: 6px; }
+  @media (max-width: 760px) {
+    .mxPlanCols, .mxCols { grid-template-columns: 1fr; }
+  }
 
   /* Interview cue card (prompting) */
   #interviewCard {
@@ -535,6 +571,7 @@
     <div class="modeTabs">
       <button class="modeTab active" data-mode="script">📜 Free script</button>
       <button class="modeTab" data-mode="interview">🎙 Interview</button>
+      <button class="modeTab" data-mode="ads">🎯 50·5·3 Ads</button>
     </div>
 
     <!-- Free script pane -->
@@ -615,6 +652,30 @@ OU | AI website builders — overrated or underrated?"></textarea>
       </div>
     </div>
 
+    <!-- 50·5·3 ad builder pane -->
+    <div class="modePane" id="pane-ads">
+      <p class="hint"><b>Hormozi 50·5·3:</b> film 50 hooks, 5 meats, 3 CTAs in one sitting, then stitch them into every combo. The shoot runs in three blocks — <b>Interview</b> (I ask, you talk — your answers become the meats), <b>Hooks</b> (read each line, hit N), <b>CTAs</b> (read, hit N). After you stop, hit <b>🎯 Find hooks · meats · CTAs</b> and Claude ranks what actually landed.</p>
+      <div class="aiRow mxField" style="flex-direction:column;align-items:stretch;">
+        <input id="mxOffer" type="text" placeholder="The offer (e.g. $497 Pro Performance Audit — full SEO · AEO · GEO teardown + 30/60/90 plan)">
+        <input id="mxAudience" type="text" placeholder="Who it's for (e.g. Las Vegas home-service owners doing $500K–$3M)">
+        <textarea id="mxProof" placeholder="Real proof, results, stories, numbers (only what's true — Claude won't invent any)"></textarea>
+        <input id="mxCta" type="text" placeholder="Where the CTA sends people (e.g. book a free discovery call at panicciventures.com)">
+      </div>
+      <div class="aiRow aiOpts" style="margin-top:8px;">
+        <label>Hooks <input id="mxNH" type="number" min="5" max="60" value="50"></label>
+        <label>Meats <input id="mxNM" type="number" min="1" max="8" value="5"></label>
+        <label>CTAs <input id="mxNC" type="number" min="1" max="5" value="3"></label>
+        <label title="Chrome/Edge: captures what you say so Claude can find the hooks, meats and CTAs right after you stop"><input id="mxLive" type="checkbox" checked> Live transcript</label>
+        <button id="mxPlanBtn" class="primary">Build shoot list ✨</button>
+      </div>
+      <div id="mxPlanStatus" class="aiStatus"></div>
+      <div class="mxPlanCols">
+        <label>① Interview → meats <span class="mxCount" id="mxCountQ"></span><textarea id="mxQs" placeholder="One question per line"></textarea></label>
+        <label>② Hooks to read <span class="mxCount" id="mxCountH"></span><textarea id="mxHooks" placeholder="One hook per line"></textarea></label>
+        <label>③ CTAs to read <span class="mxCount" id="mxCountC"></span><textarea id="mxCtas" placeholder="One CTA per line"></textarea></label>
+      </div>
+    </div>
+
     <button id="startBtn" class="primary">Start prompting ▶</button>
   </div>
 
@@ -632,7 +693,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       <button id="coverBtn">⬇ Cover frame (.png)</button>
       <button id="reRecordBtn">＋ New take</button>
       <button id="backToEditBtn">Back to script</button>
+      <button id="mxFindBtn" class="primary">🎯 Find hooks · meats · CTAs</button>
     </div>
+    <div id="mxBoard"></div>
     <p id="convertNote" style="display:none;max-width:460px;text-align:center;font-size:12px;opacity:.7;line-height:1.5;">
       This browser recorded WebM and MP4 conversion couldn't run (offline or blocked).
       The WebM still works — to get MP4 directly, open this in <b>Safari</b> on your Mac, or reconnect to the internet and record again.
@@ -664,6 +727,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
         <tr><td class="key"><kbd>R</kbd></td><td>Start / stop recording</td></tr>
         <tr><td class="key"><kbd>N</kbd> / <kbd>→</kbd></td><td>Interview: next question (marks a segment)</td></tr>
         <tr><td class="key"><kbd>←</kbd></td><td>Interview: previous question</td></tr>
+        <tr><td class="key"><kbd>N</kbd></td><td>50·5·3: next interview question / hook / CTA</td></tr>
         <tr><td class="key"><kbd>Space</kbd></td><td>Script: pause / resume scroll</td></tr>
         <tr><td class="key"><kbd>B</kbd></td><td>Drop a marker</td></tr>
         <tr><td class="key"><kbd>1</kbd>–<kbd>4</kbd></td><td>Script: mark Hook / Point / CTA / Retake</td></tr>
@@ -915,8 +979,20 @@ OU | AI website builders — overrated or underrated?"></textarea>
     HOT:   { key: "HOT",   label: "Hot Take",  cls: "t-hot" },
     OU:    { key: "OU",    label: "Over/Underrated", cls: "t-ou" },
     INTRO: { key: "INTRO", label: "Intro",     cls: "t-intro" },
-    CTA:   { key: "CTA",   label: "CTA",       cls: "t-cta" }
+    CTA:   { key: "CTA",   label: "CTA",       cls: "t-cta" },
+    // 50·5·3 ad shoot types (not offered in the plain interview builder)
+    MEAT:  { key: "MEAT",  label: "Interview → Meat", cls: "t-meat",  adsOnly: true },
+    HOOK:  { key: "HOOK",  label: "Hook",      cls: "t-hook",  adsOnly: true },
+    ADCTA: { key: "ADCTA", label: "Ad CTA",    cls: "t-adcta", adsOnly: true }
   };
+
+  // 50·5·3 ad builder
+  let adsMode = false;          // the 🎯 tab: runs on the interview engine with ad types
+  let savedInterviewQs = null;  // the plain interview list, restored when leaving the ads tab
+  let liveChunks = [];          // [{start, end, text}] live transcript for the current take
+  let capRec = null;            // SpeechRecognition used only for transcript capture
+  let capSession = 0;
+  let capPending = {};          // key -> {start, text} interim results not yet final
 
   let prompting = false;
   let scrollPos = 0;        // px scrolled
@@ -1128,6 +1204,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
       const sel = document.createElement("select");
       Object.values(TYPES).forEach((t) => {
+        if (t.adsOnly) return;
         const o = document.createElement("option");
         o.value = t.key; o.textContent = t.label;
         if (t.key === q.type) o.selected = true;
@@ -1177,6 +1254,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
     if (!q) return;
     const ti = typeInfo(q.type);
     icQnum.textContent = `Question ${currentQ + 1} of ${questions.length}`;
+    if (adsMode) {
+      const same = questions.filter((x) => x.type === q.type);
+      const k = questions.slice(0, currentQ + 1).filter((x) => x.type === q.type).length;
+      const cue = q.type === "MEAT" ? "Interview — answer like you're talking to one client"
+        : q.type === "HOOK" ? "Read it like you mean it, then N" : "Read it, then N";
+      icQnum.textContent = `${typeInfo(q.type).label} ${k} of ${same.length} · ${cue}`;
+    }
     icBadge.innerHTML = `<span class="typeBadge ${ti.cls}">${ti.label}</span>`;
     icQuestion.textContent = q.text;
     // Scale question text to length
@@ -1356,6 +1440,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
       segCount.classList.add("active");
       segNum.textContent = "Q" + (currentQ + 1);
     }
+    liveChunks = [];
+    if (adsMode && $("mxLive").checked) startCapture();
     recBtn.textContent = "■ Stop";
     recdot.classList.add("active");
     recTime.textContent = "0:00";
@@ -1368,6 +1454,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     if (recorder && recording) {
       // Close the final interview segment at the moment of stopping.
       if (mode === "interview") closeSegment((performance.now() - recStartTs) / 1000);
+      stopCapture();
       recorder.stop();
     }
     recording = false;
@@ -1437,6 +1524,14 @@ OU | AI website builders — overrated or underrated?"></textarea>
       end: seg.end === null ? dur : seg.end,
       durationSeconds: Math.round(((seg.end === null ? dur : seg.end) - seg.start) * 100) / 100
     }));
+    // Live transcript (50·5·3 shoots): give each segment the words said inside it.
+    const takeChunks = liveChunks.slice();
+    if (takeChunks.length) {
+      takeSegments.forEach((sg) => {
+        sg.transcript = takeChunks.filter((c) => c.start >= sg.start - 0.3 && c.start < sg.end)
+          .map((c) => c.text).join(" ").trim();
+      });
+    }
 
     // The clips Claude should actually cut: interview segments if present, else markers.
     const clips = takeSegments.length ? takeSegments.map((s) => ({
@@ -1451,7 +1546,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       linkedin:        { aspect: "1:1 or 16:9", idealSeconds: [30, 60], maxSeconds: 90, captions: "burn-in", tone: "professional, insight-first" }
     };
 
-    const editingBrief = mode === "interview"
+    const editingBrief = adsMode
+      ? "Hormozi 50·5·3 shoot. MEAT segments are interview answers: cut the best 15-60s standalone stretches as meats. HOOK segments are read hook lines (one per segment). ADCTA segments are read CTAs. Every hook must butt-join onto every meat, then every CTA. See adMatrix for the picked modules and video/adbuild.py to cut + stitch."
+      : mode === "interview"
       ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets."
       : "Cut around the markers/suggestedClips. Add burned-in captions and export per platform using platformTargets.";
 
@@ -1474,6 +1571,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       suggestedClips: clips,           // ready-to-cut clips (segments in interview mode)
       platformTargets,                 // how to cut for IG / TikTok / FB / LinkedIn
       editingBrief,                    // plain-English instructions for the editor (Claude)
+      adsShoot: adsMode,               // 50·5·3 ad shoot (MEAT / HOOK / ADCTA segments)
+      liveTranscript: takeChunks,      // [{start, end, text}] browser speech capture (approximate timing)
+      adMatrix: null,                  // filled by 🎯 Find hooks · meats · CTAs
       script: scriptEl.value || ""
     };
 
@@ -1500,6 +1600,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
     const mk = t.meta.markers.length ? ` · ${t.meta.markers.length} markers` : "";
     takeLabel.textContent = `Take ${idx + 1} of ${takes.length}${mk}`;
     convertNote.style.display = t.ext === "webm" ? "block" : "none";
+    mxFindBtn.classList.toggle("show", !!t.meta.adsShoot);
+    if (t.meta.adMatrix) renderBoard(t); else { mxBoard.classList.remove("active"); mxBoard.innerHTML = ""; }
     renderTakesStrip();
   }
 
@@ -1570,12 +1672,18 @@ OU | AI website builders — overrated or underrated?"></textarea>
   // ---------- Interview editor wiring ----------
   document.querySelectorAll(".modeTab").forEach((tab) => {
     tab.addEventListener("click", () => {
-      mode = tab.dataset.mode;
+      const next = tab.dataset.mode;
+      const wasAds = adsMode;
+      adsMode = next === "ads";
+      mode = adsMode ? "interview" : next;   // the ad shoot runs on the interview engine
+      if (adsMode && !wasAds) savedInterviewQs = questions;
+      if (!adsMode && wasAds && savedInterviewQs) { questions = savedInterviewQs; savedInterviewQs = null; renderQBuilder(); }
       document.querySelectorAll(".modeTab").forEach((t) => t.classList.toggle("active", t === tab));
-      document.getElementById("pane-script").classList.toggle("active", mode === "script");
-      document.getElementById("pane-interview").classList.toggle("active", mode === "interview");
-      startBtn.textContent = mode === "interview" ? "Start interview ▶" : "Start prompting ▶";
-      if (mode === "interview" && questions.length === 0) { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); }
+      document.getElementById("pane-script").classList.toggle("active", next === "script");
+      document.getElementById("pane-interview").classList.toggle("active", next === "interview");
+      document.getElementById("pane-ads").classList.toggle("active", adsMode);
+      startBtn.textContent = adsMode ? "Start 50·5·3 shoot ▶" : mode === "interview" ? "Start interview ▶" : "Start prompting ▶";
+      if (next === "interview" && questions.length === 0) { questions = STARTER_QUESTIONS.map((q) => ({ ...q })); renderQBuilder(); }
     });
   });
   $("addNicheBtn").addEventListener("click", () => addQuestion("NICHE", ""));
@@ -1689,6 +1797,294 @@ OU | AI website builders — overrated or underrated?"></textarea>
     toast(`Imported ${parsed.length} questions`);
   });
   nextQBtn.addEventListener("click", () => advanceQuestion(1));
+
+  // ---------- 50·5·3 ad builder (Hormozi hook / meat / CTA) ----------
+  const mxFindBtn = $("mxFindBtn");
+  const mxBoard   = $("mxBoard");
+  const mxQs = $("mxQs"), mxHooks = $("mxHooks"), mxCtas = $("mxCtas");
+  const mxPlanStatus = $("mxPlanStatus"), mxPlanBtn = $("mxPlanBtn");
+  const MX_KEY = "pce_553_plan_v1";
+  const MX_FIELDS = ["mxOffer", "mxAudience", "mxProof", "mxCta", "mxNH", "mxNM", "mxNC", "mxQs", "mxHooks", "mxCtas"];
+
+  function esc(x) {
+    return String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function lines(el) { return el.value.split(/\n+/).map((l) => l.trim()).filter(Boolean); }
+  function mxCounts() {
+    const n = (id, d) => parseInt($(id).value, 10) || d;
+    return { hooks: n("mxNH", 50), meats: n("mxNM", 5), ctas: n("mxNC", 3) };
+  }
+  function updateMxCounts() {
+    $("mxCountQ").textContent = `(${lines(mxQs).length})`;
+    $("mxCountH").textContent = `(${lines(mxHooks).length})`;
+    $("mxCountC").textContent = `(${lines(mxCtas).length})`;
+  }
+  function saveMx() {
+    const o = {};
+    MX_FIELDS.forEach((id) => { o[id] = $(id).value; });
+    lsSet(MX_KEY, JSON.stringify(o));
+    updateMxCounts();
+  }
+  (function restoreMx() {
+    try {
+      const o = JSON.parse(lsGet(MX_KEY) || "null");
+      if (o) MX_FIELDS.forEach((id) => { if (o[id] != null) $(id).value = o[id]; });
+    } catch (_) {}
+    updateMxCounts();
+  })();
+  MX_FIELDS.forEach((id) => $(id).addEventListener("input", saveMx));
+
+  // Shoot order: interview first (warms you up), then hooks, then CTAs.
+  function adsShootList() {
+    return [
+      ...lines(mxQs).map((text) => ({ type: "MEAT", text })),
+      ...lines(mxHooks).map((text) => ({ type: "HOOK", text })),
+      ...lines(mxCtas).map((text) => ({ type: "ADCTA", text }))
+    ];
+  }
+
+  function setMxStatus(txt, kind) { mxPlanStatus.textContent = txt; mxPlanStatus.className = "aiStatus" + (kind ? " " + kind : ""); }
+
+  mxPlanBtn.addEventListener("click", async () => {
+    const offer = $("mxOffer").value.trim();
+    if (!offer) { setMxStatus("Tell me the offer first.", "err"); return; }
+    if ((lines(mxQs).length || lines(mxHooks).length) && !confirm("Replace the current shoot list?")) return;
+    mxPlanBtn.disabled = true;
+    setMxStatus("Claude is writing your interview, hooks and CTAs… (30–60s for 50 hooks)");
+    try {
+      const resp = await fetch("/api/fifty-five-three", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "plan", offer,
+          audience: $("mxAudience").value.trim(),
+          proof: $("mxProof").value.trim(),
+          cta: $("mxCta").value.trim(),
+          counts: mxCounts()
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setMxStatus(data.error === "not_configured"
+          ? "Not connected yet — add ANTHROPIC_API_KEY in Vercel, then redeploy. (You can still paste lines in.)"
+          : (data.message || `Generation failed (${resp.status}).`), "err");
+        return;
+      }
+      mxQs.value = (data.interview || []).map((q) => q.text).join("\n");
+      mxHooks.value = (data.hooks || []).map((h) => h.text).join("\n");
+      mxCtas.value = (data.ctas || []).map((c) => c.text).join("\n");
+      saveMx();
+      setMxStatus(`✓ ${data.interview.length} interview questions · ${data.hooks.length} hooks · ${data.ctas.length} CTAs. Edit anything, then Start.`, "ok");
+    } catch (_) {
+      setMxStatus("Can't reach the generator here. This works once deployed — locally, paste lines in.", "err");
+    } finally {
+      mxPlanBtn.disabled = false;
+    }
+  });
+
+  // ---- Live transcript capture (Chrome/Edge/Safari speech API) ----
+  // Timing is approximate (start = first interim result, end = final result);
+  // video/adbuild.py snaps every cut to Whisper word timestamps later.
+  function capNow() { return Math.round(((performance.now() - recStartTs) / 1000) * 100) / 100; }
+  function startCapture() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { toast("No live transcript in this browser — run adbuild.py on the take instead"); return; }
+    capPending = {};
+    const begin = () => {
+      capSession++;
+      const sess = capSession;
+      let r;
+      try { r = new SR(); } catch (_) { return; }
+      r.continuous = true; r.interimResults = true; r.lang = "en-US";
+      r.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const k = sess + ":" + i;
+          const text = e.results[i][0].transcript.trim();
+          if (!capPending[k]) capPending[k] = { start: Math.max(0, capNow() - 0.4), text: "" };
+          capPending[k].text = text;
+          if (e.results[i].isFinal) {
+            if (text) liveChunks.push({ start: capPending[k].start, end: capNow(), text });
+            capPending[k] = { done: true };
+          }
+        }
+      };
+      r.onerror = (e) => {
+        if (e && (e.error === "not-allowed" || e.error === "service-not-allowed")) { toast("Mic blocked for live transcript"); capRec = null; }
+      };
+      r.onend = () => { if (capRec === r) begin(); };   // Chrome stops after silences — keep it going
+      capRec = r;
+      try { r.start(); } catch (_) {}
+    };
+    begin();
+  }
+  function stopCapture() {
+    const r = capRec;
+    capRec = null;
+    if (r) { r.onresult = null; r.onend = null; try { r.stop(); } catch (_) {} }
+    // Flush anything still mid-sentence so the last words aren't lost.
+    const t = recStartTs ? capNow() : 0;
+    Object.values(capPending).forEach((p) => { if (!p.done && p.text) liveChunks.push({ start: p.start, end: t, text: p.text }); });
+    capPending = {};
+    liveChunks.sort((a, b) => a.start - b.start);
+  }
+
+  // ---- Identify hooks / meats / CTAs ----
+  function normW(x) { return String(x || "").toLowerCase().replace(/[^\p{L}\p{N}'\s]/gu, " ").split(/\s+/).filter(Boolean); }
+  function findChunk(chunks, quote, fromIdx) {
+    const q = normW(quote).slice(0, 6);
+    if (!q.length) return -1;
+    let best = -1, bestScore = 0;
+    for (let i = fromIdx || 0; i < chunks.length; i++) {
+      const w = new Set(normW(chunks[i].text));
+      const sc = q.filter((x) => w.has(x)).length / q.length;
+      if (sc > bestScore) { bestScore = sc; best = i; }
+    }
+    return bestScore >= 0.5 ? best : -1;
+  }
+  function locateModules(data, meta) {
+    const segBy = {};
+    meta.segments.forEach((sg) => { segBy[sg.n] = sg; });
+    const chunksIn = (sg) => (meta.liveTranscript || []).filter((c) => c.start >= sg.start - 0.3 && c.start < sg.end);
+    const span = (sg, startQ, endQ, whole) => {
+      if (whole) return { start: sg.start, end: sg.end, approx: true };
+      const ch = chunksIn(sg);
+      const a = findChunk(ch, startQ, 0);
+      const b = findChunk(ch, endQ || startQ, Math.max(0, a));
+      return {
+        start: a >= 0 ? ch[a].start : sg.start,
+        end: b >= 0 ? Math.min(sg.end, ch[b].end + 0.3) : sg.end,
+        approx: true
+      };
+    };
+    const pad = (n) => String(n).padStart(2, "0");
+    const hooks = (data.hooks || []).filter((h) => segBy[h.seg]).map((h, i) => ({
+      id: "H" + pad(i + 1), on: true, ...h,
+      ...span(segBy[h.seg], h.text, h.text, h.source === "read" && segBy[h.seg].type === "HOOK")
+    }));
+    const meats = (data.meats || []).filter((m) => segBy[m.seg]).map((m, i) => ({
+      id: "M" + (i + 1), on: true, ...m, ...span(segBy[m.seg], m.startQuote, m.endQuote, false)
+    }));
+    const ctas = (data.ctas || []).filter((c) => segBy[c.seg]).map((c, i) => ({
+      id: "C" + (i + 1), on: true, ...c, ...span(segBy[c.seg], c.text, c.text, segBy[c.seg].type === "ADCTA")
+    }));
+    return { method: "hormozi-50-5-3", identifiedAt: new Date().toISOString(), model: data.model, hooks, meats, ctas, reshoot: data.reshoot || [] };
+  }
+
+  async function findModules() {
+    const t = takes[currentTakeIdx];
+    if (!t) return;
+    const segs = (t.meta.segments || []).map((sg) => ({
+      n: sg.n, type: sg.type, prompt: sg.question, start: sg.start, end: sg.end, transcript: sg.transcript || ""
+    }));
+    mxBoard.classList.add("active");
+    mxBoard.innerHTML = `<p class="mxSummary">🎯 Claude is watching the tape — ranking hooks, meats and CTAs…</p>`;
+    mxFindBtn.disabled = true;
+    try {
+      const resp = await fetch("/api/fifty-five-three", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "identify", segments: segs, counts: mxCounts() })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        mxBoard.innerHTML = `<p class="mxSummary" style="color:#ffb199">${esc(data.message || "Identify failed (" + resp.status + ").")}</p>`;
+        return;
+      }
+      t.meta.adMatrix = locateModules(data, t.meta);
+      renderBoard(t);
+    } catch (_) {
+      mxBoard.innerHTML = `<p class="mxSummary" style="color:#ffb199">Can't reach the analyzer here — works once deployed.</p>`;
+    } finally {
+      mxFindBtn.disabled = false;
+    }
+  }
+  mxFindBtn.addEventListener("click", findModules);
+
+  function renderBoard(t) {
+    const mx = t.meta.adMatrix;
+    if (!mx) return;
+    const H = mx.hooks.filter((x) => x.on), M = mx.meats.filter((x) => x.on), C = mx.ctas.filter((x) => x.on);
+    const total = H.length * M.length * C.length;
+    const r2Hooks = Math.min(5, H.length);
+    const item = (x, kind) => {
+      const main = kind === "meats" ? `<b>${esc(x.title)}</b> <span class="mxSub">${esc(x.angle)}</span><div class="mxSub">“${esc(x.startQuote)} … ${esc(x.endQuote)}”</div>` : esc(x.text);
+      const sub = [kind === "hooks" ? x.style + (x.source === "interview" ? " · pulled from interview" : "") : "",
+        `seg ${x.seg}`, `${fmtTime(x.start)}–${fmtTime(x.end)}`, x.why].filter(Boolean).map(esc).join(" · ");
+      return `<div class="mxItem${x.on ? "" : " off"}" data-kind="${kind}" data-id="${x.id}">
+        <span class="mxScore${x.score >= 8 ? " hi" : ""}">${x.score}</span>
+        <div class="mxBody"><span class="mxSub">${x.id}</span> ${main}<div class="mxSub">${sub}</div></div>
+        <button data-act="play" title="Preview">▶</button><button data-act="toggle" title="Keep / drop">${x.on ? "✕" : "↺"}</button></div>`;
+    };
+    const col = (title, list, kind) => `<div class="mxCol"><h3><span>${title}</span><span>${list.filter((x) => x.on).length}</span></h3>${list.map((x) => item(x, kind)).join("") || '<div class="mxSub">None found.</div>'}</div>`;
+    const reshoot = mx.reshoot.length
+      ? `<div class="mxReshoot">↻ Reshoot: ${mx.reshoot.map((r) => `seg ${r.seg} (${esc(r.reason)})`).join(" · ")}</div>` : "";
+    const m1 = M[0] ? M[0].id : "M1", c1 = C[0] ? C[0].id : "C1";
+    mxBoard.innerHTML = `
+      <p class="mxSummary"><b>${H.length}</b> hooks × <b>${M.length}</b> meats × <b>${C.length}</b> CTAs = <b>${total}</b> ad combos</p>
+      <div class="mxCols">${col("🪝 Hooks", mx.hooks, "hooks")}${col("🥩 Meats", mx.meats, "meats")}${col("📣 CTAs", mx.ctas, "ctas")}</div>
+      <div class="mxPlan"><b>Test plan</b> — change one variable at a time:
+        <ol>
+          <li><b>Hook test (${H.length} ads):</b> every hook × ${m1} × ${c1}. Same meat + CTA, so the hook is the only thing being judged. Rank on hook rate (3-sec views ÷ impressions).</li>
+          <li><b>Meat test (${r2Hooks * M.length} ads):</b> top ${r2Hooks} hooks × all ${M.length} meats × ${c1}. Rank on cost per result.</li>
+          <li><b>CTA test (${C.length} ads):</b> winning hook + meat × all ${C.length} CTAs. Then scale the winner.</li>
+        </ol>
+        ${reshoot}
+        <div class="row" style="margin-top:10px;justify-content:flex-start">
+          <button data-act="json" class="primary">⬇ Ad matrix (.json)</button>
+          <button data-act="csv">⬇ Ad manifest (.csv)</button>
+          <button data-act="rerun">↻ Re-run</button>
+        </div>
+        <div class="mxSub" style="margin-top:6px">Timings here are approximate. Run <code>video/adbuild.py</code> with the take + its .json — it snaps every cut to Whisper word timings, then cuts and stitches the combos.</div>
+      </div>`;
+  }
+
+  mxBoard.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    const t = takes[currentTakeIdx];
+    if (!btn || !t || !t.meta.adMatrix) return;
+    const mx = t.meta.adMatrix;
+    const act = btn.dataset.act;
+    if (act === "play" || act === "toggle") {
+      const row = btn.closest(".mxItem");
+      const x = mx[row.dataset.kind].find((y) => y.id === row.dataset.id);
+      if (!x) return;
+      if (act === "toggle") { x.on = !x.on; renderBoard(t); return; }
+      playbackVid.currentTime = x.start;
+      playbackVid.play().catch(() => {});
+      const stopAt = () => { if (playbackVid.currentTime >= x.end) { playbackVid.pause(); playbackVid.removeEventListener("timeupdate", stopAt); } };
+      playbackVid.addEventListener("timeupdate", stopAt);
+      playbackVid.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (act === "json") {
+      const blob = new Blob([JSON.stringify(mx, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      triggerDownload(url, t.meta.file.replace(/\.[^.]+$/, "") + "-ad-matrix.json");
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } else if (act === "csv") {
+      downloadManifest(t);
+    } else if (act === "rerun") {
+      findModules();
+    }
+  });
+
+  // One row per combo. ad_name matches how it should be named in Meta Ads Manager,
+  // so the Ad Performance leaderboard reads straight back to H/M/C ids.
+  function downloadManifest(t) {
+    const mx = t.meta.adMatrix;
+    const H = mx.hooks.filter((x) => x.on), M = mx.meats.filter((x) => x.on), C = mx.ctas.filter((x) => x.on);
+    const top5 = new Set(H.slice(0, 5).map((x) => x.id));
+    const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+    const rows = [["ad_name", "test_round", "hook_id", "hook_text", "meat_id", "meat_title", "cta_id", "cta_text",
+      "hook_in", "hook_out", "meat_in", "meat_out", "cta_in", "cta_out"].join(",")];
+    H.forEach((h) => M.forEach((m) => C.forEach((c) => {
+      const round = (m === M[0] && c === C[0]) ? "R1 hook test" : (top5.has(h.id) && c === C[0]) ? "R2 meat test" : "";
+      rows.push([`553 ${h.id}-${m.id}-${c.id}`, round, h.id, h.text, m.id, m.title, c.id, c.text,
+        h.start, h.end, m.start, m.end, c.start, c.end].map(q).join(","));
+    })));
+    const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, t.meta.file.replace(/\.[^.]+$/, "") + "-ad-manifest.csv");
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
 
   // ---------- ffmpeg.wasm transcode (lazy-loaded, single-threaded core) ----------
   function loadScript(src) {
@@ -1977,6 +2373,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
   // ---------- Enter / exit prompting ----------
   async function enterPrompting() {
     const interview = mode === "interview";
+    if (adsMode) {
+      questions = adsShootList();
+      if (!questions.length) { toast("Build or paste a shoot list first"); return; }
+    }
     if (interview) {
       // Drop empty questions; require at least one.
       questions = questions.filter((q) => q.text && q.text.trim());
