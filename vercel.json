@@ -3,6 +3,14 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/:client", "destination": "/testimonial" }
-  ]
+    {
+      "source": "/:client",
+      "destination": "/testimonial"
+    }
+  ],
+  "functions": {
+    "api/fifty-five-three.js": {
+      "maxDuration": 60
+    }
+  }
 }

@@ -39,6 +39,28 @@ python3 run.py TAKE.mp4 [MORE_TAKES.mp4 ...] \
 Outputs land in `--out-dir`: `seamless.mp4`, `captions.json`, and one
 `*_<ratio>.mp4` per format.
 
+## 50·5·3 ads (`adbuild.py`)
+
+For takes recorded in the studio's **🎯 50·5·3 Ads** tab. Download the take's MP4
+and its **Script data (.json)** (after hitting *Find hooks · meats · CTAs*, so it
+carries your picks), then:
+
+```bash
+python3 adbuild.py TAKE.mp4 --meta TAKE.json --out-dir ./ads          # Round 1 hook test
+python3 adbuild.py TAKE.mp4 --meta TAKE.json --render all              # every combo
+python3 adbuild.py TAKE.mp4 --meta TAKE.json --render clips            # modules only
+python3 adbuild.py TAKE.mp4 --meta TAKE.json --brand 9x16,1x1          # + captions/bug
+```
+
+- Every module edge is snapped to Whisper word timestamps (the browser's are approximate).
+- No adMatrix in the json? It transcribes and calls the studio's
+  `/api/fifty-five-three` identify endpoint itself (same prompt as the browser).
+- Hooks/meats you dropped (✕) on the board are skipped.
+- Output: `modules/H01.mp4 … M1.mp4 … C1.mp4`, one `H07-M1-C1.mp4` per ad,
+  `ad-matrix.snapped.json`, and `manifest.csv`. Name each ad in Meta exactly as
+  `ad_name` so the ad leaderboard maps straight back to hook/meat/CTA.
+- `--brand` skips the intro card on purpose: an ad has to open on the hook.
+
 ## Steps
 
 1. **Silence jump-cut** — removes dead air; threshold auto-set ~12 dB below
@@ -70,4 +92,5 @@ Sourced from the `panicci-deliverables` skill (`brand.json`): deep green
 | `captions.py` | transcription + script alignment |
 | `brandkit.py` | safe-zone branded renderer (importable + CLI) |
 | `run.py` | orchestrator |
+| `adbuild.py` | 50·5·3 ad modules + combos |
 | `assets/brand-mark.svg` | the P/V shield |

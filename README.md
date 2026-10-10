@@ -1,12 +1,24 @@
 # Panicci Content Engine
 
-Two tools on one Vercel project (`studio.panicciventures.com`):
+Three tools on one Vercel project (`studio.panicciventures.com`):
 
 1. **Teleprompter + recorder** (`/`) — Sammy's interview-style content rig with
    setting presets, eyeline mode, Claude-powered question generation, and a
    Generate-with-Claude button that writes a full teleprompter script from a
    topic/idea.
-2. **Testimonial studios** (`/<client-slug>/`) — client-facing recording pages that
+2. **🎯 50·5·3 Ads** (`/`, third tab) — Hormozi's modular ad process. Opens with the
+   **Panicci Ventures set** pre-loaded (`presets/panicci-553.json`: topic, 4 discovery +
+   10 interview questions, 50 hooks, 3 CTAs, real client proof), so it's load → Start →
+   record. For another topic or client, *Customize* opens the builder where Claude writes
+   a shoot list (discovery questions that open the session on your niche + topic,
+   interview questions that pull out *meats*, 50 hook lines, 3 CTA
+   lines); you film it in one sitting, one segment per item. When you stop, **🎯 Find
+   hooks · meats · CTAs** sends the live transcript to Claude, which ranks every hook
+   (including punchy lines buried in your answers), picks the best 5 meats with cut
+   points, picks 3 CTAs, and flags reshoots. Out comes a board with the combo math, a
+   3-round test plan (hook → meat → CTA), and a CSV manifest of every ad named
+   `553 H07-M2-C1`. `video/adbuild.py` then cuts and stitches the real files.
+3. **Testimonial studios** (`/<client-slug>/`) — client-facing recording pages that
    capture **name + email**, walk the speaker through a personalized question set,
    and upload the video **directly to Vercel Blob** (no downloads, no email attachments).
 
@@ -18,6 +30,8 @@ clients/<slug>.json         # per-client config: name, tagline, questions, editi
 api/generate-questions.js   # serverless proxy → Anthropic Messages API (interview questions)
 api/generate-script.js      # serverless proxy → Anthropic Messages API (teleprompter script)
 api/upload-testimonial.js   # mints scoped Vercel Blob client-upload tokens
+api/fifty-five-three.js     # 50·5·3: "plan" (shoot list) + "identify" (rank hooks/meats/CTAs)
+presets/panicci-553.json    # the ready-to-record Panicci Ventures 50·5·3 set
 vercel.json                 # cleanUrls + /:client → testimonial.html rewrite
 ```
 

@@ -23,7 +23,8 @@ FAM = {"b": "PVSG Bold", "m": "PVSG Medium", "s": "PVSG SemiBold"}
 def _dur(f):
     return float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","default=nk=1:nw=1",f]).decode())
 
-def render(SRC, CAPS, RATIO, OUT):
+def render(SRC, CAPS, RATIO, OUT, intro=True, outro=True):
+    """intro/outro=False for paid ads (adbuild.py): an ad has to open on the hook."""
     W, H = DIMS[RATIO]; S = SAFE[RATIO]; k = W / 1080.0
     mark = "data:image/png;base64," + base64.b64encode(open(os.path.join(BUILD, "mark_cream.png"), "rb").read()).decode()
     fontb = os.path.join(BUILD, "PVSGBold.ttf")
@@ -120,9 +121,12 @@ def render(SRC, CAPS, RATIO, OUT):
         subprocess.check_call(["ffmpeg","-hide_banner","-loglevel","error","-y","-loop","1","-t",str(t),"-i",png_,
             "-f","lavfi","-t",str(t),"-i","anullsrc=r=48000:cl=mono",
             "-vf",f"fps=30,fade=t=in:st=0:d={fi},fade=t=out:st={t-fo:.2f}:d={fo},format=yuv420p","-map","0:v","-map","1:a",*ENC,out])
-    card(f"{tmp}/intro.png", 2.5, 0.5, 0.4, f"{tmp}/intro.mp4")
-    card(f"{tmp}/outro.png", 3.6, 0.4, 0.5, f"{tmp}/outro.mp4")
-    open(f"{tmp}/cc.txt", "w").write("".join(f"file '{os.path.abspath(f)}'\n" for f in [f"{tmp}/intro.mp4", f"{tmp}/main.mp4", f"{tmp}/outro.mp4"]))
+    seq = [f"{tmp}/main.mp4"]
+    if intro:
+        card(f"{tmp}/intro.png", 2.5, 0.5, 0.4, f"{tmp}/intro.mp4"); seq.insert(0, f"{tmp}/intro.mp4")
+    if outro:
+        card(f"{tmp}/outro.png", 3.6, 0.4, 0.5, f"{tmp}/outro.mp4"); seq.append(f"{tmp}/outro.mp4")
+    open(f"{tmp}/cc.txt", "w").write("".join(f"file '{os.path.abspath(f)}'\n" for f in seq))
     subprocess.check_call(["ffmpeg","-hide_banner","-loglevel","error","-y","-f","concat","-safe","0","-i",f"{tmp}/cc.txt","-c","copy","-movflags","+faststart",OUT])
     return OUT
 
