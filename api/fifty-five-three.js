@@ -1,8 +1,9 @@
 // Panicci Content Engine — Hormozi 50·5·3 ad builder.
 // One Vercel serverless function, two actions:
 //
-//   POST { action: "plan", offer, audience, proof, cta, voice, counts }
-//     -> a shoot list: interview questions that pull out "meats" (stories, proof,
+//   POST { action: "plan", niche, topic, offer, audience, proof, cta, voice, counts }
+//     -> a shoot list: discovery questions that open the session on the niche + topic,
+//        interview questions that pull out "meats" (stories, proof,
 //        how-it-works, objection kills), N hook lines to read, and CTA lines to read.
 //
 //   POST { action: "identify", segments: [{n, type, prompt, start, end, transcript}], counts }
@@ -77,7 +78,10 @@ module.exports = async (req, res) => {
 
 // ---------- plan ----------
 function buildPlan(body, counts, voice) {
+  const niche = str(body.niche, 400);
+  const topic = str(body.topic, 600);
   const offer = str(body.offer, 800);
+  if (!topic) return { error: "missing_topic", message: "Tell me what this session is about." };
   if (!offer) return { error: "missing_offer", message: "Tell me the offer you're running ads for." };
   const audience = str(body.audience, 600);
   const proof = str(body.proof, 1200);
@@ -88,28 +92,33 @@ function buildPlan(body, counts, voice) {
     "You are a direct-response video ad strategist running Alex Hormozi's hook / meat / CTA modular ad process.",
     "An ad = HOOK (first 3-5 seconds, earns attention) + MEAT (15-60 seconds, earns belief) + CTA (5-10 seconds, earns the click).",
     "Hooks, meats and CTAs are filmed as separate modules so every hook can be stitched onto every meat and every CTA.",
-    "The founder films three blocks in one session:",
-    "1) INTERVIEW: you ask questions, they answer off the cuff. Their answers become the MEATS. Ask questions that pull out a specific story, hard proof with numbers, how the offer actually works (demo), a teaching moment, and the top objection killed. Questions must invite a 30-60 second answer that stands alone without the question being heard.",
+    "The founder films four blocks in one session:",
+    "0) DISCOVERY: the session opens here. 3-5 open questions that explore THIS session's topic inside THIS niche before any selling: how they see the topic, what the market gets wrong about it, what their customers believe or fear about it, what changed recently, why it matters now. Warm them up, get them talking in their own words, and surface the raw material (opinions, stories, specifics) the later questions build on. Conversational, one idea per question, no yes/no questions.",
+    "1) INTERVIEW: builds on discovery and goes deeper into the same topic. you ask questions, they answer off the cuff. Their answers become the MEATS. Ask questions that pull out a specific story, hard proof with numbers, how the offer actually works (demo), a teaching moment, and the top objection killed. Questions must invite a 30-60 second answer that stands alone without the question being heard.",
     "2) HOOKS: lines they read straight to camera. Each hook must work in front of ANY meat, so no hook may depend on a specific story detail. Max 18 words, one breath. Lead with a callout of the audience or a specific result. Vary the style across: " + HOOK_STYLES.join(", ") + ".",
     "3) CTAS: lines they read to close. Each says exactly what to do next and why now, max 25 words, no fake scarcity.",
     "Write everything for the spoken word in this voice: " + voice,
     "Never invent results, client names or numbers that are not in the proof given. If proof is thin, write hooks that don't need numbers.",
     "Return STRICT JSON only, no prose, no code fences.",
-    "Shape: {\"interview\":[{\"text\":\"question\",\"angle\":\"story|proof|demo|education|objection\"}],\"hooks\":[{\"text\":\"line\",\"style\":\"callout\"}],\"ctas\":[{\"text\":\"line\"}]}"
+    "Shape: {\"discovery\":[{\"text\":\"question\"}],\"interview\":[{\"text\":\"question\",\"angle\":\"story|proof|demo|education|objection\"}],\"hooks\":[{\"text\":\"line\",\"style\":\"callout\"}],\"ctas\":[{\"text\":\"line\"}]}"
   ].join("\n");
 
   const user = [
+    niche ? `Niche / industry: ${niche}` : "",
+    `This session's topic / subject matter: ${topic}`,
     `Offer: ${offer}`,
     audience ? `Who it's for: ${audience}` : "",
     proof ? `Real proof / results / story material: ${proof}` : "Real proof: none given.",
     cta ? `Where the CTA sends people: ${cta}` : "",
-    `Produce exactly ${nQ} interview questions (spread across the angles), ${counts.hooks} hooks, and ${counts.ctas} CTAs.`,
+    `Produce 4 discovery questions, then exactly ${nQ} interview questions (spread across the angles), ${counts.hooks} hooks, and ${counts.ctas} CTAs.`,
     "Return the JSON object now."
   ].filter(Boolean).join("\n");
   return { system, user };
 }
 
 function cleanPlan(obj, counts) {
+  const discovery = arr(obj.discovery).map((q) => ({ text: str(typeof q === "string" ? q : (q.text || q.question), 400) }))
+    .filter((q) => q.text).slice(0, 6);
   const interview = arr(obj.interview).map((q) => ({
     text: str(q.text || q.question, 400),
     angle: MEAT_ANGLES.includes(q.angle) ? q.angle : "story"
@@ -120,7 +129,7 @@ function cleanPlan(obj, counts) {
   })).filter((h) => h.text)).slice(0, counts.hooks);
   const ctas = arr(obj.ctas).map((c) => ({ text: str(typeof c === "string" ? c : c.text, 300) }))
     .filter((c) => c.text).slice(0, counts.ctas);
-  return { interview, hooks, ctas };
+  return { discovery, interview, hooks, ctas };
 }
 
 // ---------- identify ----------
@@ -140,6 +149,7 @@ function buildIdentify(body, counts) {
   const system = [
     "You are a direct-response video editor running Alex Hormozi's hook / meat / CTA modular ad process.",
     "You get a founder's filmed session, split into segments. Each segment has a type:",
+    "- DISC: a discovery answer (the founder exploring the session topic). Treat like MEAT: meats and hooks can come from here too.",
     "- MEAT: an interview answer to the prompt shown. Find the meats here.",
     "- HOOK: the founder read the prompt line as a hook. The transcript is what they actually said.",
     "- ADCTA: the founder read the prompt line as a call to action.",

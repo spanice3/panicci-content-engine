@@ -7,7 +7,8 @@ Three tools on one Vercel project (`studio.panicciventures.com`):
    Generate-with-Claude button that writes a full teleprompter script from a
    topic/idea.
 2. **🎯 50·5·3 Ads** (`/`, third tab) — Hormozi's modular ad process. Claude writes
-   a shoot list (interview questions that pull out *meats*, 50 hook lines, 3 CTA
+   a shoot list (discovery questions that open the session on your niche + topic,
+   interview questions that pull out *meats*, 50 hook lines, 3 CTA
    lines); you film it in one sitting, one segment per item. When you stop, **🎯 Find
    hooks · meats · CTAs** sends the live transcript to Claude, which ranks every hook
    (including punchy lines buried in your answers), picks the best 5 meats with cut

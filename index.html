@@ -393,12 +393,13 @@
   .t-intro { background: rgba(120,200,140,0.22); color: #a7e3b5; }
   .t-cta   { background: rgba(255,213,74,0.20);  color: #ffe08a; }
   .t-hook  { background: rgba(255,102,60,0.26);  color: #ffc2a8; }
+  .t-disc  { background: rgba(190,120,255,0.24); color: #dcc0ff; }
   .t-meat  { background: rgba(79,140,255,0.26);  color: #b5d0ff; }
   .t-adcta { background: rgba(120,200,140,0.24); color: #b9ecc5; }
 
   /* ---------- 50·5·3 ad builder ---------- */
   #pane-ads .hint b { color: #fff; }
-  .mxPlanCols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .mxPlanCols { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
   .mxPlanCols label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; opacity: .9; }
   .mxPlanCols textarea, .mxField textarea {
     width: 100%; height: 170px; resize: vertical; border-radius: 10px;
@@ -654,8 +655,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
     <!-- 50·5·3 ad builder pane -->
     <div class="modePane" id="pane-ads">
-      <p class="hint"><b>Hormozi 50·5·3:</b> film 50 hooks, 5 meats, 3 CTAs in one sitting, then stitch them into every combo. The shoot runs in three blocks — <b>Interview</b> (I ask, you talk — your answers become the meats), <b>Hooks</b> (read each line, hit N), <b>CTAs</b> (read, hit N). After you stop, hit <b>🎯 Find hooks · meats · CTAs</b> and Claude ranks what actually landed.</p>
+      <p class="hint"><b>Hormozi 50·5·3:</b> film 50 hooks, 5 meats, 3 CTAs in one sitting, then stitch them into every combo. The shoot runs in four blocks — <b>Discovery</b> (we open on today's topic in your niche — you talk it through), <b>Interview</b> (deeper questions — your answers become the meats), <b>Hooks</b> (read each line, hit N), <b>CTAs</b> (read, hit N). After you stop, hit <b>🎯 Find hooks · meats · CTAs</b> and Claude ranks what actually landed.</p>
       <div class="aiRow mxField" style="flex-direction:column;align-items:stretch;">
+        <input id="mxNiche" type="text" placeholder="Niche / industry (e.g. SEO · AEO · GEO for Las Vegas home-service businesses)">
+        <input id="mxTopic" type="text" placeholder="This session's topic (e.g. why ChatGPT recommends your competitor and not you)">
         <input id="mxOffer" type="text" placeholder="The offer (e.g. $497 Pro Performance Audit — full SEO · AEO · GEO teardown + 30/60/90 plan)">
         <input id="mxAudience" type="text" placeholder="Who it's for (e.g. Las Vegas home-service owners doing $500K–$3M)">
         <textarea id="mxProof" placeholder="Real proof, results, stories, numbers (only what's true — Claude won't invent any)"></textarea>
@@ -670,6 +673,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       </div>
       <div id="mxPlanStatus" class="aiStatus"></div>
       <div class="mxPlanCols">
+        <label>⓪ Discovery <span class="mxCount" id="mxCountD"></span><textarea id="mxDisc" placeholder="One question per line"></textarea></label>
         <label>① Interview → meats <span class="mxCount" id="mxCountQ"></span><textarea id="mxQs" placeholder="One question per line"></textarea></label>
         <label>② Hooks to read <span class="mxCount" id="mxCountH"></span><textarea id="mxHooks" placeholder="One hook per line"></textarea></label>
         <label>③ CTAs to read <span class="mxCount" id="mxCountC"></span><textarea id="mxCtas" placeholder="One CTA per line"></textarea></label>
@@ -981,6 +985,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     INTRO: { key: "INTRO", label: "Intro",     cls: "t-intro" },
     CTA:   { key: "CTA",   label: "CTA",       cls: "t-cta" },
     // 50·5·3 ad shoot types (not offered in the plain interview builder)
+    DISC:  { key: "DISC",  label: "Discovery", cls: "t-disc",  adsOnly: true },
     MEAT:  { key: "MEAT",  label: "Interview → Meat", cls: "t-meat",  adsOnly: true },
     HOOK:  { key: "HOOK",  label: "Hook",      cls: "t-hook",  adsOnly: true },
     ADCTA: { key: "ADCTA", label: "Ad CTA",    cls: "t-adcta", adsOnly: true }
@@ -1257,7 +1262,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
     if (adsMode) {
       const same = questions.filter((x) => x.type === q.type);
       const k = questions.slice(0, currentQ + 1).filter((x) => x.type === q.type).length;
-      const cue = q.type === "MEAT" ? "Interview — answer like you're talking to one client"
+      const cue = q.type === "DISC" ? "Discovery — talk it through, no wrong answers"
+        : q.type === "MEAT" ? "Interview — answer like you're talking to one client"
         : q.type === "HOOK" ? "Read it like you mean it, then N" : "Read it, then N";
       icQnum.textContent = `${typeInfo(q.type).label} ${k} of ${same.length} · ${cue}`;
     }
@@ -1547,7 +1553,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     };
 
     const editingBrief = adsMode
-      ? "Hormozi 50·5·3 shoot. MEAT segments are interview answers: cut the best 15-60s standalone stretches as meats. HOOK segments are read hook lines (one per segment). ADCTA segments are read CTAs. Every hook must butt-join onto every meat, then every CTA. See adMatrix for the picked modules and video/adbuild.py to cut + stitch."
+      ? "Hormozi 50·5·3 shoot. DISC segments open the session (discovery on the topic) and can hold meats and hooks too. MEAT segments are interview answers: cut the best 15-60s standalone stretches as meats. HOOK segments are read hook lines (one per segment). ADCTA segments are read CTAs. Every hook must butt-join onto every meat, then every CTA. See adMatrix for the picked modules and video/adbuild.py to cut + stitch."
       : mode === "interview"
       ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets."
       : "Cut around the markers/suggestedClips. Add burned-in captions and export per platform using platformTargets.";
@@ -1571,7 +1577,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       suggestedClips: clips,           // ready-to-cut clips (segments in interview mode)
       platformTargets,                 // how to cut for IG / TikTok / FB / LinkedIn
       editingBrief,                    // plain-English instructions for the editor (Claude)
-      adsShoot: adsMode,               // 50·5·3 ad shoot (MEAT / HOOK / ADCTA segments)
+      adsShoot: adsMode,               // 50·5·3 ad shoot (DISC / MEAT / HOOK / ADCTA segments)
       liveTranscript: takeChunks,      // [{start, end, text}] browser speech capture (approximate timing)
       adMatrix: null,                  // filled by 🎯 Find hooks · meats · CTAs
       script: scriptEl.value || ""
@@ -1801,10 +1807,11 @@ OU | AI website builders — overrated or underrated?"></textarea>
   // ---------- 50·5·3 ad builder (Hormozi hook / meat / CTA) ----------
   const mxFindBtn = $("mxFindBtn");
   const mxBoard   = $("mxBoard");
+  const mxDisc = $("mxDisc");
   const mxQs = $("mxQs"), mxHooks = $("mxHooks"), mxCtas = $("mxCtas");
   const mxPlanStatus = $("mxPlanStatus"), mxPlanBtn = $("mxPlanBtn");
   const MX_KEY = "pce_553_plan_v1";
-  const MX_FIELDS = ["mxOffer", "mxAudience", "mxProof", "mxCta", "mxNH", "mxNM", "mxNC", "mxQs", "mxHooks", "mxCtas"];
+  const MX_FIELDS = ["mxNiche", "mxTopic", "mxDisc", "mxOffer", "mxAudience", "mxProof", "mxCta", "mxNH", "mxNM", "mxNC", "mxQs", "mxHooks", "mxCtas"];
 
   function esc(x) {
     return String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -1815,6 +1822,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     return { hooks: n("mxNH", 50), meats: n("mxNM", 5), ctas: n("mxNC", 3) };
   }
   function updateMxCounts() {
+    $("mxCountD").textContent = `(${lines(mxDisc).length})`;
     $("mxCountQ").textContent = `(${lines(mxQs).length})`;
     $("mxCountH").textContent = `(${lines(mxHooks).length})`;
     $("mxCountC").textContent = `(${lines(mxCtas).length})`;
@@ -1834,9 +1842,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
   })();
   MX_FIELDS.forEach((id) => $(id).addEventListener("input", saveMx));
 
-  // Shoot order: interview first (warms you up), then hooks, then CTAs.
+  // Shoot order: discovery on the topic first (warms you up), then interview, hooks, CTAs.
   function adsShootList() {
     return [
+      ...lines(mxDisc).map((text) => ({ type: "DISC", text })),
       ...lines(mxQs).map((text) => ({ type: "MEAT", text })),
       ...lines(mxHooks).map((text) => ({ type: "HOOK", text })),
       ...lines(mxCtas).map((text) => ({ type: "ADCTA", text }))
@@ -1847,8 +1856,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
   mxPlanBtn.addEventListener("click", async () => {
     const offer = $("mxOffer").value.trim();
+    const topic = $("mxTopic").value.trim();
+    if (!topic) { setMxStatus("Tell me this session's topic first.", "err"); return; }
     if (!offer) { setMxStatus("Tell me the offer first.", "err"); return; }
-    if ((lines(mxQs).length || lines(mxHooks).length) && !confirm("Replace the current shoot list?")) return;
+    if ((lines(mxDisc).length || lines(mxQs).length || lines(mxHooks).length) && !confirm("Replace the current shoot list?")) return;
     mxPlanBtn.disabled = true;
     setMxStatus("Claude is writing your interview, hooks and CTAs… (30–60s for 50 hooks)");
     try {
@@ -1856,7 +1867,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "plan", offer,
+          action: "plan", offer, topic,
+          niche: $("mxNiche").value.trim(),
           audience: $("mxAudience").value.trim(),
           proof: $("mxProof").value.trim(),
           cta: $("mxCta").value.trim(),
@@ -1870,11 +1882,12 @@ OU | AI website builders — overrated or underrated?"></textarea>
           : (data.message || `Generation failed (${resp.status}).`), "err");
         return;
       }
+      mxDisc.value = (data.discovery || []).map((q) => q.text).join("\n");
       mxQs.value = (data.interview || []).map((q) => q.text).join("\n");
       mxHooks.value = (data.hooks || []).map((h) => h.text).join("\n");
       mxCtas.value = (data.ctas || []).map((c) => c.text).join("\n");
       saveMx();
-      setMxStatus(`✓ ${data.interview.length} interview questions · ${data.hooks.length} hooks · ${data.ctas.length} CTAs. Edit anything, then Start.`, "ok");
+      setMxStatus(`✓ ${(data.discovery || []).length} discovery · ${data.interview.length} interview questions · ${data.hooks.length} hooks · ${data.ctas.length} CTAs. Edit anything, then Start.`, "ok");
     } catch (_) {
       setMxStatus("Can't reach the generator here. This works once deployed — locally, paste lines in.", "err");
     } finally {
