@@ -61,6 +61,18 @@ python3 adbuild.py TAKE.mp4 --meta TAKE.json --brand 9x16,1x1          # + capti
   `ad_name` so the ad leaderboard maps straight back to hook/meat/CTA.
 - `--brand` skips the intro card on purpose: an ad has to open on the hook.
 
+## Drive I/O (`drive_io.py`)
+
+Used by the OS Clipper Agent. Auth comes from `GDRIVE_CLIENT_ID`, `GDRIVE_CLIENT_SECRET`,
+`GDRIVE_REFRESH_TOKEN` in the environment (never arguments).
+
+```bash
+python3 drive_io.py pull <shoot_folder_id> ./raw          # everything in <shoot>/raw
+python3 drive_io.py push ./cuts <shoot_folder_id> --into cuts
+```
+
+Resumable uploads in 8 MB chunks, resuming from whatever Drive confirms it kept.
+
 ## Steps
 
 1. **Silence jump-cut** — removes dead air; threshold auto-set ~12 dB below

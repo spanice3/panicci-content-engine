@@ -415,6 +415,12 @@
   .mxCount { font-weight: 600; opacity: .6; }
   #mxFindBtn { display: none; }
   #mxFindBtn.show { display: inline-block; }
+  .clipStatus { display: none; max-width: 640px; margin: 6px auto 0; text-align: center; font-size: 13px; line-height: 1.5; opacity: .9; }
+  .clipStatus.active { display: block; }
+  .clipStatus a { color: inherit; font-weight: 600; text-decoration: underline; }
+  .clipStatus.err { color: #ffb199; }
+  .clipBar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; margin: 6px auto 0; max-width: 360px; }
+  .clipBar i { display: block; height: 100%; width: 0; background: #ce9e27; transition: width .2s; }
   #mxBoard { display: none; width: min(1100px, 94vw); margin-top: 6px; }
   #mxBoard.active { display: block; }
   .mxSummary { text-align: center; font-size: 14px; margin: 4px 0 10px; }
@@ -714,7 +720,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       <button id="reRecordBtn">＋ New take</button>
       <button id="backToEditBtn">Back to script</button>
       <button id="mxFindBtn" class="primary">🎯 Find hooks · meats · CTAs</button>
+      <button id="clipBtn" title="Uploads this take + its script data to Google Drive and queues the Clipper Agent">📤 Send to Clipper</button>
     </div>
+    <div id="clipStatus" class="clipStatus" role="status" aria-live="polite"></div>
     <div id="mxBoard"></div>
     <p id="convertNote" style="display:none;max-width:460px;text-align:center;font-size:12px;opacity:.7;line-height:1.5;">
       This browser recorded WebM and MP4 conversion couldn't run (offline or blocked).
@@ -2072,6 +2080,133 @@ OU | AI website builders — overrated or underrated?"></textarea>
     }
   }
   mxFindBtn.addEventListener("click", findModules);
+
+  // ---------- 📤 Send to Clipper: take + script data straight to Google Drive, then queue the Clipper Agent ----------
+  // The studio-drive edge function (panicci-os) opens one Drive resumable upload per file and the browser PUTs the
+  // bytes straight to Drive, so nothing big passes through a server. The Clipper Agent picks the batch up once
+  // uploads go quiet for 15 minutes, cuts it with video/adbuild.py, and drops the ads in the OS for approval.
+  const CLIP_FN = "https://sehnpskesbxgpdwknvvq.supabase.co/functions/v1/studio-drive";
+  const CLIP_KEY = "pce_studio_key_v1";
+  const CLIP_CHUNK = 32 * 256 * 1024;   // 8 MB; Drive wants chunks in multiples of 256 KB
+  const clipBtn = $("clipBtn"), clipStatus = $("clipStatus");
+
+  function clipSay(html, err) {
+    clipStatus.innerHTML = html;
+    clipStatus.classList.add("active");
+    clipStatus.classList.toggle("err", !!err);
+  }
+  async function clipCall(payload) {
+    const r = await fetch(CLIP_FN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: lsGet(CLIP_KEY) || "", ...payload })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.status === 401) lsSet(CLIP_KEY, "");
+    if (!r.ok) throw new Error(d.error || `Request failed (${r.status})`);
+    return d;
+  }
+  async function putResumable(uploadUrl, blob, onProgress) {
+    const total = blob.size;
+    let offset = 0, res = null;
+    while (offset < total) {
+      const end = Math.min(offset + CLIP_CHUNK, total);
+      for (let attempt = 0; ; attempt++) {
+        let retryable = true;
+        try {
+          res = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Range": `bytes ${offset}-${end - 1}/${total}` },
+            body: blob.slice(offset, end)
+          });
+          if (res.status === 308 || res.ok) break;
+          retryable = res.status >= 500 || res.status === 429;
+          if (!retryable) throw new Error(`Drive refused the upload (${res.status}). Send again.`);
+        } catch (e) {
+          if (!retryable || attempt >= 3) throw e;
+        }
+        if (attempt >= 3) throw new Error("The upload kept failing. Check the connection and send again.");
+        await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt + 1)));
+      }
+      offset = end;
+      onProgress(offset);
+    }
+    return res.json();
+  }
+  async function connectDrive() {
+    try {
+      const d = await clipCall({ action: "connect" });
+      // New tab, so the takes recorded in this one aren't lost to the redirect.
+      window.open(d.url, "_blank", "noopener");
+      clipSay("Finish the Google sign-in in the new tab, then tap 📤 Send to Clipper again.");
+    } catch (e) {
+      clipSay(esc(e.message), true);
+    }
+  }
+  async function sendToClipper() {
+    const t = takes[currentTakeIdx];
+    if (!t) return;
+    if (!lsGet(CLIP_KEY)) {
+      const k = (prompt("Paste your studio key (one time, this browser remembers it):") || "").trim();
+      if (!k) return;
+      lsSet(CLIP_KEY, k);
+    }
+    clipBtn.disabled = true;
+    try {
+      const st = await clipCall({ action: "status" });
+      if (!st.connected) {
+        clipSay(`Google Drive isn't connected yet. <a href="#" id="clipConnect">Connect Google Drive</a> (one time), then send again.`);
+        $("clipConnect").addEventListener("click", (e) => { e.preventDefault(); connectDrive(); });
+        return;
+      }
+      const base = t.meta.file.replace(/\.[^.]+$/, "");
+      const files = [
+        { blob: t.blob, name: `${base}.${t.ext}`, mime: t.blob.type.split(";")[0] || `video/${t.ext}`, role: "video" },
+        { blob: new Blob([JSON.stringify(t.meta, null, 2)], { type: "application/json" }), name: `${base}.json`, mime: "application/json", role: "meta" }
+      ];
+      // Same day + same set = same Drive folder, so a whole shoot lands together and the Clipper cuts it as one batch.
+      const shoot = `${tsStamp().slice(0, 10)} ${t.meta.adsShoot ? (lsGet(MX_NAME_KEY) || "50-5-3 shoot") : "Studio takes"}`;
+      clipSay("Opening the Drive folder…");
+      const s = await clipCall({ action: "start", shoot, files: files.map((f) => ({ name: f.name, mime: f.mime, size: f.blob.size })) });
+      const total = files.reduce((n, f) => n + f.blob.size, 0);
+      let before = 0;
+      const uploaded = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const out = await putResumable(s.uploads[i].url, f.blob, (sent) => {
+          const pct = Math.round(((before + sent) / total) * 100);
+          clipSay(`Uploading to Drive… ${pct}% <div class="clipBar"><i style="width:${pct}%"></i></div>`);
+        });
+        before += f.blob.size;
+        uploaded.push({ id: out.id, name: out.name || f.name, role: f.role });
+      }
+      const mx = t.meta.adMatrix;
+      const on = (list) => (list || []).filter((x) => x.on).length;
+      await clipCall({
+        action: "done", shoot, folder_id: s.folder_id, files: uploaded,
+        summary: { take: base, duration_sec: Math.round(t.durationSec), ads_shoot: !!t.meta.adsShoot, picks_ready: !!mx,
+          hooks: mx ? on(mx.hooks) : 0, meats: mx ? on(mx.meats) : 0, ctas: mx ? on(mx.ctas) : 0 }
+      });
+      const tip = t.meta.adsShoot && !mx ? " Tip: tap 🎯 Find hooks first next time so the cuts use your picks; the Clipper runs it for you if you don't." : "";
+      clipSay(`✓ Sent. <a href="${esc(s.folder_url)}" target="_blank" rel="noopener">Open the Drive folder</a>. The Clipper starts once uploads go quiet for 15 minutes, and the ads land in the OS for your approval.${tip}`);
+    } catch (e) {
+      clipSay(esc(e.message), true);
+    } finally {
+      clipBtn.disabled = false;
+    }
+  }
+  clipBtn.addEventListener("click", sendToClipper);
+
+  // Back from the Google sign-in tab
+  (() => {
+    const q = new URLSearchParams(location.search);
+    if (!q.has("drive") && !q.has("drive_error")) return;
+    const msg = q.has("drive_error") ? "Google Drive didn't connect: " + q.get("drive_error") : `Google Drive connected${q.get("drive_email") ? " (" + q.get("drive_email") + ")" : ""}. Go back to your take and tap 📤 Send to Clipper.`;
+    history.replaceState(null, "", location.pathname);
+    markToast.textContent = msg;
+    markToast.classList.add("show");
+    setTimeout(() => markToast.classList.remove("show"), 8000);
+  })();
 
   function renderBoard(t) {
     const mx = t.meta.adMatrix;

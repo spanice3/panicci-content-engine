@@ -18,6 +18,12 @@ Three tools on one Vercel project (`studio.panicciventures.com`):
    points, picks 3 CTAs, and flags reshoots. Out comes a board with the combo math, a
    3-round test plan (hook → meat → CTA), and a CSV manifest of every ad named
    `553 H07-M2-C1`. `video/adbuild.py` then cuts and stitches the real files.
+   **📤 Send to Clipper** (on any take) uploads the take + its script data straight from the browser into
+   Google Drive (`Panicci Studio / 50-5-3 / <date> <set> / raw`) and queues the OS **Clipper Agent**, which waits
+   for uploads to go quiet for 15 minutes, runs `adbuild.py`, and puts the modules + hook-test ads in the
+   folder's `cuts/` with one review item in the OS. It never uploads to Meta. Plumbing: the `studio-drive`
+   edge function in `panicci-os` (Drive OAuth, scope `drive.file`) and `video/drive_io.py` for the agent.
+   First use asks for the studio key once and has you tap *Connect Google Drive* once.
 3. **Testimonial studios** (`/<client-slug>/`) — client-facing recording pages that
    capture **name + email**, walk the speaker through a personalized question set,
    and upload the video **directly to Vercel Blob** (no downloads, no email attachments).
