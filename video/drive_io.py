@@ -2,7 +2,8 @@
 """Google Drive I/O for the Clipper Agent (drive.file scope, stdlib only).
 
 Auth comes from the environment, never arguments, so tokens stay out of shell history and logs:
-  GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET, GDRIVE_REFRESH_TOKEN
+  GDRIVE_ACCESS_TOKEN (a ~1h token; what the Clipper Agent uses), or
+  GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET, GDRIVE_REFRESH_TOKEN (local use)
 
   python3 drive_io.py pull <shoot_folder_id> <dest_dir>
       Downloads every file in <shoot>/raw into dest_dir. Prints a JSON list of {id, name, path, size}.
@@ -19,6 +20,10 @@ _tok = {"value": None, "at": 0.0}
 
 
 def token():
+    # Preferred: a short-lived access token minted elsewhere (the Clipper Agent gets one from the database),
+    # so no long-lived secret ever has to be on this machine.
+    if os.environ.get("GDRIVE_ACCESS_TOKEN"):
+        return os.environ["GDRIVE_ACCESS_TOKEN"]
     if _tok["value"] and time.time() - _tok["at"] < 45 * 60:
         return _tok["value"]
     body = urllib.parse.urlencode({
