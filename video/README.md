@@ -63,8 +63,11 @@ python3 adbuild.py TAKE.mp4 --meta TAKE.json --brand 9x16,1x1          # + capti
 
 ## Drive I/O (`drive_io.py`)
 
-Used by the OS Clipper Agent. Auth comes from `GDRIVE_CLIENT_ID`, `GDRIVE_CLIENT_SECRET`,
-`GDRIVE_REFRESH_TOKEN` in the environment (never arguments).
+Used by the OS Clipper Agent. Auth comes from the environment, never arguments:
+`GDRIVE_ACCESS_TOKEN` (a 1-hour token; the agent mints one with
+`select public.clipper_drive_token_start()` then `public.clipper_drive_token(<id>)`, so the
+long-lived OAuth secrets never leave Supabase Vault), or `GDRIVE_CLIENT_ID` +
+`GDRIVE_CLIENT_SECRET` + `GDRIVE_REFRESH_TOKEN` for local use.
 
 ```bash
 python3 drive_io.py pull <shoot_folder_id> ./raw          # everything in <shoot>/raw
