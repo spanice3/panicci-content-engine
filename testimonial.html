@@ -1916,6 +1916,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
     }, extra || {}));
   }
 
+  // studio-drive edge function (panicci-os): re-reads session.meta.json from Blob and posts it to the OS.
+  const OS_NOTIFY = "https://sehnpskesbxgpdwknvvq.supabase.co/functions/v1/studio-drive";
+
   function sessionBase() {
     return `testimonials/${clientSlug}/${sessionStamp}-${slugify(person.name)}`;
   }
@@ -2006,9 +2009,14 @@ OU | AI website builders — overrated or underrated?"></textarea>
               : { question: i + 1, text: q.text, skipped: true };
           })
         };
-        await upload(`${sessionBase()}/session.meta.json`,
+        const sess = await upload(`${sessionBase()}/session.meta.json`,
           new Blob([JSON.stringify(summary, null, 2)], { type: "application/json" }),
           { access: "public", handleUploadUrl: "/api/upload-testimonial", clientPayload: identityPayload() });
+        // Tell the Panicci OS it landed (shows up on Sammy's Today). Best effort: the videos are already safe.
+        fetch(OS_NOTIFY, {
+          method: "POST", keepalive: true, headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "testimonial", session_url: sess.url })
+        }).catch(() => {});
       } catch (_) {}
     } catch (err) {
       console.warn("send failed:", err);
