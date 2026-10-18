@@ -83,8 +83,9 @@ Config schema (all optional except `name` + `questions`):
    `testimonials/<client-slug>/<date>-<person>/qNN-<type>.*` (random suffix).
    Browse them in Vercel → Storage → Blob.
 
-`api/upload-testimonial.js` refuses tokens without a valid name + email and only
-allows the `testimonials/` prefix. Note: Blob URLs are public-but-unguessable, and
+`api/upload-testimonial.js` refuses tokens without a valid name + email, only from the
+studio's own origin, and only for `testimonials/<slug>/<session>/<file>` where `<slug>` has a
+`clients/<slug>.json` (videos up to 300 MB; JSON only for `.meta.json`). Note: Blob URLs are public-but-unguessable, and
 the `.meta.json` includes the person's email — don't share meta URLs.
 
 ## Deploy (Vercel)
@@ -92,6 +93,11 @@ Push to `main` → auto-deploys to `studio.panicciventures.com`.
 
 Environment (Project → Settings → Environment Variables):
 - `ANTHROPIC_API_KEY` — required for question + script generation (`ANTHROPIC_MODEL` optional)
+- `STUDIO_API_KEY` — required. The Claude endpoints (`generate-questions`, `generate-script`,
+  `fifty-five-three`) only answer requests carrying it as `x-studio-key`, and return 503 until
+  it's set. Use the same value as the studio key (`social_studio_upload_key` in panicci-os), so
+  the studio's one-time key prompt unlocks both Claude and Send to Clipper. `adbuild.py` reads it
+  from its environment.
 - `BLOB_READ_WRITE_TOKEN` — **added automatically** when you connect a Blob store:
   **Vercel → Storage → Create Database → Blob → connect to `panicci-content-engine`**,
   then redeploy. Until then the send button shows a friendly "not switched on yet"

@@ -2,6 +2,8 @@
 // Runs as a Vercel serverless function. Holds the API key server-side so it is
 // never exposed to the browser. POST { niche, count, types, brandVoice, extra }.
 
+const { allowOrigin, studioKeyOk } = require("./_lib/guard");
+
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 // Overridable via env (ANTHROPIC_MODEL).
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
@@ -15,12 +17,11 @@ const TYPE_GUIDE = {
 };
 
 module.exports = async (req, res) => {
-  // CORS (same-origin in prod; permissive so it also works if embedded).
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // Studio-only: locked to the studio origins and gated by the shared studio key.
+  if (!allowOrigin(req, res, "Content-Type, x-studio-key")) return;
   if (req.method === "OPTIONS") { res.status(204).end(); return; }
   if (req.method !== "POST") { res.status(405).json({ error: "Use POST" }); return; }
+  if (!studioKeyOk(req, res)) return;
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {

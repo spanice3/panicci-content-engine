@@ -55,6 +55,7 @@ python3 adbuild.py TAKE.mp4 --meta TAKE.json --brand 9x16,1x1          # + capti
 - Every module edge is snapped to Whisper word timestamps (the browser's are approximate).
 - No adMatrix in the json? It transcribes and calls the studio's
   `/api/fifty-five-three` identify endpoint itself (same prompt as the browser).
+  That call needs `STUDIO_API_KEY` in the environment (the studio key).
 - Hooks/meats you dropped (✕) on the board are skipped.
 - Output: `modules/H01.mp4 … M1.mp4 … C1.mp4`, one `H07-M1-C1.mp4` per ad,
   `ad-matrix.snapped.json`, and `manifest.csv`. Name each ad in Meta exactly as

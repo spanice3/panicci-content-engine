@@ -8,7 +8,8 @@ modules -> stitched ad combos, named H07-M2-C1 to match the ad manifest.
 TAKE.json is the studio's "Script data (.json)" download for that take. If it
 already has an adMatrix (you hit Find hooks / meats / CTAs in the browser),
 that's used. If not, the take is transcribed with Whisper and sent to the
-studio's /api/fifty-five-three identify endpoint (same prompt the browser uses).
+studio's /api/fifty-five-three identify endpoint (same prompt the browser uses;
+needs STUDIO_API_KEY in the environment).
 
 Either way every cut is snapped to Whisper word timestamps, so module edges
 land on real word boundaries, not the browser's approximate speech timings.
@@ -67,8 +68,10 @@ def identify(meta, words, api):
         text = " ".join(w[2] for w in words if s["start"] - 0.3 <= w[0] < s["end"]).strip()
         segs.append({"n": s["n"], "type": s["type"], "prompt": s.get("question", ""),
                      "start": s["start"], "end": s["end"], "transcript": text})
+    # The endpoint is gated by the studio key: same value as Vercel's STUDIO_API_KEY.
+    headers = {"Content-Type": "application/json", "x-studio-key": os.environ.get("STUDIO_API_KEY", "")}
     req = urllib.request.Request(api, data=json.dumps({"action": "identify", "segments": segs}).encode(),
-                                 headers={"Content-Type": "application/json"})
+                                 headers=headers)
     with urllib.request.urlopen(req, timeout=120) as r:
         data = json.load(r)
     pad = lambda i: str(i).zfill(2)
