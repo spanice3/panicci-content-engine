@@ -4,15 +4,30 @@
 // Requires the BLOB_READ_WRITE_TOKEN env var, added automatically when a Blob
 // store is connected to this project in Vercel → Storage.
 
+const fs = require("fs");
+const path = require("path");
 const { handleUpload } = require("@vercel/blob/client");
+const { allowOrigin } = require("./_lib/guard");
 
-const MAX_BYTES = 1024 * 1024 * 1024; // 1 GB per file — plenty for a long take
+const MAX_VIDEO_BYTES = 300 * 1024 * 1024; // 300 MB — one answer is 30-90 seconds
+const MAX_META_BYTES = 1024 * 1024;        // 1 MB for the .meta.json sidecars
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// testimonials/<slug>/<session stamp>-<name>/<q01-type.webm | q01-type.meta.json | session.meta.json>
+const PATH_RE = /^testimonials\/([a-z0-9-]{1,60})\/[a-z0-9_-]{1,120}\/([a-z0-9_-]{1,40})\.(mp4|webm|mov|meta\.json)$/;
+
+// Only studios that exist as clients/<slug>.json can receive uploads.
+// (vercel.json includeFiles ships clients/ with this function.)
+let slugs = null;
+function knownSlugs() {
+  if (!slugs) {
+    slugs = new Set(fs.readdirSync(path.join(__dirname, "..", "clients"))
+      .filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)));
+  }
+  return slugs;
+}
 
 module.exports = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (!allowOrigin(req, res)) return;
   if (req.method === "OPTIONS") { res.status(204).end(); return; }
   if (req.method !== "POST") { res.status(405).json({ error: "Use POST" }); return; }
 
@@ -28,6 +43,14 @@ module.exports = async (req, res) => {
   let body = req.body;
   if (typeof body === "string") { try { body = JSON.parse(body); } catch (_) { body = null; } }
 
+  // Token requests come from the studio page, so they must carry a studio Origin (browsers always send
+  // one on POST). The upload-completed callback comes from Vercel with no Origin and is signature-checked
+  // by handleUpload.
+  if (body && body.type === "blob.generate-client-token" && !req.headers.origin) {
+    res.status(403).json({ error: "origin_not_allowed", message: "Uploads only work from the studio page." });
+    return;
+  }
+
   try {
     const jsonResponse = await handleUpload({
       body,
@@ -42,20 +65,28 @@ module.exports = async (req, res) => {
         if (name.length < 2 || !EMAIL_RE.test(email)) {
           throw new Error("A name and a valid email are required before uploading.");
         }
-        if (!/^testimonials\//.test(pathname)) {
-          throw new Error("Uploads must live under testimonials/.");
+        const m = PATH_RE.exec(pathname || "");
+        if (!m || !knownSlugs().has(m[1])) {
+          throw new Error("That upload path isn't a Panicci testimonial studio.");
         }
+        if (payload.clientSlug && payload.clientSlug !== m[1]) {
+          throw new Error("Upload path doesn't match this studio.");
+        }
+        const isMeta = m[3] === "meta.json";
         return {
-          allowedContentTypes: ["video/mp4", "video/webm", "video/quicktime", "application/json"],
-          maximumSizeInBytes: MAX_BYTES,
+          allowedContentTypes: isMeta ? ["application/json"] : ["video/mp4", "video/webm", "video/quicktime"],
+          maximumSizeInBytes: isMeta ? MAX_META_BYTES : MAX_VIDEO_BYTES,
           addRandomSuffix: true,
-          tokenPayload: JSON.stringify({ name, email, pathname, client: payload.client || "", take: payload.take || null })
+          // No name/email here: this payload comes back in the completion callback and its logs.
+          tokenPayload: JSON.stringify({ slug: m[1], pathname })
         };
       },
 
-      // Fires server-side once the blob has landed (not on localhost).
+      // Fires server-side once the blob has landed (not on localhost). Slug + path only, no PII.
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log("testimonial upload complete:", blob.pathname, tokenPayload);
+        let slug = "";
+        try { slug = JSON.parse(tokenPayload || "{}").slug || ""; } catch (_) {}
+        console.log("testimonial upload complete:", slug, blob.pathname);
       }
     });
 

@@ -1113,6 +1113,27 @@ OU | AI website builders — overrated or underrated?"></textarea>
   function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (_) { return false; } }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (_) {} }
 
+  // One studio key per browser: it unlocks the /api Claude endpoints (x-studio-key header) and the
+  // studio-drive function (Send to Clipper). Asked once, forgotten if the server says it's wrong.
+  const STUDIO_KEY = "pce_studio_key_v1";
+  function studioKey() {
+    let k = lsGet(STUDIO_KEY);
+    if (!k) {
+      k = (prompt("Paste your studio key (one time, this browser remembers it):") || "").trim();
+      if (k) lsSet(STUDIO_KEY, k);
+    }
+    return k || "";
+  }
+  async function studioApi(url, payload) {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-studio-key": studioKey() },
+      body: JSON.stringify(payload)
+    });
+    if (resp.status === 401) lsSet(STUDIO_KEY, "");
+    return resp;
+  }
+
   function loadPresets() {
     presets = {};
     const raw = lsGet(PRESET_KEY);
@@ -1748,15 +1769,11 @@ OU | AI website builders — overrated or underrated?"></textarea>
     aiGenBtn.disabled = true;
     setAiStatus("Asking Claude for a fresh set…");
     try {
-      const resp = await fetch("/api/generate-questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          niche,
-          extra: $("aiAngle").value.trim(),
-          count: parseInt($("aiCount").value, 10) || 10,
-          types
-        })
+      const resp = await studioApi("/api/generate-questions", {
+        niche,
+        extra: $("aiAngle").value.trim(),
+        count: parseInt($("aiCount").value, 10) || 10,
+        types
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -1791,14 +1808,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
     scriptGenBtn.disabled = true;
     setScriptAiStatus("Asking Claude to write your script…");
     try {
-      const resp = await fetch("/api/generate-script", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          tone: $("scriptTone").value,
-          seconds: parseInt($("scriptSeconds").value, 10) || 60
-        })
+      const resp = await studioApi("/api/generate-script", {
+        topic,
+        tone: $("scriptTone").value,
+        seconds: parseInt($("scriptSeconds").value, 10) || 60
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -1930,17 +1943,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
     mxPlanBtn.disabled = true;
     setMxStatus("Claude is writing your interview, hooks and CTAs… (30–60s for 50 hooks)");
     try {
-      const resp = await fetch("/api/fifty-five-three", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "plan", offer, topic,
-          niche: $("mxNiche").value.trim(),
-          audience: $("mxAudience").value.trim(),
-          proof: $("mxProof").value.trim(),
-          cta: $("mxCta").value.trim(),
-          counts: mxCounts()
-        })
+      const resp = await studioApi("/api/fifty-five-three", {
+        action: "plan", offer, topic,
+        niche: $("mxNiche").value.trim(),
+        audience: $("mxAudience").value.trim(),
+        proof: $("mxProof").value.trim(),
+        cta: $("mxCta").value.trim(),
+        counts: mxCounts()
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -2061,11 +2070,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     mxBoard.innerHTML = `<p class="mxSummary">🎯 Claude is watching the tape — ranking hooks, meats and CTAs…</p>`;
     mxFindBtn.disabled = true;
     try {
-      const resp = await fetch("/api/fifty-five-three", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "identify", segments: segs, counts: mxCounts() })
-      });
+      const resp = await studioApi("/api/fifty-five-three", { action: "identify", segments: segs, counts: mxCounts() });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         mxBoard.innerHTML = `<p class="mxSummary" style="color:#ffb199">${esc(data.message || "Identify failed (" + resp.status + ").")}</p>`;
@@ -2086,7 +2091,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
   // bytes straight to Drive, so nothing big passes through a server. The Clipper Agent picks the batch up once
   // uploads go quiet for 15 minutes, cuts it with video/adbuild.py, and drops the ads in the OS for approval.
   const CLIP_FN = "https://sehnpskesbxgpdwknvvq.supabase.co/functions/v1/studio-drive";
-  const CLIP_KEY = "pce_studio_key_v1";
+  const CLIP_KEY = STUDIO_KEY;
   const CLIP_CHUNK = 32 * 256 * 1024;   // 8 MB; Drive wants chunks in multiples of 256 KB
   const clipBtn = $("clipBtn"), clipStatus = $("clipStatus");
 

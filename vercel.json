@@ -11,6 +11,9 @@
   "functions": {
     "api/fifty-five-three.js": {
       "maxDuration": 60
+    },
+    "api/upload-testimonial.js": {
+      "includeFiles": "clients/*.json"
     }
   }
 }

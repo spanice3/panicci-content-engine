@@ -13,6 +13,8 @@
 // The browser studio (index.html, 50·5·3 tab) and video/adbuild.py both call this,
 // so there's one prompt, not two drifting copies.
 
+const { allowOrigin, studioKeyOk } = require("./_lib/guard");
+
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
@@ -20,11 +22,11 @@ const HOOK_STYLES = ["callout", "question", "bold-claim", "proof", "contrarian",
 const MEAT_ANGLES = ["story", "proof", "demo", "education", "objection"];
 
 module.exports = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // Studio-only: locked to the studio origins and gated by the shared studio key.
+  if (!allowOrigin(req, res, "Content-Type, x-studio-key")) return;
   if (req.method === "OPTIONS") { res.status(204).end(); return; }
   if (req.method !== "POST") { res.status(405).json({ error: "Use POST" }); return; }
+  if (!studioKeyOk(req, res)) return;
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
