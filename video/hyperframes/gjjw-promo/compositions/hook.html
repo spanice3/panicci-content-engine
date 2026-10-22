@@ -1,0 +1,44 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #14130f;
+    }
+    .ground { position: absolute; inset: 0; background: #fbfaf6; }
+    .tex { position: absolute; left: 0; right: 0; bottom: 0; height: 560px; background-image: radial-gradient(#7a602a33 2.2px, transparent 2.6px); background-size: 26px 26px; }
+    #hk-logo { position: absolute; left: 50%; top: 230px; width: 820px; margin-left: -410px; }
+    #hk-kicker { position: absolute; left: 80px; right: 80px; top: 430px; text-align: center; font-size: 32px; font-weight: 600; letter-spacing: 0.14em; color: #7a602a; }
+    #hk-title { position: absolute; left: 60px; right: 60px; top: 560px; text-align: center; font-size: 168px; line-height: 1; font-weight: 700; letter-spacing: -0.045em; }
+    #hk-title .w { display: inline-block; }
+    #hk-title .green { color: #296037; }
+    #hk-sub { position: absolute; left: 80px; right: 80px; top: 960px; text-align: center; font-size: 48px; font-weight: 600; color: #5a574e; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hook-ground" class="ground clip" data-start="0" data-duration="3.2" data-layout-ignore></div>
+    <div id="hook-tex" class="tex clip" data-start="0" data-duration="3.2" data-layout-ignore></div>
+    <div id="hk-logo-wrap" class="clip" data-start="0" data-duration="3.2">
+      <img id="hk-logo" src="assets/gjjw-logo.png" alt="Gracie Jiu-Jitsu Warwick" />
+    </div>
+    <p id="hk-kicker" class="clip" data-start="0" data-duration="3.2">WARWICK, RI · KIDS &amp; ADULTS</p>
+    <h1 id="hk-title" class="clip" data-start="0" data-duration="3.2"><span class="w" id="hk-w1">#1 on</span> <span class="w green" id="hk-w2">the map.</span></h1>
+    <p id="hk-sub" class="clip" data-start="0" data-duration="3.2">Every pin. Almost every week.</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    // Frame 0 is the thumbnail: logo and claim already readable
+    tl.fromTo("#hk-logo", { opacity: 0.85, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.5, ease: "expo.out" }, 0);
+    tl.fromTo("#hk-w1", { y: 14 }, { y: 0, duration: 0.45, ease: "expo.out" }, 0);
+    tl.fromTo("#hk-w2", { y: 22 }, { y: 0, duration: 0.5, ease: "expo.out" }, 0.08);
+    tl.fromTo("#hk-sub", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.8);
+    tl.to(["#hk-logo", "#hk-title", "#hk-sub", "#hk-kicker"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 3.0);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

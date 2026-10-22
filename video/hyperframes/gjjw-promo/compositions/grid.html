@@ -1,0 +1,87 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #f8f5ef;
+    }
+    .ground { position: absolute; inset: 0; background: #1a4224; }
+    .tex { position: absolute; left: 0; right: 0; bottom: 0; height: 560px; background-image: repeating-linear-gradient(135deg, #f1e3bf14 0 3px, transparent 3px 22px); }
+    #gd-chip { position: absolute; left: 80px; top: 196px; padding: 14px 26px; border-radius: 999px; background: #f8f5ef1a; border: 1px solid #f1e3bf55; font-size: 30px; font-weight: 500; color: #f1e3bf; }
+    #gd-pins { position: absolute; inset: 0; }
+    .pin { position: absolute; width: 60px; height: 60px; border-radius: 50%; background: #5cc66b; color: #0f2a16; font-size: 32px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px #1a4224, 0 0 0 7px #5cc66b55; }
+    #gd-ring { position: absolute; left: 160px; top: 380px; width: 760px; height: 760px; border-radius: 50%; border: 2px dashed #f1e3bf55; }
+    #gd-num { position: absolute; left: 80px; right: 80px; top: 1150px; font-size: 96px; line-height: 1; font-weight: 700; letter-spacing: -0.04em; color: #e3b743; }
+    #gd-num span { color: #f8f5ef; font-size: 52px; letter-spacing: -0.01em; }
+    #gd-src { position: absolute; left: 80px; right: 80px; top: 1262px; font-size: 28px; font-weight: 500; color: #c7d6cb; }
+  </style>
+  <div id="root" data-composition-id="grid" data-width="1080" data-height="1920">
+    <div id="grid-ground" class="ground clip" data-start="0" data-duration="5.2" data-layout-ignore></div>
+    <div id="grid-tex" class="tex clip" data-start="0" data-duration="5.2" data-layout-ignore></div>
+    <div id="gd-chip" class="clip" data-start="0" data-duration="5.2">“kids jiu-jitsu Warwick” · Google Maps</div>
+    <div id="gd-ring" class="clip" data-start="0" data-duration="5.2" data-layout-ignore></div>
+    <div id="gd-pins" class="clip" data-start="0" data-duration="5.2" data-layout-allow-overlap>
+      <div class="pin r0" style="left:510px;top:730px">1</div>
+      <div class="pin r1" style="left:510px;top:610px">1</div>
+      <div class="pin r1" style="left:614px;top:670px">1</div>
+      <div class="pin r1" style="left:614px;top:790px">1</div>
+      <div class="pin r1" style="left:510px;top:850px">1</div>
+      <div class="pin r1" style="left:406px;top:790px">1</div>
+      <div class="pin r1" style="left:406px;top:670px">1</div>
+      <div class="pin r2" style="left:510px;top:495px">1</div>
+      <div class="pin r2" style="left:628px;top:526px">1</div>
+      <div class="pin r2" style="left:714px;top:612px">1</div>
+      <div class="pin r2" style="left:745px;top:730px">1</div>
+      <div class="pin r2" style="left:714px;top:848px">1</div>
+      <div class="pin r2" style="left:628px;top:934px">1</div>
+      <div class="pin r2" style="left:510px;top:965px">1</div>
+      <div class="pin r2" style="left:393px;top:934px">1</div>
+      <div class="pin r2" style="left:306px;top:848px">1</div>
+      <div class="pin r2" style="left:275px;top:730px">1</div>
+      <div class="pin r2" style="left:306px;top:612px">1</div>
+      <div class="pin r2" style="left:392px;top:526px">1</div>
+      <div class="pin r3" style="left:510px;top:380px">1</div>
+      <div class="pin r3" style="left:618px;top:397px">1</div>
+      <div class="pin r3" style="left:716px;top:447px">1</div>
+      <div class="pin r3" style="left:793px;top:524px">1</div>
+      <div class="pin r3" style="left:843px;top:622px">1</div>
+      <div class="pin r3" style="left:860px;top:730px">1</div>
+      <div class="pin r3" style="left:843px;top:838px">1</div>
+      <div class="pin r3" style="left:793px;top:936px">1</div>
+      <div class="pin r3" style="left:716px;top:1013px">1</div>
+      <div class="pin r3" style="left:618px;top:1063px">1</div>
+      <div class="pin r3" style="left:510px;top:1080px">1</div>
+      <div class="pin r3" style="left:402px;top:1063px">1</div>
+      <div class="pin r3" style="left:304px;top:1013px">1</div>
+      <div class="pin r3" style="left:227px;top:936px">1</div>
+      <div class="pin r3" style="left:177px;top:838px">1</div>
+      <div class="pin r3" style="left:160px;top:730px">1</div>
+      <div class="pin r3" style="left:177px;top:622px">1</div>
+      <div class="pin r3" style="left:227px;top:524px">1</div>
+      <div class="pin r3" style="left:304px;top:447px">1</div>
+      <div class="pin r3" style="left:402px;top:397px">1</div>
+    </div>
+    <p id="gd-num" class="clip" data-start="0" data-duration="5.2">39 of 39 <span>map pins at #1</span></p>
+    <p id="gd-src" class="clip" data-start="0" data-duration="5.2">Search Atlas local grid · 5-mile radius · Oct 21, 2026</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#gd-chip", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0);
+    tl.fromTo("#gd-ring", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "expo.out" }, 0.1);
+    // the grid lights up from the gym outward, ring by ring
+    ["r0", "r1", "r2", "r3"].forEach((r, i) => {
+      tl.fromTo("#gd-pins ." + r, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.6)", stagger: 0.025 }, 0.35 + i * 0.32);
+    });
+    tl.fromTo("#gd-num", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 2.0);
+    tl.fromTo("#gd-src", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 2.3);
+    tl.to(["#gd-chip", "#gd-ring", "#gd-pins", "#gd-num", "#gd-src"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 5.0);
+    window.__timelines["grid"] = tl;
+  </script>
+</template>

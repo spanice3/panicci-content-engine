@@ -39,3 +39,14 @@ and 34,701 clicks in 12 months → 3,076 searches ranking top 3 → "Your restau
 Every number comes from Google Search Console (US, Oct 20, 2025 – Oct 19, 2026), pulled through Search Atlas on
 2026-10-22. The monthly bars are the real calendar-month impressions, Oct 2025 – Sep 2026. The site shot is a
 Search Atlas capture of rogueislandgroup.com from the same day. Refresh the numbers before re-posting it in a few months.
+
+## gjjw-promo — 23.4s, 1080×1920 (case-study clip)
+
+Gracie Jiu-Jitsu Warwick: "#1 on the map" → all 39 grid pins at #1 for "kids jiu-jitsu Warwick" → the unedited
+map-pack screenshot → top-3 spots vs the next four schools (39 / 20 / 15 / 5 / 5) → #1 in 26 of 28 weekly scans
+since April → "Your school is next."
+
+Grid, competitor and weekly numbers are Search Atlas local heatmaps (business 126116, grid `2pb8.c5y6`, 5-mile
+radius, 39 pins), pulled 2026-10-22; the Oct 19 scan returned no position and is left out. Competing schools are
+deliberately unnamed. The pin layout follows Search Atlas's circle grid (1 + 6 + 12 + 20); every pin read #1 on
+Oct 21. The screenshot is the unedited Oct 12, 2026 capture from panicciventures.com.

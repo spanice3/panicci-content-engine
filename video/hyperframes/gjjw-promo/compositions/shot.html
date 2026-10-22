@@ -1,0 +1,43 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #14130f;
+    }
+    .ground { position: absolute; inset: 0; background: #fbfaf6; }
+    .tex { position: absolute; left: 0; right: 0; bottom: 0; height: 560px; background-image: radial-gradient(#7a602a33 2.2px, transparent 2.6px); background-size: 26px 26px; }
+    #sh-title { position: absolute; left: 80px; right: 80px; top: 200px; font-size: 104px; line-height: 1; font-weight: 700; letter-spacing: -0.04em; }
+    #sh-title .green { color: #296037; }
+    #sh-card { position: absolute; left: 80px; top: 360px; width: 920px; height: 860px; border-radius: 28px; overflow: hidden; background: #fff; box-shadow: 0 30px 80px -24px #14130f40; }
+    #sh-img { position: absolute; left: 0; top: 0; width: 920px; }
+    #sh-ring { position: absolute; left: 8px; top: 104px; width: 904px; height: 304px; border: 6px solid #296037; border-radius: 20px; }
+    #sh-cap { position: absolute; left: 80px; right: 80px; top: 1250px; font-size: 28px; font-weight: 500; color: #5a574e; }
+  </style>
+  <div id="root" data-composition-id="shot" data-width="1080" data-height="1920">
+    <div id="shot-ground" class="ground clip" data-start="0" data-duration="3.6" data-layout-ignore></div>
+    <div id="shot-tex" class="tex clip" data-start="0" data-duration="3.6" data-layout-ignore></div>
+    <h2 id="sh-title" class="clip" data-start="0" data-duration="3.6">What parents <span class="green">see.</span></h2>
+    <div id="sh-card" class="clip" data-start="0" data-duration="3.6" data-layout-allow-overflow>
+      <img id="sh-img" src="assets/gjjw-map-pack.webp" alt="Google Maps: Gracie Jiu-Jitsu Warwick listed first for kids jiu-jitsu in Warwick, RI" />
+      <div id="sh-ring"></div>
+    </div>
+    <p id="sh-cap" class="clip" data-start="0" data-duration="3.6">Unedited Google Maps screenshot · Warwick, RI · Oct 12, 2026</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#sh-title", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.05);
+    tl.fromTo("#sh-img", { y: 860 }, { y: 0, duration: 0.6, ease: "expo.out" }, 0.15);
+    tl.fromTo("#sh-cap", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.7);
+    tl.fromTo("#sh-ring", { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, 1.2);
+    tl.to(["#sh-title", "#sh-card", "#sh-cap"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 3.4);
+    window.__timelines["shot"] = tl;
+  </script>
+</template>
