@@ -1,0 +1,132 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #f8f5ef;
+    }
+    #dd-ground {
+      position: absolute;
+      inset: 0;
+      background: #1a4224;
+    }
+    #dd-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: repeating-linear-gradient(135deg, #f1e3bf14 0 3px, transparent 3px 22px);
+    }
+    #dd-chip {
+      position: absolute;
+      left: 80px;
+      top: 196px;
+      padding: 14px 26px;
+      border-radius: 999px;
+      background: #f8f5ef1a;
+      border: 1px solid #f1e3bf55;
+      font-size: 30px;
+      font-weight: 500;
+      color: #f1e3bf;
+    }
+    #dd-title {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 280px;
+      font-size: 150px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+    #dd-title .gold { color: #e3b743; }
+    #dd-sub {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 452px;
+      font-size: 38px;
+      font-weight: 500;
+      color: #d9e4dc;
+    }
+    #dd-card {
+      position: absolute;
+      left: 80px;
+      top: 540px;
+      width: 920px;
+      height: 742px;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 30px 80px -20px #00000080;
+    }
+    #dd-shot {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 920px;
+    }
+    #dd-dim {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 372px;
+      bottom: 0;
+      background: #1a4224;
+    }
+    #dd-ring {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      width: 904px;
+      height: 360px;
+      border: 6px solid #e3b743;
+      border-radius: 20px;
+    }
+    #dd-cap {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1296px;
+      font-size: 28px;
+      font-weight: 500;
+      color: #c7d6cb;
+    }
+  </style>
+  <div id="root" data-composition-id="desertdog" data-width="1080" data-height="1920">
+    <div id="dd-ground" class="clip" data-start="0" data-duration="4.3" data-layout-ignore></div>
+    <div id="dd-lines" class="clip" data-start="0" data-duration="4.3" data-layout-ignore></div>
+    <div id="dd-chip" class="clip" data-start="0" data-duration="4.3">“offroad tours” · Google Maps · Fountain Hills, AZ</div>
+    <h2 id="dd-title" class="clip" data-start="0" data-duration="4.3">Page 3 → <span class="gold">#1</span></h2>
+    <p id="dd-sub" class="clip" data-start="0" data-duration="4.3">Ahead of a competitor with twice the reviews.</p>
+    <div id="dd-card" class="clip" data-start="0" data-duration="4.3" data-layout-allow-overflow>
+      <img id="dd-shot" src="assets/desert-dog-map-pack.webp" alt="Google Maps: Desert Dog Offroad Adventures ranked first for offroad tours" />
+      <div id="dd-dim"></div>
+      <div id="dd-ring"></div>
+    </div>
+    <p id="dd-cap" class="clip" data-start="0" data-duration="4.3">Desert Dog Offroad Adventures · real screenshot, Oct 12, 2026</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#dd-chip", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0);
+    tl.fromTo("#dd-title", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.1);
+    tl.fromTo("#dd-sub", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.45);
+    tl.fromTo("#dd-shot", { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 0.35);
+    tl.fromTo("#dd-cap", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.9);
+    // Ring the #1 listing, the competitor with twice the reviews steps back
+    tl.fromTo("#dd-ring", { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, 1.5);
+    tl.fromTo("#dd-dim", { opacity: 0 }, { opacity: 0.55, duration: 0.4, ease: "power2.inOut" }, 1.7);
+    // Exit
+    tl.to("#dd-card", { opacity: 0, duration: 0.2, ease: "power2.in" }, 4.05);
+    tl.to(["#dd-title", "#dd-sub", "#dd-chip", "#dd-cap"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 4.05);
+    window.__timelines["desertdog"] = tl;
+  </script>
+</template>

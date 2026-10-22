@@ -1,0 +1,109 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #12211a;
+    }
+    #kw-ground {
+      position: absolute;
+      inset: 0;
+      background: #f8f5ef;
+    }
+    #kw-dots {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: radial-gradient(#29603733 2.2px, transparent 2.6px);
+      background-size: 26px 26px;
+    }
+    #kw-num {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 210px;
+      font-size: 168px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      color: #296037;
+    }
+    #kw-label {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 395px;
+      font-size: 52px;
+      line-height: 1.1;
+      font-weight: 600;
+    }
+    .kw-row {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 34px;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: 0 6px 24px -10px #19422440;
+    }
+    .kw-q {
+      font-size: 42px;
+      font-weight: 500;
+    }
+    .kw-p {
+      font-size: 54px;
+      font-weight: 700;
+      color: #296037;
+    }
+    #kw-r0 { top: 560px; }
+    #kw-r1 { top: 690px; }
+    #kw-r2 { top: 820px; }
+    #kw-r3 { top: 950px; }
+    #kw-r4 { top: 1080px; }
+    #kw-src {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1222px;
+      font-size: 28px;
+      font-weight: 500;
+      color: #4f665a;
+    }
+  </style>
+  <div id="root" data-composition-id="keywords" data-width="1080" data-height="1920">
+    <div id="kw-ground" class="clip" data-start="0" data-duration="4.8" data-layout-ignore></div>
+    <div id="kw-dots" class="clip" data-start="0" data-duration="4.8" data-layout-ignore></div>
+    <div id="kw-num" class="clip" data-start="0" data-duration="4.8">3,076</div>
+    <p id="kw-label" class="clip" data-start="0" data-duration="4.8">searches where they rank top 3. Like these:</p>
+    <div id="kw-r0" class="kw-row clip" data-start="0" data-duration="4.8"><span class="kw-q">“restaurants near me”</span><span class="kw-p">#1</span></div>
+    <div id="kw-r1" class="kw-row clip" data-start="0" data-duration="4.8"><span class="kw-q">“happy hour near me”</span><span class="kw-p">#1</span></div>
+    <div id="kw-r2" class="kw-row clip" data-start="0" data-duration="4.8"><span class="kw-q">“sunday brunch providence”</span><span class="kw-p">#1</span></div>
+    <div id="kw-r3" class="kw-row clip" data-start="0" data-duration="4.8"><span class="kw-q">“lunch near me”</span><span class="kw-p">#2</span></div>
+    <div id="kw-r4" class="kw-row clip" data-start="0" data-duration="4.8"><span class="kw-q">“bottomless mimosas”</span><span class="kw-p">#2</span></div>
+    <p id="kw-src" class="clip" data-start="0" data-duration="4.8">Average Google position · Search Console · US · last 12 months</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#kw-num", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.05);
+    tl.fromTo("#kw-label", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.25);
+    for (let i = 0; i < 5; i++) {
+      tl.fromTo("#kw-r" + i, { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 0.6 + i * 0.12);
+    }
+    tl.fromTo("#kw-src", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.4);
+    tl.to(["#kw-num", "#kw-label", "#kw-r0", "#kw-r1", "#kw-r2", "#kw-r3", "#kw-r4", "#kw-src"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 4.6);
+    window.__timelines["keywords"] = tl;
+  </script>
+</template>

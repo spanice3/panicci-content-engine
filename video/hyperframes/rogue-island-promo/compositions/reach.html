@@ -1,0 +1,160 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #f8f5ef;
+    }
+    #rc-ground {
+      position: absolute;
+      inset: 0;
+      background: #1a4224;
+    }
+    #rc-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: repeating-linear-gradient(135deg, #f1e3bf14 0 3px, transparent 3px 22px);
+    }
+    #rc-num {
+      position: absolute;
+      left: 60px;
+      right: 60px;
+      top: 220px;
+      font-size: 176px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      color: #e3b743;
+      font-variant-numeric: tabular-nums;
+    }
+    #rc-label {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 420px;
+      font-size: 50px;
+      line-height: 1.12;
+      font-weight: 600;
+    }
+    #rc-chart {
+      position: absolute;
+      left: 80px;
+      top: 620px;
+      width: 920px;
+      height: 400px;
+      border-bottom: 2px solid #f1e3bf66;
+    }
+    .rc-bar {
+      position: absolute;
+      bottom: 0;
+      width: 56px;
+      background: #f1e3bf;
+      border-radius: 6px 6px 0 0;
+      transform-origin: bottom center;
+    }
+    .rc-m {
+      position: absolute;
+      top: 1034px;
+      width: 56px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 500;
+      color: #c7d6cb;
+    }
+    #rc-chart-cap {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1084px;
+      font-size: 28px;
+      font-weight: 500;
+      color: #c7d6cb;
+    }
+    #rc-clicks {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1150px;
+      font-size: 52px;
+      font-weight: 700;
+    }
+    #rc-clicks .gold { color: #e3b743; }
+    #rc-src {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1230px;
+      font-size: 28px;
+      font-weight: 500;
+      color: #c7d6cb;
+    }
+  </style>
+  <div id="root" data-composition-id="reach" data-width="1080" data-height="1920">
+    <div id="rc-ground" class="clip" data-start="0" data-duration="5.2" data-layout-ignore></div>
+    <div id="rc-lines" class="clip" data-start="0" data-duration="5.2" data-layout-ignore></div>
+    <div id="rc-num" class="clip" data-start="0" data-duration="5.2">1,004,888</div>
+    <p id="rc-label" class="clip" data-start="0" data-duration="5.2">times Rogue Island showed up on Google in 12 months.</p>
+    <!-- Monthly US impressions, Search Console, Oct 2025 – Sep 2026 -->
+    <div id="rc-chart" class="clip" data-start="0" data-duration="5.2" data-layout-allow-overflow>
+      <div class="rc-bar" id="rc-b0" style="left:10px;height:306px"></div>
+      <div class="rc-bar" id="rc-b1" style="left:86px;height:278px"></div>
+      <div class="rc-bar" id="rc-b2" style="left:162px;height:284px"></div>
+      <div class="rc-bar" id="rc-b3" style="left:238px;height:294px"></div>
+      <div class="rc-bar" id="rc-b4" style="left:314px;height:344px"></div>
+      <div class="rc-bar" id="rc-b5" style="left:390px;height:396px"></div>
+      <div class="rc-bar" id="rc-b6" style="left:466px;height:400px"></div>
+      <div class="rc-bar" id="rc-b7" style="left:542px;height:366px"></div>
+      <div class="rc-bar" id="rc-b8" style="left:618px;height:271px"></div>
+      <div class="rc-bar" id="rc-b9" style="left:694px;height:306px"></div>
+      <div class="rc-bar" id="rc-b10" style="left:770px;height:286px"></div>
+      <div class="rc-bar" id="rc-b11" style="left:846px;height:271px"></div>
+    </div>
+    <div id="rc-months" class="clip" data-start="0" data-duration="5.2" data-layout-allow-overlap>
+      <span class="rc-m" style="left:90px">O</span>
+      <span class="rc-m" style="left:166px">N</span>
+      <span class="rc-m" style="left:242px">D</span>
+      <span class="rc-m" style="left:318px">J</span>
+      <span class="rc-m" style="left:394px">F</span>
+      <span class="rc-m" style="left:470px">M</span>
+      <span class="rc-m" style="left:546px">A</span>
+      <span class="rc-m" style="left:622px">M</span>
+      <span class="rc-m" style="left:698px">J</span>
+      <span class="rc-m" style="left:774px">J</span>
+      <span class="rc-m" style="left:850px">A</span>
+      <span class="rc-m" style="left:926px">S</span>
+    </div>
+    <p id="rc-chart-cap" class="clip" data-start="0" data-duration="5.2">72K–107K Google impressions, every month</p>
+    <p id="rc-clicks" class="clip" data-start="0" data-duration="5.2"><span class="gold">34,701</span> clicks to their site.</p>
+    <p id="rc-src" class="clip" data-start="0" data-duration="5.2">Google Search Console · US · Oct 20, 2025 – Oct 19, 2026</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    // Counter climbs to the real 12-month total, driven by timeline time
+    const counter = { v: 0 };
+    const numEl = document.querySelector("#rc-num");
+    tl.fromTo(counter, { v: 0 }, {
+      v: 1004888, duration: 1.6, ease: "power3.out",
+      onUpdate: () => { numEl.textContent = Math.round(counter.v).toLocaleString("en-US"); },
+    }, 0.1);
+    tl.fromTo("#rc-label", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.3);
+    for (let i = 0; i < 12; i++) {
+      tl.fromTo("#rc-b" + i, { scaleY: 0 }, { scaleY: 1, duration: 0.5, ease: "expo.out" }, 0.4 + i * 0.06);
+    }
+    tl.fromTo("#rc-months", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.6);
+    tl.fromTo("#rc-chart-cap", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.3);
+    tl.fromTo("#rc-clicks", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 2.0);
+    tl.fromTo("#rc-src", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 2.3);
+    tl.to(["#rc-num", "#rc-label", "#rc-chart", "#rc-months", "#rc-chart-cap", "#rc-clicks", "#rc-src"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 5.0);
+    window.__timelines["reach"] = tl;
+  </script>
+</template>

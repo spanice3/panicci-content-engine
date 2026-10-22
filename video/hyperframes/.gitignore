@@ -1,0 +1,4 @@
+# HyperFrames working state and render output (renders go to Drive / the OS, not git)
+.hyperframes/
+renders/
+*.mp4

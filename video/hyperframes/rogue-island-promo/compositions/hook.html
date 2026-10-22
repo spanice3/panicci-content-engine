@@ -1,0 +1,97 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #f8f5ef;
+    }
+    #hk-ground {
+      position: absolute;
+      inset: 0;
+      background: #1a4224;
+    }
+    #hk-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: repeating-linear-gradient(135deg, #f1e3bf14 0 3px, transparent 3px 22px);
+    }
+    #hk-logo {
+      position: absolute;
+      left: 50%;
+      top: 250px;
+      width: 560px;
+      margin-left: -280px;
+    }
+    #hk-kicker {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 540px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: #f1e3bf;
+    }
+    #hk-title {
+      position: absolute;
+      left: 60px;
+      right: 60px;
+      top: 640px;
+      text-align: center;
+      font-size: 150px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+    #hk-title .w {
+      display: inline-block;
+    }
+    #hk-title .gold {
+      color: #e3b743;
+    }
+    #hk-sub {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 990px;
+      text-align: center;
+      font-size: 42px;
+      font-weight: 500;
+      color: #d9e4dc;
+    }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hk-ground" class="clip" data-start="0" data-duration="3.4" data-layout-ignore></div>
+    <div id="hk-lines" class="clip" data-start="0" data-duration="3.4" data-layout-ignore></div>
+    <div id="hk-logo-wrap" class="clip" data-start="0" data-duration="3.4">
+      <img id="hk-logo" src="assets/rogue-island.webp" alt="Rogue Island Local Kitchen and Bar" />
+    </div>
+    <p id="hk-kicker" class="clip" data-start="0" data-duration="3.4">PROVIDENCE, RI · RESTAURANT</p>
+    <h1 id="hk-title" class="clip" data-start="0" data-duration="3.4">
+      <span class="w" id="hk-w1">Page 4</span>
+      <span class="w" id="hk-w2">→ <span class="gold">Page 1.</span></span>
+    </h1>
+    <p id="hk-sub" class="clip" data-start="0" data-duration="3.4">Here's what that looks like on Google.</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    // Frame 0 is the thumbnail: logo and claim already on screen
+    tl.fromTo("#hk-logo", { opacity: 0.85, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.5, ease: "expo.out" }, 0);
+    tl.fromTo("#hk-w1", { opacity: 0.85, filter: "blur(3px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.05);
+    tl.fromTo("#hk-w2", { opacity: 0.6, filter: "blur(4px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.4);
+    tl.fromTo("#hk-sub", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.9);
+    tl.to(["#hk-logo", "#hk-title", "#hk-sub", "#hk-kicker"], { opacity: 0, duration: 0.18, ease: "power2.in" }, 3.2);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

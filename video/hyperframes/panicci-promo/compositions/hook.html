@@ -1,0 +1,98 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #12211a;
+    }
+    #hook-ground {
+      position: absolute;
+      inset: 0;
+      background: #f8f5ef;
+    }
+    /* Panicci dot texture, below the platform caption line only */
+    #hook-dots {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: radial-gradient(#29603733 2.2px, transparent 2.6px);
+      background-size: 26px 26px;
+    }
+    #hook-kicker {
+      position: absolute;
+      left: 80px;
+      top: 214px;
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: #296037;
+    }
+    #hook-title {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 268px;
+      font-size: 132px;
+      line-height: 0.98;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+    }
+    #hook-title .w {
+      display: inline-block;
+    }
+    #hook-title .gold {
+      color: #94700f;
+    }
+    #hook-panel {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 720px;
+      height: 600px;
+      border-radius: 36px;
+      overflow: hidden;
+      background: radial-gradient(120% 95% at 50% 28%, #f1e3bf 0%, #ddc28c 60%, #c4a56d 100%);
+    }
+    #hook-sammy {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 500px;
+      margin-left: -250px;
+    }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hook-ground" class="clip" data-start="0" data-duration="3.6" data-layout-ignore></div>
+    <div id="hook-dots" class="clip" data-start="0" data-duration="3.6" data-layout-ignore></div>
+    <div id="hook-kicker" class="clip" data-start="0" data-duration="3.6">LAS VEGAS · PANICCI VENTURES</div>
+    <h1 id="hook-title" class="clip" data-start="0" data-duration="3.6">
+      <span class="w" id="hook-w1">Sammy P</span>
+      <span class="w" id="hook-w2">takes you</span>
+      <span class="w" id="hook-w3">from A to <span class="gold">C.</span></span>
+    </h1>
+    <div id="hook-panel" class="clip" data-start="0" data-duration="3.6" data-layout-allow-overflow>
+      <img id="hook-sammy" src="assets/sammy-smile.webp" alt="Sammy Panice" />
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    // Frame 0 is the thumbnail: the full line is already on screen, settling in.
+    tl.fromTo("#hook-w1", { opacity: 0.35, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0);
+    tl.fromTo("#hook-w2", { opacity: 0.35, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.1);
+    tl.fromTo("#hook-w3", { opacity: 0.35, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.2);
+    tl.fromTo("#hook-sammy", { y: 160 }, { y: 0, duration: 0.7, ease: "expo.out" }, 0.15);
+    // Exit: the photo drops out with the scene's move
+    tl.to("#hook-sammy", { y: 640, duration: 0.35, ease: "power3.in" }, 3.2);
+    tl.to("#hook-title", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 3.3);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

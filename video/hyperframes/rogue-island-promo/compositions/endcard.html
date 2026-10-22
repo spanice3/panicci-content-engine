@@ -1,0 +1,103 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #f8f5ef;
+    }
+    #end-ground {
+      position: absolute;
+      inset: 0;
+      background: #1a4224;
+    }
+    #end-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: repeating-linear-gradient(135deg, #f1e3bf14 0 3px, transparent 3px 22px);
+    }
+    #end-logo {
+      position: absolute;
+      left: 50%;
+      top: 280px;
+      width: 440px;
+      margin-left: -220px;
+    }
+    #end-line {
+      position: absolute;
+      left: 60px;
+      right: 60px;
+      top: 630px;
+      text-align: center;
+      font-size: 92px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+    }
+    #end-line .gold { color: #e3b743; }
+    #end-btn {
+      position: absolute;
+      left: 110px;
+      right: 110px;
+      top: 880px;
+      height: 128px;
+      border-radius: 22px;
+      background: #f1e3bf;
+      color: #1a4224;
+      font-size: 44px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    #end-url {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1060px;
+      text-align: center;
+      font-size: 48px;
+      font-weight: 600;
+    }
+    #end-terms {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 1140px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 500;
+      color: #c7d6cb;
+    }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1080" data-height="1920">
+    <div id="end-ground" class="clip" data-start="0" data-duration="3.6" data-layout-ignore></div>
+    <div id="end-lines" class="clip" data-start="0" data-duration="3.6" data-layout-ignore></div>
+    <div id="end-logo-wrap" class="clip" data-start="0" data-duration="3.6">
+      <img id="end-logo" src="assets/panicci-ventures_logo-cream.png" alt="Panicci Ventures" />
+    </div>
+    <h2 id="end-line" class="clip" data-start="0" data-duration="3.6">Your restaurant<br /><span class="gold">is next.</span></h2>
+    <div id="end-btn" class="clip" data-start="0" data-duration="3.6"><span data-var-text="cta">Grade my site free — 60 seconds</span><span>→</span></div>
+    <p id="end-url" class="clip" data-start="0" data-duration="3.6" data-var-text="url">panicciventures.com</p>
+    <p id="end-terms" class="clip" data-start="0" data-duration="3.6">90-day build, then month-to-month.</p>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#end-logo", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.05);
+    tl.fromTo("#end-line", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.35);
+    tl.fromTo("#end-btn", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 0.5);
+    tl.fromTo("#end-url", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.65);
+    tl.fromTo("#end-terms", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.75);
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>
