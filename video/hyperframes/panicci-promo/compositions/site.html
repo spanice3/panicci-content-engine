@@ -1,0 +1,75 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      font-weight: 300 700;
+      src: url("assets/fonts/space-grotesk-latin.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: #12211a;
+    }
+    #site-ground {
+      position: absolute;
+      inset: 0;
+      background: #f8f5ef;
+    }
+    #site-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 560px;
+      background-image: repeating-linear-gradient(135deg, #29603718 0 3px, transparent 3px 22px);
+    }
+    #site-title {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 200px;
+      font-size: 72px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    #site-title .green { color: #296037; }
+    #site-phone {
+      position: absolute;
+      left: 250px;
+      top: 410px;
+      width: 580px;
+      height: 900px;
+      border-radius: 48px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 10px solid #12211a;
+      box-shadow: 0 30px 80px -24px #19422473;
+    }
+    #site-shot {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 560px;
+    }
+  </style>
+  <div id="root" data-composition-id="site" data-width="1080" data-height="1920">
+    <div id="site-ground" class="clip" data-start="0" data-duration="2.6" data-layout-ignore></div>
+    <div id="site-lines" class="clip" data-start="0" data-duration="2.6" data-layout-ignore></div>
+    <h2 id="site-title" class="clip" data-start="0" data-duration="2.6">And the site that <span class="green">sells it.</span></h2>
+    <div id="site-phone" class="clip" data-start="0" data-duration="2.6" data-layout-allow-overflow>
+      <img id="site-shot" src="assets/site-home.webp" alt="panicciventures.com homepage on a phone" />
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#site-title", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 0.05);
+    tl.fromTo("#site-shot", { y: 700 }, { y: 0, duration: 0.55, ease: "expo.out" }, 0.1);
+    // The real homepage scrolling: hero, map-pack proof, case studies
+    tl.to("#site-shot", { y: -2200, duration: 1.6, ease: "power2.inOut" }, 0.75);
+    tl.to(["#site-title", "#site-phone"], { opacity: 0, duration: 0.15, ease: "power2.in" }, 2.43);
+    window.__timelines["site"] = tl;
+  </script>
+</template>
