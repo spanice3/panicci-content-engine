@@ -30,3 +30,12 @@ No music is baked in on purpose: add a trending sound in-app when posting.
    and real ranking screenshots (dated, with the search location named).
 3. Swap the copy and screenshots in the scene files under `compositions/`; keep the timing.
 4. `check`, then `render`.
+
+## rogue-island-promo — 21s, 1080×1920 (case-study clip)
+
+Rogue Island Local Kitchen & Bar, Providence: Page 4 → Page 1 → rebuilt site → 1,004,888 Google impressions
+and 34,701 clicks in 12 months → 3,076 searches ranking top 3 → "Your restaurant is next."
+
+Every number comes from Google Search Console (US, Oct 20, 2025 – Oct 19, 2026), pulled through Search Atlas on
+2026-10-22. The monthly bars are the real calendar-month impressions, Oct 2025 – Sep 2026. The site shot is a
+Search Atlas capture of rogueislandgroup.com from the same day. Refresh the numbers before re-posting it in a few months.
