@@ -37,9 +37,22 @@ api/generate-questions.js   # serverless proxy → Anthropic Messages API (inter
 api/generate-script.js      # serverless proxy → Anthropic Messages API (teleprompter script)
 api/upload-testimonial.js   # mints scoped Vercel Blob client-upload tokens
 api/fifty-five-three.js     # 50·5·3: "plan" (shoot list) + "identify" (rank hooks/meats/CTAs)
+api/post-instagram.js       # publishes images / Reels / carousels to IG (Graph API, IG_ACCESS_TOKEN)
 presets/panicci-553.json    # the ready-to-record Panicci Ventures 50·5·3 set
 vercel.json                 # cleanUrls + /:client → testimonial.html rewrite
 ```
+
+## Posting to Instagram
+`POST /api/post-instagram` (needs `x-studio-key`). Env: `IG_ACCESS_TOKEN` (long-lived; `IGAA…`
+Instagram Login tokens need nothing else) and `IG_USER_ID` (only for Facebook Login tokens).
+```json
+{ "action": "check" }                                              // who am I posting as + 24h quota
+{ "type": "reel", "mediaUrl": "https://…blob…/cut.mp4", "caption": "…" }
+{ "type": "image", "mediaUrl": "https://…/post.jpg", "caption": "…" }
+{ "type": "carousel", "items": [{ "type": "image", "mediaUrl": "…" }, …], "caption": "…" }
+{ "containerId": "…" }                                             // finish a Reel that was still processing
+```
+Media must be a public HTTPS URL (Blob URLs work). Long-lived tokens die after 60 days — refresh and update the env.
 
 ## How testimonial pages work
 `studio.panicciventures.com/gracie-jiu-jitsu-warwick` → the rewrite serves
