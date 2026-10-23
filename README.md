@@ -37,9 +37,25 @@ api/generate-questions.js   # serverless proxy → Anthropic Messages API (inter
 api/generate-script.js      # serverless proxy → Anthropic Messages API (teleprompter script)
 api/upload-testimonial.js   # mints scoped Vercel Blob client-upload tokens
 api/fifty-five-three.js     # 50·5·3: "plan" (shoot list) + "identify" (rank hooks/meats/CTAs)
+api/post-instagram.js       # hands posts to the OS social_queue (panicci-os studio-queue fn)
 presets/panicci-553.json    # the ready-to-record Panicci Ventures 50·5·3 set
 vercel.json                 # cleanUrls + /:client → testimonial.html rewrite
 ```
+
+## Posting to Instagram
+`POST /api/post-instagram` (needs `x-studio-key`) hands the post to the OS: it forwards to the panicci-os
+`studio-queue` edge function, which writes a `social_queue` row. The OS crons publish it with the Vault tokens
+that `ig-token-refresh` renews daily — no IG token lives in this project. Client accounts wait in
+`pending_approval` for Sammy; `panicci` posts go straight to `queued`.
+```json
+{ "action": "accounts" }                                                    // IG accounts + which have a token
+{ "account": "kitchen-magic", "kind": "reel", "mediaUrl": "https://…blob…/cut.mp4", "caption": "…" }
+{ "account": "panicci", "kind": "feed", "mediaUrl": "https://…/post.jpg", "scheduledAt": "2026-10-24T16:00:00Z" }
+{ "account": "gjjw", "kind": "carousel", "mediaUrls": ["…", "…"], "caption": "…" }   // also "story"
+{ "action": "status", "id": "<queue id>" }                                 // status + permalink once live
+```
+Media must be a public HTTPS URL (Blob URLs work). New client account = `ig_accounts` + `content_accounts`
+rows and `put_ig_token_for()` in panicci-os.
 
 ## How testimonial pages work
 `studio.panicciventures.com/gracie-jiu-jitsu-warwick` → the rewrite serves
