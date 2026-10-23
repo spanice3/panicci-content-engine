@@ -14,9 +14,6 @@
     },
     "api/upload-testimonial.js": {
       "includeFiles": "clients/*.json"
-    },
-    "api/post-instagram.js": {
-      "maxDuration": 60
     }
   }
 }
