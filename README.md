@@ -64,7 +64,7 @@ Config schema (all optional except `name` + `questions`):
 - `/pv-gracie-jiu-jitsu-warwick`, `/pv-desert-dog`, `/pv-rogue-island`,
   `/pv-chicali-tacos`, `/pv-thirsty-pirate`, `/pv-headcase`, `/pv-roadworthy` —
   **Panicci Ventures partner** testimonials, personalized with each client's real
-  GSC/ranking/review stats (GJJW, Desert Dog, Rogue Island refreshed Oct 12 2026 from Search Console, Search Atlas grids and GBP; the rest are from Aug 2026 — refresh before re-sending links)
+  GSC/ranking/review stats (all refreshed Oct 12 2026 from Search Console, Search Atlas grids and GBP — refresh again before re-sending links after a few months)
 - `/partner` — generic PV partner testimonial for clients without a custom page yet
 
 ## Recording → Blob flow (one take per question)
