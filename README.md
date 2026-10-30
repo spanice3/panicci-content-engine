@@ -7,9 +7,10 @@ Three tools on one Vercel project (`studio.panicciventures.com`):
    Generate-with-Claude button that writes a full teleprompter script from a
    topic/idea.
 2. **🎯 50·5·3 Ads** (`/`, third tab) — Hormozi's modular ad process. Opens with the
-   **Panicci Ventures set** pre-loaded (`presets/panicci-553.json`: topic, 4 discovery +
-   10 interview questions, 50 hooks, 3 CTAs, real client proof), so it's load → Start →
-   record. For another topic or client, *Customize* opens the builder where Claude writes
+   **Panicci Ventures set** pre-loaded (`presets/panicci-553.json`, the money-first set of
+   2026-10-30: 2 warm-ups, 5 scripted meats + 2 freestyle, 50 hooks, 3 CTAs, real client proof),
+   so it's load → Start → record. A meat written as `MEAT 1 · LABEL — script` shows the label in the
+   header and only the script on the card. For another topic or client, *Customize* opens the builder where Claude writes
    a shoot list (discovery questions that open the session on your niche + topic,
    interview questions that pull out *meats*, 50 hook lines, 3 CTA
    lines); you film it in one sitting, one segment per item. When you stop, **🎯 Find
