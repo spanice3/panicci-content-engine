@@ -590,9 +590,11 @@
     <!-- Free script pane -->
     <div class="modePane active" id="pane-script">
       <p class="hint">Paste your script, then press Start. First run asks for camera + mic permission.</p>
-      <div class="qBuilderBar" style="margin-bottom:8px;">
+      <div class="qBuilderBar aiOpts" style="margin-bottom:8px;">
         <button id="scriptAiToggleBtn" class="primary">✨ Generate with Claude</button>
+        <select id="readySelect" title="Load a ready-to-record script"><option value="">📼 Ready scripts…</option></select>
       </div>
+      <p id="readyNote" class="hint" style="display:none;margin-bottom:8px;"></p>
       <div id="scriptAiPanel">
         <div class="aiRow">
           <input id="scriptTopic" type="text" placeholder="Topic or idea (e.g. why local businesses need a fast website)">
@@ -1608,7 +1610,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       recordedAt: new Date().toISOString(),
       mode: mode,
       take: takes.length + 1,
-      file: `recording-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
+      file: `${readyScript && mode === "script" ? readyScript.id + "-" : ""}recording-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
       container: lastExt,
       codec: codecNote,
       durationSeconds: dur,
@@ -1625,7 +1627,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
       adsShoot: adsMode,               // 50·5·3 ad shoot (DISC / MEAT / HOOK / ADCTA segments)
       liveTranscript: takeChunks,      // [{start, end, text}] browser speech capture (approximate timing)
       adMatrix: null,                  // filled by 🎯 Find hooks · meats · CTAs
-      script: scriptEl.value || ""
+      script: scriptEl.value || "",
+      readyScript: readyScript && mode === "script"   // 📼 set it came from, with the caption to post it with
+        ? { id: readyScript.id, title: readyScript.title, source: readyScript.source, caption: readyScript.caption }
+        : null
     };
 
     const take = {
@@ -1824,6 +1829,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       }
       if (!data.script) { setScriptAiStatus("Claude returned nothing usable — try again.", "err"); return; }
       scriptEl.value = data.script;
+      clearReady();
       setScriptAiStatus("✓ Script ready. Edit anything you like, then Start prompting.", "ok");
     } catch (err) {
       // Likely running from file:// with no backend.
@@ -1832,6 +1838,48 @@ OU | AI website builders — overrated or underrated?"></textarea>
       scriptGenBtn.disabled = false;
     }
   });
+
+  // ---------- 📼 Ready scripts: written-for-you talking heads (presets/talking-heads.json) ----------
+  // Picking one fills the teleprompter and tags the next takes with its id, so the Clipper's Drive folders read
+  // "my-story-recording-…" and the take's .json carries the caption to post it with.
+  const readySelect = $("readySelect"), readyNote = $("readyNote");
+  let readySet = [], readyScript = null;
+  function clearReady() {
+    readyScript = null;
+    readySelect.value = "";
+    readyNote.style.display = "none";
+  }
+  (async function loadReadyScripts() {
+    try {
+      const r = await fetch("presets/talking-heads.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      readySet = (await r.json()).scripts || [];
+      readySet.forEach((s) => {
+        const o = document.createElement("option");
+        o.value = s.id;
+        o.textContent = `${s.title} · ~${s.seconds}s`;
+        readySelect.appendChild(o);
+      });
+    } catch (_) {
+      readySelect.style.display = "none";   // file:// or offline: the picker just isn't there
+    }
+  })();
+  readySelect.addEventListener("change", () => {
+    const s = readySet.find((x) => x.id === readySelect.value);
+    if (!s) { clearReady(); return; }
+    const cur = scriptEl.value.trim();
+    const known = cur === scriptEl.defaultValue.trim() || readySet.some((x) => x.script.trim() === cur);
+    if (cur && !known && !confirm(`Replace the script in the box with “${s.title}”?`)) {
+      readySelect.value = readyScript ? readyScript.id : "";
+      return;
+    }
+    scriptEl.value = s.script;
+    readyScript = s;
+    readyNote.textContent = `🎬 ${s.note}`;
+    readyNote.style.display = "block";
+    toast(`“${s.title}” loaded — hit Start`);
+  });
+  scriptEl.addEventListener("input", () => { if (!scriptEl.value.trim()) clearReady(); });
 
   $("bulkImportBtn").addEventListener("click", () => {
     const parsed = parseBulk(qBulkText.value);
