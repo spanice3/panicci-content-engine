@@ -5,7 +5,10 @@ Three tools on one Vercel project (`studio.panicciventures.com`):
 1. **Teleprompter + recorder** (`/`) — Sammy's interview-style content rig with
    setting presets, eyeline mode, Claude-powered question generation, and a
    Generate-with-Claude button that writes a full teleprompter script from a
-   topic/idea.
+   topic/idea. **📼 Ready scripts** (Free script tab) loads written-for-you talking
+   heads from `presets/talking-heads.json`; takes are named after the script
+   (`my-story-recording-…`) and their `.json` carries the IG caption. Shoot briefs
+   live in `shoots/` (not deployed).
 2. **🎯 50·5·3 Ads** (`/`, third tab) — Hormozi's modular ad process. Opens with the
    **Panicci Ventures set** pre-loaded (`presets/panicci-553.json`: topic, 4 discovery +
    10 interview questions, 50 hooks, 3 CTAs, real client proof), so it's load → Start →
@@ -38,6 +41,8 @@ api/generate-script.js      # serverless proxy → Anthropic Messages API (telep
 api/upload-testimonial.js   # mints scoped Vercel Blob client-upload tokens
 api/fifty-five-three.js     # 50·5·3: "plan" (shoot list) + "identify" (rank hooks/meats/CTAs)
 presets/panicci-553.json    # the ready-to-record Panicci Ventures 50·5·3 set
+presets/talking-heads.json  # 📼 Ready scripts: My Story + talking heads (script, delivery note, source, IG caption)
+shoots/                     # shoot-day briefs (excluded from the deploy)
 vercel.json                 # cleanUrls + /:client → testimonial.html rewrite
 ```
 
