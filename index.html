@@ -667,7 +667,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
     <!-- 50·5·3 ad builder pane -->
     <div class="modePane" id="pane-ads">
-      <p class="hint"><b>Hormozi 50·5·3:</b> 50 hooks, 5 meats, 3 CTAs in one sitting. Load the Panicci set, hit Start, and go — <b>Discovery</b> (talk it through), <b>Interview</b> (your answers become the meats), <b>Hooks</b> (read, hit N), <b>CTAs</b> (read, hit N). When you stop, hit <b>🎯 Find hooks · meats · CTAs</b>.</p>
+      <p class="hint"><b>Hormozi 50·5·3:</b> 50 hooks, 5 meats, 3 CTAs in one sitting. Load the Panicci set, hit Start, and go — <b>Discovery</b> (talk it through), <b>Meats</b> (read the scripted ones, or answer and your answers become meats), <b>Hooks</b> (read, hit N), <b>CTAs</b> (read, hit N). When you stop, hit <b>🎯 Find hooks · meats · CTAs</b>.</p>
       <div class="mxReady" id="mxReady">
         <div class="mxReadyTitle" id="mxReadyTitle">No shoot loaded</div>
         <div class="mxReadyMeta" id="mxReadyMeta"></div>
@@ -1303,20 +1303,23 @@ OU | AI website builders — overrated or underrated?"></textarea>
     const q = questions[currentQ];
     if (!q) return;
     const ti = typeInfo(q.type);
+    // A labeled meat ("MEAT 1 · THE TOP THREE — script…") shows the label in the header, not on the card.
+    const lab = adsMode && q.type === "MEAT" ? /^([A-Z0-9 ·]+) — ([\s\S]+)$/.exec(q.text) : null;
+    const shown = lab ? lab[2] : q.text;
     icQnum.textContent = `Question ${currentQ + 1} of ${questions.length}`;
     if (adsMode) {
       const same = questions.filter((x) => x.type === q.type);
       const k = questions.slice(0, currentQ + 1).filter((x) => x.type === q.type).length;
       const cue = q.type === "DISC" ? "Discovery — talk it through, no wrong answers"
-        : q.type === "MEAT" ? "Interview — answer like you're talking to one client"
+        : q.type === "MEAT" ? (lab && !/FREESTYLE/.test(lab[1]) ? "Scripted — say it like you're talking to one owner, then N" : "Interview — answer like you're talking to one client")
         : q.type === "HOOK" ? "Read it like you mean it, then N" : "Read it, then N";
-      icQnum.textContent = `${typeInfo(q.type).label} ${k} of ${same.length} · ${cue}`;
+      icQnum.textContent = `${typeInfo(q.type).label} ${k} of ${same.length}${lab ? " · " + lab[1] : ""} · ${cue}`;
     }
     icBadge.innerHTML = `<span class="typeBadge ${ti.cls}">${ti.label}</span>`;
-    icQuestion.textContent = q.text;
-    // Scale question text to length
-    const len = q.text.length;
-    icQuestion.style.fontSize = (len > 120 ? 30 : len > 70 ? 38 : 46) + "px";
+    icQuestion.textContent = shown;
+    // Scale question text to length (scripted meats run 400-600 characters)
+    const len = shown.length;
+    icQuestion.style.fontSize = (len > 300 ? 26 : len > 120 ? 30 : len > 70 ? 38 : 46) + "px";
     segNum.textContent = "Q" + (currentQ + 1);
   }
 
