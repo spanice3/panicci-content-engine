@@ -62,6 +62,17 @@ python3 adbuild.py TAKE.mp4 --meta TAKE.json --brand 9x16,1x1          # + capti
   `ad_name` so the ad leaderboard maps straight back to hook/meat/CTA.
 - `--brand` skips the intro card on purpose: an ad has to open on the hook.
 
+## Frozen-take check (`avcheck.py`)
+
+`run.py` and `adbuild.py` check every take first: if the picture freezes (a gap over 1.5 s between frames,
+or the video ending 1.5 s+ before the sound, the iPhone failure from 2026-11-03), they stop with
+`Frozen take, not cutting it: picture freezes at 0:12 while the sound runs to 1:43.` and cut nothing.
+`--allow-frozen` overrides it when you want the audio anyway. Standalone:
+
+```bash
+python3 avcheck.py raw/*.mp4      # one line per take, exit 1 if any is frozen
+```
+
 ## Drive I/O (`drive_io.py`)
 
 Used by the OS Clipper Agent. Auth comes from the environment, never arguments:
