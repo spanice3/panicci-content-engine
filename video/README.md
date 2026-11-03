@@ -120,4 +120,5 @@ Sourced from the `panicci-deliverables` skill (`brand.json`): deep green
 | `brandkit.py` | safe-zone branded renderer (importable + CLI) |
 | `run.py` | orchestrator |
 | `adbuild.py` | 50·5·3 ad modules + combos |
+| `bjj_gjjw_ads.py` | Jiu-jitsu gym owner Meta ads (Nov 2026): on-camera hook, then voice-over proof scenes with real GJJW numbers and the AI answer screen recordings. Inputs in `ads/bjj-gjjw/` |
 | `assets/brand-mark.svg` | the P/V shield |
