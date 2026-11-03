@@ -31,6 +31,16 @@ Three tools on one Vercel project (`studio.panicciventures.com`):
    capture **name + email**, walk the speaker through a personalized question set,
    and upload the video **directly to Vercel Blob** (no downloads, no email attachments).
 
+## Frozen-take guard (iPhone)
+On 2026-11-03 every iPhone Safari take froze the picture 11–20 s in while the audio ran the full length. The
+recorder now (1) records in 1-second fragments (`TIMESLICE_MS`) and holds a screen wake lock while prompting,
+(2) watches camera frames and the bytes the recorder writes, showing a red **Video stopped at m:ss** banner the
+moment the picture stops, and restarting the camera before the next take, and (3) reads each finished MP4's
+sample tables, marking a take **⚠ frozen** when the video freezes or ends before the sound. Send to Clipper asks
+before it ships a frozen take, and `video/avcheck.py` makes the Clipper refuse one either way. Every take's
+`.json` carries `recordingHealth`: the verdict plus a timeline (voice-follow restarts, track mute/unmute, page
+hidden, audio-session changes, wake lock, per-fragment KB). When a freeze happens, that timeline names the cause.
+
 ## Structure
 ```
 index.html                  # the teleprompter/recorder app (presets + eyeline)
