@@ -304,6 +304,26 @@
   }
   #markToast.show { opacity: 1; }
 
+  /* ---------- Take health (frozen-video guard) ---------- */
+  #stallBanner {
+    position: absolute; left: 50%; top: 8%; transform: translateX(-50%);
+    width: min(560px, 92vw); z-index: 42; display: none; pointer-events: none;   /* never covers ■ Stop */
+    background: rgba(170, 20, 20, 0.95); color: #fff; border-radius: 14px;
+    padding: 12px 16px; font-size: 15px; line-height: 1.4; text-align: center; font-weight: 600;
+    box-shadow: 0 6px 30px rgba(0,0,0,.5);
+  }
+  #stallBanner.active { display: block; }
+  #stallBanner b { display: block; font-size: 17px; margin-bottom: 2px; }
+  .takeWarn {
+    display: none; max-width: 560px; margin: 2px auto 0; padding: 8px 12px; border-radius: 10px;
+    background: rgba(170,20,20,.22); border: 1px solid rgba(255,90,80,.6); color: #ffd0ca;
+    font-size: 13px; line-height: 1.45; text-align: center;
+  }
+  .takeWarn.active { display: block; }
+  .takeWarn.good { background: transparent; border-color: transparent; color: #a7e3b5; padding: 0 12px; font-size: 12px; }
+  .takeChip.bad { border-color: #ff4b42; }
+  .takeChip .cap .badMk { color: #ff7a70; font-weight: 800; }
+
   /* ---------- Multi-take session ---------- */
   #takeLabel { font-size: 13px; font-weight: 700; opacity: .8; }
   #sessionTray { width: min(760px, 92vw); display: none; flex-direction: column; gap: 10px; }
@@ -572,6 +592,9 @@
   <!-- Marker toast -->
   <div id="markToast"></div>
 
+  <!-- Frozen-video warning (shown the moment the picture stops while recording) -->
+  <div id="stallBanner" role="alert"></div>
+
   <!-- Voice listening indicator -->
   <div id="voiceCaption">🎙 listening…</div>
 
@@ -715,6 +738,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     <div id="takeLabel"></div>
     <video id="playbackVid" controls playsinline></video>
     <div class="meta" id="playbackMeta"></div>
+    <div id="takeWarn" class="takeWarn" role="alert"></div>
     <div class="row">
       <button id="downloadBtn" class="primary">⬇ Download MP4</button>
       <button id="metaBtn">⬇ Script data (.json)</button>
@@ -913,6 +937,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
   const playback  = $("playback");
   const playbackVid = $("playbackVid");
   const playbackMeta= $("playbackMeta");
+  const takeWarn    = $("takeWarn");
+  const stallBanner = $("stallBanner");
   const downloadBtn = $("downloadBtn");
   const metaBtn     = $("metaBtn");
   const coverBtn    = $("coverBtn");
@@ -1437,6 +1463,373 @@ OU | AI website builders — overrated or underrated?"></textarea>
   camSel.addEventListener("change", () => initStream(camSel.value, micSel.value));
   micSel.addEventListener("change", () => initStream(camSel.value, micSel.value));
 
+  // ---------- Take health: catch frozen video live, check every take before it ships ----------
+  // 2026-11-03: five iPhone Safari takes came back with the picture frozen 11–20 s in while the audio ran the full
+  // length (one MP4 fragment, the last video sample stretched over the rest of the take). Three layers here:
+  //  1. record in 1 s fragments with the screen held awake (startRecording),
+  //  2. watch camera frames + the bytes the recorder writes, and warn on screen the moment the picture stops,
+  //  3. read the finished MP4's own sample tables and flag a take whose video freezes or ends before the audio.
+  // Every take's .json carries the timeline (recordingHealth.events), so the next freeze names its own cause.
+  const TIMESLICE_MS = 1000;
+  const STALL_SEC = 2;      // no new camera frame for this long while recording = camera stalled
+  const GAP_SEC = 1.5;      // a hole this long between recorded video frames = frozen picture
+  const SHORT_SEC = 1.5;    // recorded video ending this much before the audio = frozen picture
+  let health = null;        // the current/last take's health record (startHealth)
+  let healthTimerId = null;
+  let wakeLock = null, wakePending = false;
+  const watchedTracks = new WeakSet();
+  const r2 = (x) => (x == null ? null : Math.round(x * 100) / 100);
+
+  function hlog(ev, detail) {
+    const h = health;
+    if (!h || !h.active || h.events.length >= 300) return;
+    const e = { t: r2((performance.now() - recStartTs) / 1000), ev };
+    if (detail != null && detail !== "") e.detail = String(detail).slice(0, 160);
+    h.events.push(e);
+  }
+
+  // Keep the screen on while prompting: a dimmed or locked iPhone stops the camera but can keep the mic going.
+  async function keepAwake(on) {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      if (!on) { const w = wakeLock; wakeLock = null; if (w) await w.release(); return; }
+      if (wakeLock || wakePending || document.visibilityState !== "visible") return;
+      wakePending = true;
+      const w = await navigator.wakeLock.request("screen");
+      wakePending = false;
+      if (!prompting) { w.release().catch(() => {}); return; }
+      wakeLock = w;
+      w.addEventListener("release", () => { if (wakeLock === w) wakeLock = null; hlog("screen-wake-released"); });
+      hlog("screen-wake-on");
+    } catch (e) {
+      wakePending = false;
+      hlog("screen-wake-failed", e && (e.name || e.message));
+    }
+  }
+
+  function watchTrack(tr) {
+    if (watchedTracks.has(tr)) return;
+    watchedTracks.add(tr);
+    tr.addEventListener("mute", () => hlog(tr.kind + "-muted"));
+    tr.addEventListener("unmute", () => hlog(tr.kind + "-unmuted"));
+    tr.addEventListener("ended", () => hlog(tr.kind + "-ended"));
+  }
+
+  // Camera side: count frames actually reaching the on-screen preview.
+  function watchFrames(h) {
+    if (!preview.requestVideoFrameCallback) return;
+    h.frameSource = "rvfc";
+    const tick = () => {
+      if (health !== h || !h.active) return;
+      h.frames++;
+      h.lastFrameAt = performance.now();
+      preview.requestVideoFrameCallback(tick);
+    };
+    preview.requestVideoFrameCallback(tick);
+  }
+
+  function startHealth(mimeType) {
+    const vt = stream && stream.getVideoTracks()[0];
+    const as = navigator.audioSession;
+    health = {
+      active: true, events: [], chunks: [], bytes: 0, lastChunkT: 0, peakRate: 0,
+      frames: 0, lastFrameAt: performance.now(), frameSource: "none", previewPaused: false,
+      stalledAt: null, stallKind: null, resumedAt: null,
+      mimeType: mimeType || "default", timesliceMs: TIMESLICE_MS, voiceFollow: voiceMode,
+      screenWakeLock: !!wakeLock, ua: navigator.userAgent
+    };
+    const s = vt ? vt.getSettings() : {};
+    hlog("rec-start", `video ${vt ? vt.readyState + (vt.muted ? "/muted" : "") : "none"} ${s.width || "?"}x${s.height || "?"}@${s.frameRate ? Math.round(s.frameRate) : "?"}` +
+      `${as ? " · audioSession " + as.type + "/" + as.state : ""}${voiceMode ? " · voice-follow on" : ""}`);
+    if (stream) stream.getTracks().forEach(watchTrack);
+    watchFrames(health);
+    healthTimerId = setInterval(checkHealth, 500);
+  }
+
+  // Recorder side: what the MediaRecorder actually writes. Healthy 8 Mbps video is ~1 MB/s; audio alone is ~20 KB/s.
+  function noteChunk(size) {
+    const h = health;
+    if (!h) return;
+    h.bytes += size;
+    if (!h.active) return;
+    const t = (performance.now() - recStartTs) / 1000;
+    const rate = size / Math.max(0.05, t - h.lastChunkT);
+    h.chunks.push({ t0: h.lastChunkT, t, b: size, rate });
+    h.lastChunkT = t;
+    if (h.chunks.length > 1) h.peakRate = Math.max(h.peakRate, rate);   // chunk 1 carries the file header
+  }
+
+  function checkHealth() {
+    const h = health;
+    if (!h || !h.active || !recording) return;
+    const now = performance.now(), t = (now - recStartTs) / 1000;
+    const visible = document.visibilityState === "visible";
+    if (preview.paused !== h.previewPaused) {
+      h.previewPaused = preview.paused;
+      hlog(preview.paused ? "preview-paused" : "preview-playing");
+    }
+    if (preview.paused && stream) preview.play().catch(() => {});
+
+    // Camera stalled: no new frame on the preview for STALL_SEC (only judged while the page is on screen).
+    let cam = false;
+    if (h.frameSource === "rvfc" && visible && !preview.paused && t > STALL_SEC) {
+      cam = (now - h.lastFrameAt) / 1000 > STALL_SEC;
+    }
+    // Recorder stalled: the last 3 one-second fragments are audio-sized, or fragments stopped arriving.
+    let rec = false, recFrom = null;
+    const c = h.chunks;
+    if (c.length >= 4 && h.peakRate >= 150e3) {
+      const low = Math.min(60e3, h.peakRate * 0.25);
+      const last3 = c.slice(-3);
+      if (last3.every((x) => x.rate < low)) { rec = true; recFrom = last3[0].t0; }
+      else if (t - c[c.length - 1].t > 5) { rec = true; recFrom = c[c.length - 1].t; }
+      // Preview hiccup while the recorder is still writing full-size video: not a frozen take.
+      if (cam && !rec && t - c[c.length - 1].t <= 3 && c.slice(-2).every((x) => x.rate >= low)) {
+        if (!h.previewOnlyLogged) { hlog("preview-stalled-recorder-ok"); h.previewOnlyLogged = true; }
+        cam = false;
+      }
+    }
+
+    if ((cam || rec) && h.stalledAt == null) {
+      h.stallKind = cam ? "camera" : "recorder";
+      h.stalledAt = r2(cam ? (h.lastFrameAt - recStartTs) / 1000 : recFrom);
+      hlog("video-stalled", `${h.stallKind} · last frame ${r2((now - h.lastFrameAt) / 1000)}s ago · ` +
+        `${c.length ? Math.round(c[c.length - 1].rate / 1024) + " KB/s" : "no fragments"}`);
+      showStall(h);
+    } else if (!cam && !rec && h.stalledAt != null && h.resumedAt == null) {
+      h.resumedAt = r2(t);
+      hlog("video-resumed");
+      showStall(h);
+    }
+  }
+
+  function showStall(h) {
+    const at = fmtTime(h.stalledAt);
+    stallBanner.innerHTML = h.resumedAt != null
+      ? `<b>⚠ The picture froze ${at}–${fmtTime(h.resumedAt)}</b>It came back, but this take has a frozen stretch. Record it again.`
+      : `<b>⚠ Video stopped at ${at}</b>${h.stallKind === "camera" ? "The camera stopped sending frames" : "The recorder stopped saving the picture"}` +
+        ` but the mic is still going, so this take will look frozen. Tap ■ Stop and record it again.`;
+    stallBanner.classList.add("active");
+    showControls();   // bring the ■ Stop button back on screen
+  }
+
+  function stopHealth() {
+    if (healthTimerId) { clearInterval(healthTimerId); healthTimerId = null; }
+    stallBanner.classList.remove("active");
+    if (!health || !health.active) return;
+    hlog("rec-stop");
+    health.active = false;
+  }
+
+  // The take's recordingHealth block (lands in the .json). ok/verdict fill in when the file check finishes.
+  function healthSummary(h, durationSec) {
+    if (!h) return null;
+    return {
+      ok: null, verdict: "checking",
+      live: {
+        stalledAtSec: h.stalledAt, stallKind: h.stallKind, resumedAtSec: h.resumedAt,
+        previewFrames: h.frames, frameSource: h.frameSource,
+        avgKBps: Math.round(h.bytes / 1024 / Math.max(1, durationSec)), fragments: h.chunks.length
+      },
+      mimeType: h.mimeType, timesliceMs: h.timesliceMs, voiceFollow: h.voiceFollow,
+      screenWakeLock: h.screenWakeLock, ua: h.ua,
+      fragmentsKB: h.chunks.map((x) => [r2(x.t), Math.round(x.b / 1024)]),
+      events: h.events
+    };
+  }
+
+  // Page/device events worth having on the timeline when a freeze happens.
+  document.addEventListener("visibilitychange", () => {
+    hlog("page-" + document.visibilityState);
+    if (document.visibilityState === "visible" && prompting) keepAwake(true);
+  });
+  window.addEventListener("pagehide", () => hlog("pagehide"));
+  window.addEventListener("blur", () => hlog("window-blur"));
+  window.addEventListener("focus", () => hlog("window-focus"));
+  if (screen.orientation && screen.orientation.addEventListener)
+    screen.orientation.addEventListener("change", () => hlog("orientation", screen.orientation.type));
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener)
+    navigator.mediaDevices.addEventListener("devicechange", () => hlog("devicechange"));
+  if (navigator.audioSession && navigator.audioSession.addEventListener)
+    navigator.audioSession.addEventListener("statechange", () => hlog("audio-session", navigator.audioSession.state));
+  preview.addEventListener("resize", () => hlog("preview-resize", `${preview.videoWidth}x${preview.videoHeight}`));
+
+  // ---- MP4 sample-table probe: when does the recorded picture actually stop? ----
+  // Reads only the moov/moof boxes (a few KB each) via blob.slice, never the media data.
+  // <mp4-probe>
+  function mp4Probe() {
+    const fourcc = (dv, o) => String.fromCharCode(dv.getUint8(o), dv.getUint8(o + 1), dv.getUint8(o + 2), dv.getUint8(o + 3));
+    const u64 = (dv, o) => dv.getUint32(o) * 4294967296 + dv.getUint32(o + 4);
+    function* boxes(dv, s, e) {
+      let o = s;
+      while (o + 8 <= e) {
+        let size = dv.getUint32(o), hdr = 8;
+        const type = fourcc(dv, o + 4);
+        if (size === 1) { size = u64(dv, o + 8); hdr = 16; } else if (size === 0) size = e - o;
+        if (size < hdr || o + size > e) return;
+        yield { type, p: o + hdr, end: o + size };
+        o += size;
+      }
+    }
+    const trackOf = (tracks, id) => tracks[id] || (tracks[id] = { id, kind: "", ts: 0, defDur: 0, first: null, t: 0, n: 0, lastStart: 0, lastDur: 0, gaps: [] });
+    function addSamples(tr, count, dur) {
+      if (!count) return;
+      if (tr.first === null) tr.first = tr.t;
+      if (tr.ts && dur > tr.ts * GAP_SEC && tr.gaps.length < 20) tr.gaps.push({ at: tr.t, dur });
+      tr.lastStart = tr.t + (count - 1) * dur;
+      tr.lastDur = dur;
+      tr.t += count * dur;
+      tr.n += count;
+    }
+    function parseTrak(dv, s, e, tracks) {
+      let id = 0, kind = "", ts = 0, stts = null;
+      const walk = (s, e) => {
+        for (const b of boxes(dv, s, e)) {
+          const v = dv.getUint8(b.p);
+          if (b.type === "tkhd") id = dv.getUint32(b.p + (v === 1 ? 20 : 12));
+          else if (b.type === "mdhd") ts = dv.getUint32(b.p + (v === 1 ? 20 : 12));
+          else if (b.type === "hdlr") kind = fourcc(dv, b.p + 8);
+          else if (b.type === "stts") stts = b;
+          else if (b.type === "mdia" || b.type === "minf" || b.type === "stbl") walk(b.p, b.end);
+        }
+      };
+      walk(s, e);
+      if (!id) return;
+      const tr = trackOf(tracks, id);
+      tr.kind = kind; tr.ts = ts;
+      if (!stts) return;
+      const n = dv.getUint32(stts.p + 4);
+      for (let i = 0; i < n; i++) {
+        const o = stts.p + 8 + i * 8;
+        if (o + 8 > stts.end) break;
+        addSamples(tr, dv.getUint32(o), dv.getUint32(o + 4));
+      }
+    }
+    function parseMoov(dv, s, e, tracks) {
+      for (const b of boxes(dv, s, e)) {
+        if (b.type === "trak") parseTrak(dv, b.p, b.end, tracks);
+        else if (b.type === "mvex") {
+          for (const x of boxes(dv, b.p, b.end)) if (x.type === "trex") trackOf(tracks, dv.getUint32(x.p + 4)).defDur = dv.getUint32(x.p + 12);
+        }
+      }
+    }
+    function parseMoof(dv, s, e, tracks) {
+      for (const b of boxes(dv, s, e)) {
+        if (b.type !== "traf") continue;
+        let tr = null, def = 0, base = null;
+        const runs = [];
+        for (const x of boxes(dv, b.p, b.end)) {
+          const v = dv.getUint8(x.p), flags = dv.getUint32(x.p) & 0xffffff;
+          if (x.type === "tfhd") {
+            tr = trackOf(tracks, dv.getUint32(x.p + 4));
+            let o = x.p + 8;
+            if (flags & 0x1) o += 8;
+            if (flags & 0x2) o += 4;
+            def = (flags & 0x8) ? dv.getUint32(o) : tr.defDur;
+          } else if (x.type === "tfdt") base = v === 1 ? u64(dv, x.p + 4) : dv.getUint32(x.p + 4);
+          else if (x.type === "trun") runs.push(x);
+        }
+        if (!tr) continue;
+        if (base !== null) {
+          // A jump in decode time between fragments is a hole in the picture too.
+          if (tr.n && tr.ts && base - tr.t > tr.ts * GAP_SEC && tr.gaps.length < 20) tr.gaps.push({ at: tr.t, dur: base - tr.t });
+          if (!tr.n || base > tr.t) tr.t = base;
+        }
+        for (const x of runs) {
+          const flags = dv.getUint32(x.p) & 0xffffff, n = dv.getUint32(x.p + 4);
+          let o = x.p + 8;
+          if (flags & 0x1) o += 4;
+          if (flags & 0x4) o += 4;
+          const per = ((flags & 0x100) ? 4 : 0) + ((flags & 0x200) ? 4 : 0) + ((flags & 0x400) ? 4 : 0) + ((flags & 0x800) ? 4 : 0);
+          if (!(flags & 0x100)) { addSamples(tr, n, def); continue; }
+          for (let i = 0; i < n && o + per <= x.end; i++, o += per) addSamples(tr, 1, dv.getUint32(o));
+        }
+      }
+    }
+    async function probe(blob) {
+      const tracks = {};
+      const total = blob.size;
+      let off = 0, guard = 0;
+      while (off + 8 <= total && guard++ < 200000) {
+        const h = new DataView(await blob.slice(off, Math.min(total, off + 16)).arrayBuffer());
+        let size = h.getUint32(0), hdr = 8;
+        const type = fourcc(h, 4);
+        if (size === 1) { size = u64(h, 8); hdr = 16; } else if (size === 0) size = total - off;
+        if (size < hdr) break;
+        if (type === "moov" || type === "moof") {
+          const dv = new DataView(await blob.slice(off, Math.min(total, off + size)).arrayBuffer());
+          (type === "moov" ? parseMoov : parseMoof)(dv, hdr, dv.byteLength, tracks);
+        }
+        off += size;
+      }
+      return tracks;
+    }
+    // Picture vs sound, in seconds from each track's own first sample.
+    function verdict(tracks) {
+      const list = Object.values(tracks);
+      const v = list.find((x) => x.kind === "vide" && x.n), a = list.find((x) => x.kind === "soun" && x.n);
+      const audioSec = a ? r2((a.t - a.first) / (a.ts || 1)) : null;
+      if (!v) return { ok: false, verdict: "no-video", frozeAtSec: 0, videoSec: 0, audioSec, videoFrames: 0 };
+      const ts = v.ts || 1;
+      const lastDur = v.lastDur / ts;
+      const videoSec = r2((v.lastStart - v.first) / ts + (lastDur <= GAP_SEC ? lastDur : 0));
+      const gap = v.gaps[0];
+      const out = { ok: true, verdict: "ok", frozeAtSec: null, frozenForSec: null, videoSec, audioSec, videoFrames: v.n };
+      if (gap) Object.assign(out, { ok: false, verdict: "video-froze", frozeAtSec: r2((gap.at - v.first) / ts), frozenForSec: r2(gap.dur / ts) });
+      else if (audioSec != null && audioSec - videoSec > SHORT_SEC) Object.assign(out, { ok: false, verdict: "video-ends-early", frozeAtSec: videoSec });
+      return out;
+    }
+    return { probe, verdict };
+  }
+  // </mp4-probe>
+  const MP4 = mp4Probe();
+
+  // Runs once per take after it's finalized; fills meta.recordingHealth and repaints the warning.
+  async function checkTake(take) {
+    const rh = take.meta.recordingHealth;
+    let res;
+    try {
+      res = take.ext === "mp4"
+        ? MP4.verdict(await MP4.probe(take.blob))
+        : { ok: null, verdict: "unchecked", note: "WebM take: no sample-table check" };
+    } catch (e) {
+      res = { ok: null, verdict: "unchecked", note: "couldn't read the file: " + (e && e.message) };
+    }
+    // The file is the final word. Without a file check, a live stall still counts.
+    if (res.ok === null && rh.live.stalledAtSec != null) {
+      Object.assign(res, { ok: false, verdict: "live-stall", frozeAtSec: rh.live.stalledAtSec });
+    }
+    Object.assign(rh, res);
+    if (takes[currentTakeIdx] === take) renderTakeHealth(take);
+    renderTakesStrip();
+    return rh;
+  }
+
+  function takeProblem(t) {
+    const rh = t.meta.recordingHealth;
+    if (!rh || rh.ok !== false) return "";
+    if (rh.verdict === "no-video") return "This take has no picture at all.";
+    const end = rh.audioSec || t.durationSec;
+    return `The picture freezes at ${fmtTime(rh.frozeAtSec || 0)} while the sound runs to ${fmtTime(end)}.`;
+  }
+  function renderTakeHealth(t) {
+    const p = takeProblem(t);
+    const rh = t.meta.recordingHealth;
+    const good = !p && rh && rh.ok === true;
+    takeWarn.innerHTML = p
+      ? `⚠ <b>${esc(p)}</b> Record this one again. Send to Clipper asks before it ships a frozen take.`
+      : good ? `✓ Picture and sound both run ${fmtTime(rh.videoSec)}.` : "";
+    takeWarn.classList.toggle("active", !!(p || good));
+    takeWarn.classList.toggle("good", good);
+  }
+
+  // After a freeze, start the next take on a fresh camera.
+  function cameraNeedsRestart() {
+    const vt = stream && stream.getVideoTracks()[0];
+    if (!stream) return false;
+    return !vt || vt.readyState === "ended" || vt.muted || !!(health && health.stalledAt != null);
+  }
+
   // ---------- Recording ----------
   function pickMimeType() {
     // Prefer MP4 / H.264 so clips drop straight into ad-editing tools.
@@ -1477,12 +1870,20 @@ OU | AI website builders — overrated or underrated?"></textarea>
     }
 
     chunks = [];
-    recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) { chunks.push(e.data); noteChunk(e.data.size); } };
     recorder.onstop = onRecordingStop;
-    recorder.start();
+    recorder.onerror = (e) => hlog("recorder-error", e && e.error ? `${e.error.name}: ${e.error.message}` : "unknown");
+    recorder.onpause = () => hlog("recorder-paused");
+    recorder.onresume = () => hlog("recorder-resumed");
+    recStartTs = performance.now();
+    startHealth(mimeType);
+    // 1 s fragments, not one fragment for the whole take: keeps the writer draining (Safari MP4 froze the picture
+    // 11–20 s into every no-timeslice take on 2026-11-03) and lets the health check see the bitrate live.
+    try { recorder.start(TIMESLICE_MS); }
+    catch (e) { stopHealth(); showMsg("Can't record", "Failed to start recorder: " + e.message, false); return; }
+    keepAwake(true);
 
     recording = true;
-    recStartTs = performance.now();
     markers = [];                 // fresh markers per take
     markNum.textContent = "0";
     markCount.classList.add("active");
@@ -1508,6 +1909,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       // Close the final interview segment at the moment of stopping.
       if (mode === "interview") closeSegment((performance.now() - recStartTs) / 1000);
       stopCapture();
+      stopHealth();
       recorder.stop();
     }
     recording = false;
@@ -1630,7 +2032,9 @@ OU | AI website builders — overrated or underrated?"></textarea>
       script: scriptEl.value || "",
       readyScript: readyScript && mode === "script"   // 📼 set it came from, with the caption to post it with
         ? { id: readyScript.id, title: readyScript.title, source: readyScript.source, caption: readyScript.caption }
-        : null
+        : null,
+      // Picture-vs-sound check + the recording timeline. ok=false means the video freezes; the Clipper won't cut it.
+      recordingHealth: healthSummary(health, dur)
     };
 
     const take = {
@@ -1638,6 +2042,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       durationSec, containerLabel, codecNote, meta, thumbUrl: null
     };
     takes.push(take);
+    if (meta.recordingHealth) take.check = checkTake(take);
     generateThumb(take);
     showTake(takes.length - 1);
     sessionTray.classList.toggle("active", takes.length > 0);
@@ -1658,6 +2063,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     convertNote.style.display = t.ext === "webm" ? "block" : "none";
     mxFindBtn.classList.toggle("show", !!t.meta.adsShoot);
     if (t.meta.adMatrix) renderBoard(t); else { mxBoard.classList.remove("active"); mxBoard.innerHTML = ""; }
+    renderTakeHealth(t);
     renderTakesStrip();
   }
 
@@ -1665,13 +2071,16 @@ OU | AI website builders — overrated or underrated?"></textarea>
     takesStrip.innerHTML = "";
     takes.forEach((t, i) => {
       const chip = document.createElement("div");
-      chip.className = "takeChip" + (i === currentTakeIdx ? " selected" : "");
+      const bad = !!takeProblem(t);
+      chip.className = "takeChip" + (i === currentTakeIdx ? " selected" : "") + (bad ? " bad" : "");
+      if (bad) chip.title = takeProblem(t);
       const img = document.createElement("img");
       if (t.thumbUrl) img.src = t.thumbUrl;
       const cap = document.createElement("div");
       cap.className = "cap";
       const mkTxt = t.meta.markers.length ? "⚑" + t.meta.markers.length : "";
-      cap.innerHTML = `<span>#${i + 1} · ${fmtTime(t.durationSec)}</span><span class="mk">${mkTxt}</span>`;
+      cap.innerHTML = `<span>#${i + 1} · ${fmtTime(t.durationSec)}</span>` +
+        (bad ? `<span class="badMk">⚠ frozen</span>` : `<span class="mk">${mkTxt}</span>`);
       chip.appendChild(img); chip.appendChild(cap);
       chip.addEventListener("click", () => showTake(i));
       takesStrip.appendChild(chip);
@@ -2047,9 +2456,11 @@ OU | AI website builders — overrated or underrated?"></textarea>
         }
       };
       r.onerror = (e) => {
+        hlog("transcript-error", e && e.error);
         if (e && (e.error === "not-allowed" || e.error === "service-not-allowed")) { toast("Mic blocked for live transcript"); capRec = null; }
       };
-      r.onend = () => { if (capRec === r) begin(); };   // Chrome stops after silences — keep it going
+      r.onstart = () => hlog("transcript-start");
+      r.onend = () => { hlog("transcript-end"); if (capRec === r) begin(); };   // Chrome stops after silences — keep it going
       capRec = r;
       try { r.start(); } catch (_) {}
     };
@@ -2199,6 +2610,12 @@ OU | AI website builders — overrated or underrated?"></textarea>
   async function sendToClipper() {
     const t = takes[currentTakeIdx];
     if (!t) return;
+    if (t.check) await t.check;
+    const problem = takeProblem(t);
+    if (problem && !confirm(`${problem}\n\nThe Clipper would cut a frozen video from it. Send it anyway?`)) {
+      clipSay("Not sent. Tap ＋ New take and record it again.", true);
+      return;
+    }
     if (!lsGet(CLIP_KEY)) {
       const k = (prompt("Paste your studio key (one time, this browser remembers it):") || "").trim();
       if (!k) return;
@@ -2395,13 +2812,22 @@ OU | AI website builders — overrated or underrated?"></textarea>
     return new Blob([data.buffer], { type: "video/mp4" });
   }
 
+  let startingTake = false;   // camera restart + countdown in progress (a second tap shouldn't start two recorders)
   function toggleRecord() {
     if (recording) stopRecording();
-    else startCountdownThenRecord();
+    else if (!startingTake) startCountdownThenRecord();
   }
 
   // ---------- Countdown ----------
-  function startCountdownThenRecord() {
+  async function startCountdownThenRecord() {
+    startingTake = true;
+    if (cameraNeedsRestart()) {
+      toast("Restarting the camera…");
+      const ok = await initStream(camSel.value || null, micSel.value || null);
+      if (!ok) { startingTake = false; return; }
+      health = null;
+    }
+    keepAwake(true);
     let n = 3;
     countdown.textContent = n;
     countdown.classList.add("active");
@@ -2410,6 +2836,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       if (n <= 0) {
         clearInterval(iv);
         countdown.classList.remove("active");
+        startingTake = false;
         startRecording();
         if (prompting) { paused = false; playPauseBtn.textContent = "⏸ Pause"; startScrollLoop(); }
       } else {
@@ -2519,12 +2946,16 @@ OU | AI website builders — overrated or underrated?"></textarea>
         matchWords(words);
       };
       recognition.onerror = (e) => {
+        hlog("voice-error", e && e.error);
         if (e && (e.error === "not-allowed" || e.error === "service-not-allowed")) {
           toast("Mic blocked for voice tracking");
           disableVoice();
         }
       };
-      recognition.onend = () => { if (voiceMode && recognition) { try { recognition.start(); } catch (_) {} } };
+      // Voice-follow restarts are on the take timeline: suspect #1 for the iPhone freeze (audio session churn).
+      recognition.onstart = () => hlog("voice-start");
+      recognition.onaudiostart = () => hlog("voice-audiostart");
+      recognition.onend = () => { hlog("voice-end"); if (voiceMode && recognition) { try { recognition.start(); } catch (_) {} } };
       recognition.start();
       return true;
     } catch (_) {
@@ -2653,6 +3084,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       if (!ok) return;
     }
     prompting = true;
+    keepAwake(true);
     paused = false;
     playPauseBtn.textContent = "⏸ Pause";
     editor.style.display = "none";
@@ -2678,6 +3110,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
     stopScrollLoop();
     disableVoice();
     if (recording) stopRecording();
+    keepAwake(false);
     editor.style.display = "flex";
     prompter.classList.remove("active");
     scrim.classList.remove("active");

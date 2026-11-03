@@ -9,7 +9,7 @@ Steps: silence jump-cut each take -> concat -> collapse repeated retakes
 (best-effort, printed for review) -> captions (aligned to script if given)
 -> brand each format. Run video/setup.sh once first."""
 import argparse, os, subprocess, sys
-import cutlib, captions as capmod, brandkit
+import avcheck, cutlib, captions as capmod, brandkit
 
 def seamless_from(takes, out):
     parts = []
@@ -37,7 +37,11 @@ def main():
     ap.add_argument("--out-dir", default="./out")
     ap.add_argument("--no-dedupe", action="store_true", help="skip retake collapse")
     ap.add_argument("--name", default="panicci-branded")
+    ap.add_argument("--allow-frozen", action="store_true", help="cut a take even if its picture freezes before the sound ends")
     args = ap.parse_args()
+    print("0) frozen-take check:")
+    for t in args.takes:
+        avcheck.require_ok(t, args.allow_frozen)
     os.makedirs(args.out_dir, exist_ok=True)
     seam = os.path.join(args.out_dir, "seamless.mp4")
 
