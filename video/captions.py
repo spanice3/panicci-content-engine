@@ -18,11 +18,19 @@ def _wav(mp4):
         "-i", mp4, "-ac", "1", "-ar", "16000", w])
     return w
 
+def _audio(mp4):
+    """16 kHz mono float32 samples, decoded by ffmpeg. faster-whisper gets an array instead of a
+    path, so its own PyAV decode (which breaks on newer av releases) never runs."""
+    import numpy as np
+    raw = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", mp4,
+        "-ac", "1", "-ar", "16000", "-f", "s16le", "-"], check=True, capture_output=True).stdout
+    return np.frombuffer(raw, np.int16).astype(np.float32) / 32768.0
+
 def _norm(x):
     return re.sub(r"[^a-z0-9]", "", x.lower())
 
 def asr_words(mp4):
-    segs, _ = _model().transcribe(_wav(mp4), vad_filter=True, word_timestamps=True)
+    segs, _ = _model().transcribe(_audio(mp4), vad_filter=True, word_timestamps=True)
     W = []
     for s in segs:
         for w in (s.words or []):
@@ -30,7 +38,7 @@ def asr_words(mp4):
     return W
 
 def asr_sentences(mp4):
-    segs, _ = _model().transcribe(_wav(mp4), vad_filter=True)
+    segs, _ = _model().transcribe(_audio(mp4), vad_filter=True)
     return [(s.start, s.end, s.text.strip()) for s in segs]
 
 def _chunks_from_script(script, W):
