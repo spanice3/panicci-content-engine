@@ -1,0 +1,128 @@
+{
+  "name": "Ready 50·5·3 sets · results + services · Nov 2026",
+  "note": "Short scripted 50·5·3 sets for the Reel Lab. The meats are written bodies (meatsScripted), read off the prompter with every number kept exact, then the hooks, then the CTAs, one take per set. Facts live in each set's 'proof'. Brief: shoots/2026-11-results-and-services.md",
+  "sets": [
+    {
+      "id": "az-adventures-results",
+      "name": "AZ Adventures · the phone started ringing",
+      "niche": "SEO · AEO · GEO for local service businesses (Las Vegas home base, clients nationwide)",
+      "offer": "Panicci Ventures: full-suite SEO · AEO · GEO. Month-to-month, no lock-in. Starts with a free discovery call; a paid audit is credited toward the first month.",
+      "audience": "Owner-operators of local service businesses (home services, restaurants, gyms, tour operators, auto services) doing $500K to $5M who know they should rank but don't",
+      "topic": "How a Scottsdale tour company got 55% more calls from its Google profile",
+      "proof": "AZ Adventures (cleared to name, memory client_fact). Google Business Profile call clicks 40 to 62 (+55%), 60 days ending 2026-08-18 vs 60 days ending 2026-11-02. Search Console clicks 1,168 to 2,013 (+72%), average position 18.4 to 11.2, 60-day windows ending 2026-11-02.",
+      "cta": "Text MAPS or AI to (702) 467-0784, or grab the free website grade at panicciventures.com/grade",
+      "meatsScripted": true,
+      "discovery": [],
+      "interview": [
+        "Here's the thing. Google ranks businesses that make it easy to pick. So we [your words: the two or three things we shipped for them]. Same 60 days, clicks from Google search are up 72%.",
+        "Most agencies send you a report full of impressions. I care about one thing: did the phone ring more? AZ Adventures got 40 calls off their Google profile in a 60-day stretch this summer, and 62 in the last 60 days. That's people with their wallet out.",
+        "Their average spot on Google went from 18th to 11th. That's the bottom of page two to the doorstep of page one. Same stretch, clicks from Google search are up 72%."
+      ],
+      "hooks": [
+        "A Scottsdale tour company went from 40 calls off Google to 62. Here's what changed.",
+        "72% more clicks from Google search. That's not ads. That's organic.",
+        "Your Google profile is a phone. We made this one ring 55% more.",
+        "Page two of Google is where businesses go to hide. This one climbed from 18th to 11th.",
+        "If you run a tour company, steal this.",
+        "Most owners want more traffic. This owner wanted the phone to ring. It did.",
+        "62 calls in 60 days. Here's the least sexy marketing that actually works.",
+        "I'm going to show you what we fixed for AZ Adventures, and none of it was ads."
+      ],
+      "ctas": [
+        "Want me to look at yours? Text MAPS to (702) 467-0784 and I'll send you where you show up on the map.",
+        "Text AI to (702) 467-0784 and I'll tell you what ChatGPT says about your business.",
+        "Grab your free website grade at panicciventures.com/grade."
+      ]
+    },
+    {
+      "id": "rogue-island-ai",
+      "name": "Rogue Island · AI knows them now",
+      "niche": "SEO · AEO · GEO for local service businesses (Las Vegas home base, clients nationwide)",
+      "offer": "Panicci Ventures: full-suite SEO · AEO · GEO. Month-to-month, no lock-in. Starts with a free discovery call; a paid audit is credited toward the first month.",
+      "audience": "Owner-operators of local service businesses (home services, restaurants, gyms, tour operators, auto services) doing $500K to $5M who know they should rank but don't",
+      "topic": "Getting a business named in ChatGPT, Gemini and Copilot answers",
+      "proof": "Rogue Island (cleared to name, memory client_fact). Search Atlas LLM Visibility, 2026-08-17 vs 2026-11-02: overall 22% to 48.8% (the platforms tracked changed between the dates, so say about 1 in 5 to about half, never an exact gain), Gemini 0 to 56%, Copilot 0 to 45%.",
+      "cta": "Text MAPS or AI to (702) 467-0784, or grab the free website grade at panicciventures.com/grade",
+      "meatsScripted": true,
+      "discovery": [],
+      "interview": [
+        "AI assistants don't rank websites, they pick answers. So give them one: a clear page that says exactly what you do, where you do it, and who it's for, in the words people actually ask. Then the AI has something to quote.",
+        "In August, Rogue Island showed up in about one out of five AI answers in their space. By November it was about half. Gemini went from never naming them to naming them 56% of the time.",
+        "Here's what I check first: does your business say the same name, address and services everywhere online? AI trusts what it can confirm. Clean that up and you give it a reason to recommend you."
+      ],
+      "hooks": [
+        "Ask ChatGPT to recommend a business like yours. Are you in the answer?",
+        "In August, Google's AI had never mentioned this company. Now it does more than half the time.",
+        "Your next customer isn't Googling you. They're asking AI.",
+        "AI used to name this business in 1 out of 5 answers. Now it's about half.",
+        "Copilot went from zero mentions to 45%. Here's what AI looks for.",
+        "SEO isn't dead. It just has a new boss."
+      ],
+      "ctas": [
+        "Want me to look at yours? Text MAPS to (702) 467-0784 and I'll send you where you show up on the map.",
+        "Text AI to (702) 467-0784 and I'll tell you what ChatGPT says about your business.",
+        "Grab your free website grade at panicciventures.com/grade."
+      ]
+    },
+    {
+      "id": "slg-masterworks-map",
+      "name": "SLG Masterworks · #21 to #4 on the map",
+      "niche": "SEO · AEO · GEO for local service businesses (Las Vegas home base, clients nationwide)",
+      "offer": "Panicci Ventures: full-suite SEO · AEO · GEO. Month-to-month, no lock-in. Starts with a free discovery call; a paid audit is credited toward the first month.",
+      "audience": "Owner-operators of local service businesses (home services, restaurants, gyms, tour operators, auto services) doing $500K to $5M who know they should rank but don't",
+      "topic": "Two Google profile fixes that moved a fine art studio from #21 to #4 on the map",
+      "proof": "SLG Masterworks (cleared to name, memory client_fact, Sarah Glabman 2026-10-16). Average map rank 21 (2026-09-21) to 4 (2026-10-12). Shipped 2026-09-30: profile hours plus 6 custom services. Direction requests 12 to 89, consecutive 61-day windows, latest ending 2026-10-07.",
+      "cta": "Text MAPS or AI to (702) 467-0784, or grab the free website grade at panicciventures.com/grade",
+      "meatsScripted": true,
+      "discovery": [],
+      "interview": [
+        "Google can't show you for a search it doesn't know you match. SLG's profile was missing its hours and its services. We added the hours and six real services, written the way buyers search. Twelve days later, the map said #4. It was #21.",
+        "Rank is nice. Directions are better. In one two-month stretch, 12 people asked Google for directions to SLG. In the next two months, 89. That's foot traffic you can count.",
+        "Most profiles I open are about half done. Hours, services, photos, replies to every review. It's boring, and it's exactly the stuff Google rewards."
+      ],
+      "hooks": [
+        "This art studio was #21 on Google Maps. Three weeks later it was #4.",
+        "Direction requests went from 12 to 89. People literally driving over.",
+        "We changed two things on a Google profile and it jumped 17 spots.",
+        "Nobody scrolls to #21 on Google Maps. Here's how we got out of there.",
+        "Your Google profile is probably missing the two things this one was missing.",
+        "Want to know where you rank on the map? Stay to the end."
+      ],
+      "ctas": [
+        "Want me to look at yours? Text MAPS to (702) 467-0784 and I'll send you where you show up on the map.",
+        "Text AI to (702) 467-0784 and I'll tell you what ChatGPT says about your business.",
+        "Grab your free website grade at panicciventures.com/grade."
+      ]
+    },
+    {
+      "id": "a-to-c",
+      "name": "A to C · what I actually do",
+      "niche": "SEO · AEO · GEO for local service businesses (Las Vegas home base, clients nationwide)",
+      "offer": "Panicci Ventures: full-suite SEO · AEO · GEO. Month-to-month, no lock-in. Starts with a free discovery call; a paid audit is credited toward the first month.",
+      "audience": "Owner-operators of local service businesses (home services, restaurants, gyms, tour operators, auto services) doing $500K to $5M who know they should rank but don't",
+      "topic": "What Panicci Ventures does: from where you are to the phone ringing",
+      "proof": "Panicci offer in memory: full-suite SEO · AEO · GEO plus websites, branding and analytics. Month to month after the build, no lock-in (same line as My Story).",
+      "cta": "Text MAPS or AI to (702) 467-0784, or grab the free website grade at panicciventures.com/grade",
+      "meatsScripted": true,
+      "discovery": [],
+      "interview": [
+        "A is where you are: a site that's slow, a Google profile that's half done, no idea where calls come from. C is the phone ringing and you knowing exactly why. B is the work in between, and that's my job.",
+        "SEO gets you found on Google. AEO gets you into the answer when someone asks a question. GEO gets ChatGPT and Gemini to name you. Same business, three front doors. I build all three.",
+        "After the build, it's month to month. No contract. If I'm not moving your numbers, you shouldn't keep paying me. That's why every month you get the real numbers: calls, clicks, map rank. Not impressions."
+      ],
+      "hooks": [
+        "I take businesses from A to C. Here's what that actually means.",
+        "You don't need more followers. You need the phone to ring.",
+        "If your marketing report doesn't mention calls, fire the report.",
+        "SEO, AEO, GEO. Three letters, one job: get you picked.",
+        "Panicci Ventures is basically me. Here's what I do for businesses in Vegas.",
+        "Month to month. No lock-in. Here's why I do it that way."
+      ],
+      "ctas": [
+        "Want me to look at yours? Text MAPS to (702) 467-0784 and I'll send you where you show up on the map.",
+        "Text AI to (702) 467-0784 and I'll tell you what ChatGPT says about your business.",
+        "Grab your free website grade at panicciventures.com/grade."
+      ]
+    }
+  ]
+}
