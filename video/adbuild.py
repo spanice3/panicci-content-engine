@@ -17,6 +17,8 @@ land on real word boundaries, not the browser's approximate speech timings.
 --render test  (default) Round 1 hook test: every hook x top meat x top CTA
 --render all   every combo (50 x 5 x 3 = 750 files; you probably don't want this)
 --render clips just the modules, no combos
+--combos       exact combos to stitch, e.g. H07-M2-C1,H07-M3-C1 (overrides --render). The Reel Lab uses this for
+               round 2: the winning hook against the other meats and CTAs, without rendering all 750
 --brand        also burn captions + logo bug + lower third per ratio
                (no intro card: an ad has to open on the hook)
 """
@@ -131,6 +133,7 @@ def main():
     ap.add_argument("--take-index", type=int, default=None, help="1-based take number when --meta is a session json")
     ap.add_argument("--matrix", default=None, help="ad-matrix .json (defaults to meta.adMatrix)")
     ap.add_argument("--render", choices=["test", "all", "clips"], default="test")
+    ap.add_argument("--combos", default="", help="comma list like H07-M2-C1,H07-M3-C1; overrides --render")
     ap.add_argument("--brand", default="", help="e.g. 9x16,1x1 (captions + bug + lower third)")
     ap.add_argument("--api", default=API)
     ap.add_argument("--out-dir", default="./ads")
@@ -178,14 +181,26 @@ def main():
             print(f"   {it['id']:>4} {it['in']:7.2f}-{it['out']:7.2f}s [{it['timing']}] {label[:60]}")
     json.dump(mx, open(os.path.join(a.out_dir, "ad-matrix.snapped.json"), "w"), indent=2)
 
-    if a.render == "clips":
+    want = [x.strip() for x in a.combos.split(",") if x.strip()]
+    if a.render == "clips" and not want:
         print("done: modules in", mods)
         return
-    if a.render == "test":
+    if want:
+        by = {it["id"]: it for it in H + M + C}
+        combos = []
+        for name in want:
+            parts = name.split("-")
+            if len(parts) != 3 or any(p not in by for p in parts):
+                sys.exit(f"--combos: {name} is not hook-meat-cta from this take's matrix (have {', '.join(sorted(by))})")
+            combos.append(tuple(by[p] for p in parts))
+        label = "chosen combos"
+    elif a.render == "test":
         combos = [(h, M[0], C[0]) for h in H]
+        label = "Round 1 hook test"
     else:
         combos = [(h, m, c) for h in H for m in M for c in C]
-    print(f"4) stitching {len(combos)} ads ({'Round 1 hook test' if a.render == 'test' else 'every combo'}):")
+        label = "every combo"
+    print(f"4) stitching {len(combos)} ads ({label}):")
     ratios = [r.strip() for r in a.brand.split(",") if r.strip()]
     if ratios:
         import brandkit

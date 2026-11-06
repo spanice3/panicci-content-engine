@@ -12,7 +12,9 @@ Three tools on one Vercel project (`studio.panicciventures.com`):
 2. **🎯 50·5·3 Ads** (`/`, third tab) — Hormozi's modular ad process. Opens with the
    **Panicci Ventures set** pre-loaded (`presets/panicci-553.json`: topic, 4 discovery +
    10 interview questions, 50 hooks, 3 CTAs, real client proof), so it's load → Start →
-   record. For another topic or client, *Customize* opens the builder where Claude writes
+   record. **📼 Ready 50·5·3 sets** (`presets/553-sets.json`) are short scripted sets for the Reel Lab: written
+   bodies (`meatsScripted`, read off the prompter, numbers exact), then hooks and CTAs, one take per set; their takes are
+   named after the set id. For another topic or client, *Customize* opens the builder where Claude writes
    a shoot list (discovery questions that open the session on your niche + topic,
    interview questions that pull out *meats*, 50 hook lines, 3 CTA
    lines); you film it in one sitting, one segment per item. When you stop, **🎯 Find
@@ -42,6 +44,7 @@ api/upload-testimonial.js   # mints scoped Vercel Blob client-upload tokens
 api/fifty-five-three.js     # 50·5·3: "plan" (shoot list) + "identify" (rank hooks/meats/CTAs)
 presets/panicci-553.json    # the ready-to-record Panicci Ventures 50·5·3 set
 presets/talking-heads.json  # 📼 Ready scripts: My Story + talking heads (script, delivery note, source, IG caption)
+presets/553-sets.json       # 📼 Ready 50·5·3 sets: scripted bodies + hooks + CTAs for the Reel Lab
 shoots/                     # shoot-day briefs (excluded from the deploy)
 vercel.json                 # cleanUrls + /:client → testimonial.html rewrite
 ```

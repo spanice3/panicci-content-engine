@@ -1,6 +1,6 @@
 {
-  "name": "Talking heads · Nov 2026",
-  "note": "My Story plus the six best-performing IG feed cards (Sep 24 to Oct 30, 2026, ranked by likes, comments and reach in social_hub_posts), rewritten to say to camera. Script text is spoken words only: the Clipper aligns burned-in captions to it, so delivery notes live in 'note', never in 'script'. Facts and sources are the ones each original post carried. Brief: shoots/2026-11-talking-heads.md",
+  "name": "Talking heads · results + services · Nov 2026",
+  "note": "My Story plus ten talking heads on client results (AZ Adventures, Rogue Island, SLG Masterworks, all cleared to name) and what Sammy does (A to C, SEO/AEO/GEO, month to month). Script text is spoken words only: the Clipper aligns burned-in captions to it, so delivery notes live in 'note', never in 'script'. Every number is in that script's 'source'. The same material is in the 50·5·3 tab as four Ready sets for the Reel Lab. Brief: shoots/2026-11-results-and-services.md",
   "scripts": [
     {
       "id": "my-story",
@@ -12,58 +12,94 @@
       "caption": "A is where you are. C is customers calling. Here's who I am and why I do this.\n\nI'm a designer and builder in Las Vegas. I started Panicci Ventures after watching great businesses lose to competitors who were just easier to find.\n\nSo I build the whole path: the brand, a fast website, Google rankings, the map pack, and the answers people get from ChatGPT. Desert Dog Offroad went from page 3 to #1. Gracie Jiu-Jitsu Warwick went from unranked to #1 on the map. Rogue Island went from page 4 to page 1.\n\nDM me your website and I'll tell you exactly what I see.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #lasvegaswebdesign #hendersonnv"
     },
     {
-      "id": "typo-test",
-      "title": "The typo test",
-      "seconds": 45,
-      "note": "Top performer: 3 likes, 1 comment, 53 reach (Oct 12 card). Warm-up take, record it first. Hold the phone up on 'grab your phone'.",
-      "source": "IG card 2026-10-12 https://www.instagram.com/p/DeZ4YUNHAtG/ · Search Engine Roundtable, Oct 12 2026",
-      "script": "Spell your business name wrong on Google.\nGo ahead… your customers will.\n\nSearch Engine Roundtable reported that Google's AI Overviews often show up when a search has a typo, or doesn't match any page.\nSo when somebody misspells your name, they might get a Google summary first… instead of your website.\n\nHere's the ten-minute test.\nGrab your phone.\nSearch your business name three wrong ways. Drop a letter. Swap a letter. Spell it how it sounds.\nWrite down what Google shows you each time.\n\nIf it's not you, add that common misspelling to your website and your Google profile description.\n\nTry it, and tell me in the comments what Google showed you.",
-      "caption": "Spell your business name wrong on Google. Your customers will.\n\nSearch Engine Roundtable reported on Oct 12 that Google's AI Overviews often appear when a search has a typo or matches no pages. A customer who misspells your name may see a Google summary before your website.\n\nThe 10-minute test:\n1. Search your business name 3 wrong ways on your phone.\n2. Write down what Google shows each time.\n3. If it isn't you, add the common misspelling to your website and your Google profile description.\n\nTell me in the comments what Google showed you.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #localseo #hendersonnv"
+      "id": "az-calls",
+      "title": "40 calls to 62 · AZ Adventures",
+      "seconds": 35,
+      "note": "Results. Slow down on '40… to 62' and let it land. Smile on the text line.",
+      "source": "AZ Adventures (cleared to name, memory client_fact). Google Business Profile call clicks 40 to 62 (+55%), 60 days ending 2026-08-18 vs 60 days ending 2026-11-02. Search Console clicks 1,168 to 2,013 (+72%), average position 18.4 to 11.2, 60-day windows ending 2026-11-02.",
+      "script": "A Scottsdale tour company went from 40 calls off Google… to 62.\nHere's what that actually means.\n\nMost agencies send you a report full of impressions.\nI care about one thing. Did the phone ring more?\n\nAZ Adventures got 40 calls off their Google profile in a 60-day stretch this summer.\nIn the last 60 days… 62.\nThose aren't clicks. That's people with their wallet out.\n\nWant to know where you show up on the map?\nText MAPS to (702) 467-0784. I'll send you the screenshot.",
+      "caption": "A Scottsdale tour company went from 40 calls off Google to 62.\n\nMost agencies send a report full of impressions. I care about one thing: did the phone ring more? AZ Adventures got 40 calls off their Google profile in a 60-day stretch this summer, and 62 in the last 60 days. That's 55% more people calling with their wallet out.\n\nWant to know where you show up on the map? Text MAPS to (702) 467-0784 and I'll send you the screenshot.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #localseo #googlebusinessprofile #scottsdale"
     },
     {
-      "id": "can-google-read-it",
-      "title": "Can Google read your page?",
-      "seconds": 55,
-      "note": "3 likes, 72 views (Oct 15 card). Mime trying to highlight text on your phone on 'try to highlight the words'.",
-      "source": "IG card 2026-10-15 https://www.instagram.com/p/DeiW2-CHP_K/ · Search Engine Land, Oct 13 2026",
-      "script": "Your prices are on your website.\nBut can Google actually read them?\n\nSearch Engine Land made the case that content locked behind a form holds a business back in AI search. The crawler reads your headline… and never reaches the facts.\n\nSmall shops do the same thing by accident. The price list sits behind a quote form. The menu is a photo.\n\nPull up your website on your phone.\nOpen your prices, menu or services page.\nDoes it ask for your email before it shows you anything?\nNow try to highlight the words. If you can't, they're probably a picture.\n\nMove the key facts — services, prices, hours, your city — into plain text on the page.\nThen search one of those facts plus your city, and see if you show up.\n\nStuck? DM me the link. I'll tell you what I see.",
-      "caption": "Your prices are on your website. Can Google actually read them?\n\nSearch Engine Land argued on Oct 13 that content locked behind forms holds a brand back in AI search: a crawler reads the headline and never reaches the facts. Small shops do the same thing with price lists behind quote forms and menus saved as photos.\n\nOn your phone:\n1. Open your prices, menu or services page.\n2. Does it ask for an email before it shows anything?\n3. Try to highlight the words. If you can't, they may be a picture.\n4. Put services, prices, hours and city in plain text.\n5. Search one of those facts plus your city.\n\nStuck? DM me the link and I'll tell you what I see.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #lasvegasseo #hendersonnv"
+      "id": "az-page-two",
+      "title": "Off the bottom of page two · AZ Adventures",
+      "seconds": 30,
+      "note": "Results. Hold up fingers for 18 and 11 if it feels natural. 'No ads' is the punch.",
+      "source": "AZ Adventures (cleared to name, memory client_fact). Google Business Profile call clicks 40 to 62 (+55%), 60 days ending 2026-08-18 vs 60 days ending 2026-11-02. Search Console clicks 1,168 to 2,013 (+72%), average position 18.4 to 11.2, 60-day windows ending 2026-11-02.",
+      "script": "Page two of Google is where businesses go to hide.\nThis one climbed from 18th… to 11th.\n\nAZ Adventures runs desert tours in Scottsdale.\nTheir average spot on Google went from 18th to 11th.\nBottom of page two… to the doorstep of page one.\n\nSame stretch, clicks from Google search went from 1,168 to 2,013.\nThat's 72% more. No ads. All organic.\n\nWant to know how your website grades?\nIt's free at panicciventures.com/grade.",
+      "caption": "Page two of Google is where businesses go to hide.\n\nAZ Adventures runs desert tours in Scottsdale. Over 60 days, their average spot on Google went from 18th to 11th: bottom of page two to the doorstep of page one. Same stretch, clicks from Google search went from 1,168 to 2,013. That's 72% more, no ads.\n\nWant to know how your site grades? It's free at panicciventures.com/grade.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #localseo #lasvegasseo #scottsdale"
     },
     {
-      "id": "profile-match",
-      "title": "Google can't match what your profile doesn't say",
-      "seconds": 50,
-      "note": "2 likes, 1 comment (Oct 13 card). Lean in on 'every business, not just restaurants'.",
-      "source": "IG card 2026-10-13 https://www.instagram.com/p/DedNPsZHOo4/ · Search Engine Roundtable, Oct 13 2026",
-      "script": "Somebody nearby just searched 'gluten-free dinner near me.'\nDid Google pick you?\n\nGoogle Business Profile now lets restaurants tag dishes gluten-free, dairy-free, halal and kosher, on top of vegetarian and vegan. Diners see the badge right on the dish.\n\nBut here's the part that matters for every business, not just restaurants.\nGoogle can't match what your profile doesn't say.\n\nOpen your Google profile on your phone. Tap Menu, Products, or Services.\nRestaurants: tag every dish with the badges that are true. Only what's true.\nEverybody else: write three services in plain words, the way a customer would search for them.\nThen reload your profile and read it like a stranger would.\n\nSend this to a restaurant owner you know.",
-      "caption": "Somebody nearby just searched \"gluten-free dinner near me.\" Did Google pick you?\n\nSearch Engine Roundtable reported on Oct 13 that Google Business Profile now supports gluten-free, dairy-free, halal and kosher badges on menu items. Vegetarian and vegan were already there. Only tag what is true.\n\nNot a restaurant? Same rule. Google can't match what your profile doesn't say.\n\n1. Open your Google profile, then Menu, Products or Services.\n2. Restaurants: tag each dish with the badges that are true.\n3. Everyone else: write 3 services in plain words.\n4. Reload and read it like a customer.\n\nSend this to a restaurant owner you know.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #lasvegasrestaurants #googlebusinessprofile #hendersonnv"
+      "id": "rogue-ai-answer",
+      "title": "Is AI naming you? · Rogue Island",
+      "seconds": 40,
+      "note": "Results + how AI picks. Lean in on 'are you in the answer?'. Keep it to 'about half': the platforms tracked changed, so no exact gain.",
+      "source": "Rogue Island (cleared to name, memory client_fact). Search Atlas LLM Visibility, 2026-08-17 vs 2026-11-02: overall 22% to 48.8% (the platforms tracked changed between the dates, so say about 1 in 5 to about half, never an exact gain), Gemini 0 to 56%, Copilot 0 to 45%.",
+      "script": "Ask ChatGPT to recommend a business like yours.\nAre you in the answer?\n\nIn August, Rogue Island showed up in about one out of five AI answers in their space.\nBy November… about half.\nGemini went from never naming them to naming them 56% of the time.\n\nHere's the thing. AI assistants don't rank websites. They pick answers.\nSo give them one. A clear page that says exactly what you do, where you do it, and who it's for… in the words people actually ask.\n\nWant to know what ChatGPT says about your business?\nText AI to (702) 467-0784.",
+      "caption": "Ask ChatGPT to recommend a business like yours. Are you in the answer?\n\nIn August, Rogue Island showed up in about 1 out of 5 AI answers in their space. By November it was about half, and Gemini went from never naming them to naming them 56% of the time.\n\nAI assistants don't rank websites, they pick answers. Give them one: a clear page that says what you do, where, and who it's for, in the words people actually ask.\n\nWant to know what ChatGPT says about your business? Text AI to (702) 467-0784.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #aisearch #chatgpt #localseo"
     },
     {
-      "id": "ai-bad-info",
-      "title": "AI moves fast on bad info",
-      "seconds": 50,
-      "note": "Most reach of the set: 62 reach, 97 views, 1 profile visit (Sep 30 card). Slow, knowing delivery on 'it moves fast… on bad info'.",
-      "source": "IG card 2026-09-30 https://www.instagram.com/p/Dd6-3TDluqX/ · Meta Newsroom, Sep 29 2026",
-      "script": "Meta has a free AI helper for small businesses.\nBefore you turn it on… hear me out.\n\nIt's called Muse for Small Business. You give it a goal, it connects to tools you already use — QuickBooks, Shopify, Canva, Stripe — and it drafts the work in the background.\nMeta says nothing publishes, sends, or spends without your approval. Good.\n\nHere's my take.\nAn AI agent works from what your accounts already say.\nWrong hours. An old service list. Messy books.\nIt moves fast… on bad info.\n\nSo clean up the info first.\nThen pick one chore you hate. Let it draft. Approve every single one.\nAnd keep it away from your ad budget on day one.\n\nSend this to an owner who's about to hand AI the keys.",
-      "caption": "Meta has a free AI helper for small businesses. Clean up your info before you turn it on.\n\nIt's called Muse for Small Business (Meta Newsroom, Sep 29). You give it a goal, it connects to tools like QuickBooks, Shopify, Canva and Stripe, and it drafts the work. Meta says \"nothing publishes, sends, or spends without your approval.\"\n\nMy take: an agent works from what your accounts already say. Wrong hours, an old service list, messy books? It moves fast on bad info.\n\nOne move: fix your info, pick one chore you hate, let it draft, approve every one. Keep it away from your ad budget on day one.\n\nSend this to an owner who's about to hand AI the keys.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #hendersonnv #summerlinlv"
+      "id": "ai-trust-check",
+      "title": "AI trusts what it can confirm",
+      "seconds": 25,
+      "note": "Service. Count the four places on your fingers.",
+      "source": "Panicci offer in memory: full-suite SEO · AEO · GEO plus websites, branding and analytics. Month to month after the build, no lock-in (same line as My Story). Advice, no client numbers.",
+      "script": "Your next customer isn't Googling you.\nThey're asking AI.\n\nHere's what I check first.\nDoes your business say the same name, address and services everywhere online?\nYour website. Your Google profile. Yelp. Facebook.\n\nAI trusts what it can confirm.\nClean that up… and you give it a reason to recommend you.\n\nWant to know what ChatGPT says about you right now?\nText AI to (702) 467-0784.",
+      "caption": "Your next customer isn't Googling you. They're asking AI.\n\nThe first thing I check: does your business say the same name, address and services everywhere online? Your website, your Google profile, Yelp, Facebook. AI trusts what it can confirm. Clean that up and you give it a reason to recommend you.\n\nWant to know what ChatGPT says about you right now? Text AI to (702) 467-0784.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #aisearch #chatgpt #vegassmallbusiness"
     },
     {
-      "id": "close-for-a-day",
-      "title": "If you had to close tomorrow",
-      "seconds": 50,
-      "note": "Most views of the set: 140 views, 68 reach (Oct 15 card). Tell it like a story, not a news read. Pause after 'three days'.",
-      "source": "IG card 2026-10-15 https://www.instagram.com/p/DehmyD8kfAE/ · FOX5 Vegas, Oct 14 2026",
-      "script": "Eight shops in North Las Vegas lost running water for three days.\n\nFOX5 reported that thieves cut the backflow valves at Deer Springs Town Center. No water from Saturday through Monday. One stylist estimated she lost more than a thousand dollars in canceled appointments, because licensing rules require handwashing between clients.\n\nYou can't stop a thief.\nBut you control how fast your customers hear the news.\n\nSo tonight, write the one sentence you'd post on your Google profile if you had to close for a day.\nSave it in your phone.\nAnd find where special hours live on your profile, before you need them.\n\nWhen something breaks, you're live in two minutes… instead of customers driving to a locked door.\n\nSend this to a friend who owns a shop.",
-      "caption": "Eight shops lost running water for three days.\n\nFOX5 Vegas reported on Oct 14 that thieves cut four brass backflow valves at Deer Springs Town Center in North Las Vegas. Eight businesses had no water Saturday through Monday. One stylist estimated she lost more than 1,000 dollars in canceled appointments, because licensing rules require handwashing between clients.\n\nYou can't stop a thief, but you control how fast customers hear the news. Tonight, write the sentence you'd post on your Google profile if you had to close for a day, and find where special hours live before you need them.\n\nSend this to a friend who owns a shop.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #northlasvegas #lasvegasshops"
+      "id": "slg-21-to-4",
+      "title": "#21 to #4 on Google Maps · SLG Masterworks",
+      "seconds": 30,
+      "note": "Results. 'Number 21… number 4' is the whole story, give it a beat.",
+      "source": "SLG Masterworks (cleared to name, memory client_fact, Sarah Glabman 2026-10-16). Average map rank 21 (2026-09-21) to 4 (2026-10-12). Shipped 2026-09-30: profile hours plus 6 custom services. Direction requests 12 to 89, consecutive 61-day windows, latest ending 2026-10-07.",
+      "script": "This art studio was number 21 on Google Maps.\nThree weeks later… number 4.\n\nGoogle can't show you for a search it doesn't know you match.\nSLG Masterworks' profile was missing its hours and its services.\nWe added the hours and six real services… written the way buyers search.\n\nTwelve days after that went live, the map said number 4.\n\nWant to know where you rank on the map?\nText MAPS to (702) 467-0784.",
+      "caption": "This art studio was #21 on Google Maps. Three weeks later it was #4.\n\nGoogle can't show you for a search it doesn't know you match. SLG Masterworks' profile was missing its hours and its services. We added the hours and six real services, written the way buyers search. Twelve days after that went live, the map said #4.\n\nWant to know where you rank on the map? Text MAPS to (702) 467-0784.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #googlemaps #googlebusinessprofile #localseo"
     },
     {
-      "id": "best-for",
-      "title": "Write the label before AI does",
-      "seconds": 50,
-      "note": "51 reach, 81 views (Oct 7 card). The comment ask is the point: answer every one with a tightened line, that's the authority play.",
-      "source": "IG card 2026-10-07 https://www.instagram.com/p/DeNAZI4DkDt/ · Search Engine Roundtable, Oct 6 2026",
-      "script": "ChatGPT is testing little labels on products. 'Best for beginners.' 'Best all-rounder.'\nSo who writes those labels?\n\nSearch Engine Roundtable reported OpenAI testing short verdicts on product results — search expert Brodie Clark spotted it. It's only a test. But it shows where shopping is headed: a quick verdict… before anybody visits your website.\n\nMy bet? Those verdicts come from the words written about your product.\n'High quality' gives AI nothing to repeat.\n'Easiest first pair for new runners'… that's the label, already written.\n\nPick your top three products or services.\nAdd one sentence to each page that starts with 'Best for' — name the buyer, and the reason.\n\nDrop one of yours in the comments, and I'll tighten it up.",
-      "caption": "ChatGPT is testing \"best for\" labels on products. Who writes them?\n\nSearch Engine Roundtable reported on Oct 6 that OpenAI is testing short labels on product results, like \"best all-rounder\" and \"best cushioning.\" Brodie Clark spotted the test. It's only a test, but it shows where shopping is heading: a quick verdict before a shopper visits your site.\n\nMy guess: those verdicts come from the words written about each product. \"High quality\" gives AI nothing to repeat. \"Easiest first pair for new runners\" already wrote the label.\n\nYour move: add one \"Best for\" sentence to your top 3 product or service pages. Name the buyer and the reason.\n\nDrop one of yours in the comments and I'll tighten it up.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #hendersonnv #lasvegasshops"
+      "id": "slg-directions",
+      "title": "12 to 89 direction requests · SLG Masterworks",
+      "seconds": 25,
+      "note": "Results. Point at the door on 'driving over'.",
+      "source": "SLG Masterworks (cleared to name, memory client_fact, Sarah Glabman 2026-10-16). Average map rank 21 (2026-09-21) to 4 (2026-10-12). Shipped 2026-09-30: profile hours plus 6 custom services. Direction requests 12 to 89, consecutive 61-day windows, latest ending 2026-10-07.",
+      "script": "Direction requests went from 12 to 89.\nThat's people literally driving over.\n\nRank is nice. Directions are better.\nIn one two-month stretch, 12 people asked Google for directions to SLG Masterworks.\nIn the next two months… 89.\n\nThat's foot traffic you can count.\n\nWant to see where you show up on the map?\nText MAPS to (702) 467-0784.",
+      "caption": "Direction requests went from 12 to 89. That's people literally driving over.\n\nRank is nice. Directions are better. In one two-month stretch, 12 people asked Google for directions to SLG Masterworks. In the next two months, 89. That's foot traffic you can count.\n\nWant to see where you show up on the map? Text MAPS to (702) 467-0784.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #googlemaps #localseo #vegassmallbusiness"
+    },
+    {
+      "id": "profile-half-done",
+      "title": "Most Google profiles are half done",
+      "seconds": 25,
+      "note": "Service. Tick the four missing things off on your fingers.",
+      "source": "SLG Masterworks (cleared to name, memory client_fact, Sarah Glabman 2026-10-16). Average map rank 21 (2026-09-21) to 4 (2026-10-12). Shipped 2026-09-30: profile hours plus 6 custom services. Direction requests 12 to 89, consecutive 61-day windows, latest ending 2026-10-07.",
+      "script": "Your Google profile is probably missing something.\n\nMost profiles I open are about half done.\nNo hours. No services. Old photos. Reviews nobody answered.\n\nIt's boring stuff… and it's exactly what Google rewards.\nOne art studio I work with added its hours and six services.\nIt went from number 21 on the map to number 4.\n\nWant to know where you show up?\nText MAPS to (702) 467-0784.",
+      "caption": "Your Google profile is probably missing something.\n\nMost profiles I open are about half done: no hours, no services, old photos, reviews nobody answered. It's boring, and it's exactly what Google rewards. One art studio I work with added its hours and six services and went from #21 on the map to #4.\n\nWant to know where you show up? Text MAPS to (702) 467-0784.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #googlebusinessprofile #googlemaps #hendersonnv"
+    },
+    {
+      "id": "a-to-c",
+      "title": "A to C: what I actually do",
+      "seconds": 25,
+      "note": "Service. Draw A, B, C in the air left to right.",
+      "source": "Panicci offer in memory: full-suite SEO · AEO · GEO plus websites, branding and analytics. Month to month after the build, no lock-in (same line as My Story).",
+      "script": "I take businesses from A to C.\nHere's what that actually means.\n\nA is where you are.\nA site that's slow. A Google profile that's half done. No idea where your calls come from.\nC is the phone ringing… and you knowing exactly why.\nB is the work in between.\nThat's my job.\n\nWant to see where you're starting from?\nGrab your free website grade at panicciventures.com/grade.",
+      "caption": "I take businesses from A to C. Here's what that actually means.\n\nA is where you are: a slow site, a Google profile that's half done, no idea where your calls come from. C is the phone ringing and you knowing exactly why. B is the work in between, and that's my job.\n\nWant to see where you're starting from? Grab your free website grade at panicciventures.com/grade.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #lasvegaswebdesign #hendersonnv"
+    },
+    {
+      "id": "three-front-doors",
+      "title": "SEO, AEO, GEO: three front doors",
+      "seconds": 25,
+      "note": "Service. One finger per door.",
+      "source": "Panicci offer in memory: full-suite SEO · AEO · GEO plus websites, branding and analytics. Month to month after the build, no lock-in (same line as My Story).",
+      "script": "SEO. AEO. GEO.\nThree letters… one job. Get you picked.\n\nSEO gets you found on Google.\nAEO gets you into the answer when someone asks a question.\nGEO gets ChatGPT and Gemini to name you.\n\nSame business. Three front doors.\nI build all three.\n\nWant to know what ChatGPT says about your business?\nText AI to (702) 467-0784.",
+      "caption": "SEO, AEO, GEO. Three letters, one job: get you picked.\n\nSEO gets you found on Google. AEO gets you into the answer when someone asks a question. GEO gets ChatGPT and Gemini to name you. Same business, three front doors, and I build all three.\n\nWant to know what ChatGPT says about your business? Text AI to (702) 467-0784.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #localseo #aisearch #lasvegasseo"
+    },
+    {
+      "id": "month-to-month",
+      "title": "Month to month, no lock-in",
+      "seconds": 25,
+      "note": "Service. Straight into the lens, no smile until the last line.",
+      "source": "Panicci offer in memory: full-suite SEO · AEO · GEO plus websites, branding and analytics. Month to month after the build, no lock-in (same line as My Story).",
+      "script": "Month to month. No lock-in.\nHere's why I do it that way.\n\nAfter the build, there's no contract.\nIf I'm not moving your numbers… you shouldn't keep paying me.\nSo every month you get the real numbers.\nCalls. Clicks. Where you rank on the map.\nNot impressions.\n\nIf your phone should be ringing more than it is…\ngrab your free website grade at panicciventures.com/grade.",
+      "caption": "Month to month. No lock-in. Here's why.\n\nAfter the build, there's no contract. If I'm not moving your numbers, you shouldn't keep paying me. So every month you get the real numbers: calls, clicks and where you rank on the map. Not impressions.\n\nIf your phone should be ringing more than it is, grab your free website grade at panicciventures.com/grade.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #localseo #hendersonnv"
     }
   ]
 }
