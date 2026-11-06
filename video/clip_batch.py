@@ -10,7 +10,7 @@ Each <take>.mp4 in raw_dir needs its Script data <take>.json beside it (the stud
 Cuts land in cuts_dir/<take>/, logs in cuts_dir/../logs/<take>.log (kept out of the Drive push).
 A take that fails doesn't stop the others. Exit code 0 when at least one take was cut, 1 when none were.
 """
-import argparse, concurrent.futures as cf, csv, glob, json, os, subprocess, sys, time
+import argparse, concurrent.futures as cf, csv, glob, json, os, shutil, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,6 +51,8 @@ def run(job):
         tail = [l.strip() for l in open(job["log"], errors="replace") if l.strip()]
         res["error"] = tail[-1][:300] if tail else f"exit {rc}"
         return res
+    for scratch in glob.glob(os.path.join(job["out"], ".*")):          # .kit_9x16/ etc: render scratch, not cuts
+        shutil.rmtree(scratch, ignore_errors=True) if os.path.isdir(scratch) else os.remove(scratch)
     files = sorted(os.path.relpath(p, job["out"]) for p in glob.glob(os.path.join(job["out"], "**", "*.mp4"),
                                                                        recursive=True))
     res["videos"] = len(files)

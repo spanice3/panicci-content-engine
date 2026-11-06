@@ -21,7 +21,8 @@ crop-chatgpt.png, crop-perplexity.png, crop-deepseek.png (video/ads/bjj-gjjw/) a
 Normalize a raw studio take first (its MP4 is VFR):
   ffmpeg -i take.mp4 -vf fps=30,format=yuv420p -c:v libx264 -crf 15 -g 15 -c:a aac -b:a 192k clean.mp4
 """
-import argparse, json, os
+import argparse, json, os, subprocess
+import numpy as np
 from PIL import Image, ImageDraw
 
 import bjj_gjjw_ads as v1
@@ -50,6 +51,28 @@ CUTS = {
                 fix={}),
 }
 ZOOM = {"hook", "problem", "offer", "cta"}   # punch in on the talking beats, wide when a card is up
+
+
+def let_words_land(take, segs, words, floor=0.012, cap=0.6):
+    """Whisper ends a word early (it heard "visibility" stop ~0.2 s before the sound did, which is the clip Brian
+    caught). Push every cut that ends on a pause out until the audio actually goes quiet, never into the next word."""
+    pcm = subprocess.run(["ffmpeg", "-v", "error", "-i", take, "-ac", "1", "-ar", "16000", "-f", "f32le", "-"],
+                         capture_output=True, check=True).stdout
+    x = np.frombuffer(pcm, np.float32); hop = 160                     # 10 ms frames
+    rms = np.sqrt(np.convolve(x ** 2, np.ones(hop) / hop, mode="same"))[::hop]
+    starts = sorted(w[0] for w in words)
+    out = []
+    for i, (s, e, bi, cam) in enumerate(segs):
+        nxt_seg = segs[i + 1][0] if i + 1 < len(segs) else None
+        if nxt_seg is not None and nxt_seg - e < 0.05:                   # joined to the next stretch: leave it
+            out.append((s, e, bi, cam)); continue
+        nxt_word = next((t for t in starts if t > e + 0.01), e + cap)
+        limit = min(e + cap, nxt_word - 0.03, nxt_seg - 0.01 if nxt_seg is not None else e + cap)
+        t = e
+        while t < limit and int(t * 100) < len(rms) and rms[int(t * 100)] > floor:
+            t += 0.01
+        out.append((s, max(e, min(limit, t + 0.06)), bi, cam))
+    return out
 
 
 def card_img(kind, assets, k=1.0):
@@ -243,7 +266,7 @@ def compose(base, dur, overlays, out):
 def build(name, take, words, assets, ratio, outdir):
     lay = LAYOUT[ratio]; spec = CUTS[name]; blocks = spec["blocks"]
     tmp = os.path.join(outdir, f".tmp_{name}_{ratio}"); os.makedirs(tmp, exist_ok=True)
-    segs = plan(words, blocks, vend=10 ** 6)
+    segs = let_words_land(take, plan(words, blocks, vend=10 ** 6), words)
     O, dur = timeline(segs)
     base = cut(take, segs, blocks, lay, CROP[name][ratio], tmp)
     blk = {n: (a, b) for n, a, b in blocks}
