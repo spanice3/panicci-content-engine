@@ -18,6 +18,11 @@ cd video && bash setup.sh
 Installs a static `ffmpeg`, the Space Grotesk font (weighted + installed),
 Python deps, and builds the brand assets into `video/.build/`.
 
+**Cloud routines (Clipper, Reel Lab)** never run this themselves. The "Content Engine" cloud environment's setup
+script clones this repo to `/opt/pce`, runs `setup.sh`, pre-downloads the Whisper model and writes
+`/opt/pce/video/.ready` before Claude starts (log: `/var/log/pce-setup.log`). A routine only checks for `.ready`
+and runs the scripts, so a run never clones, installs or downloads anything (that is what kept getting blocked).
+
 ## Run
 
 ```bash
@@ -53,7 +58,9 @@ python3 adbuild.py TAKE.mp4 --meta TAKE.json --brand 9x16,1x1          # + capti
 ```
 
 - Every module edge is snapped to Whisper word timestamps (the browser's are approximate).
-- No adMatrix in the json? It transcribes and calls the studio's
+- A **Ready 50·5·3 set** (`adsSet.meatsScripted`) needs no picks: every HOOK, MEAT and ADCTA segment is a module
+  as read, in the set's order (the first meat and CTA lead round 1). No API call, no key.
+- No adMatrix in the json otherwise? It transcribes and calls the studio's
   `/api/fifty-five-three` identify endpoint itself (same prompt as the browser).
   That call needs `STUDIO_API_KEY` in the environment (the studio key).
 - Hooks/meats you dropped (✕) on the board are skipped.
@@ -120,5 +127,7 @@ Sourced from the `panicci-deliverables` skill (`brand.json`): deep green
 | `brandkit.py` | safe-zone branded renderer (importable + CLI) |
 | `run.py` | orchestrator |
 | `adbuild.py` | 50·5·3 ad modules + combos |
+| `clip_batch.py` | the Clipper's cut step: every take in a folder, two at a time, routed to `run.py` or `adbuild.py`, one JSON summary |
+| `bjj_gjjw_v2.py` | Jiu-jitsu gym owner ads v2 (Brian's review, Nov 6): face on camera the whole time, title above the head, proof cards popping up above the head, no end card |
 | `bjj_gjjw_ads.py` | Jiu-jitsu gym owner Meta ads (Nov 2026): on-camera hook, then voice-over proof scenes with real GJJW numbers and the AI answer screen recordings. Inputs in `ads/bjj-gjjw/` |
 | `assets/brand-mark.svg` | the P/V shield |
