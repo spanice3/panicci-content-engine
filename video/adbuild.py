@@ -137,7 +137,11 @@ def main():
     ap.add_argument("--brand", default="", help="e.g. 9x16,1x1 (captions + bug + lower third)")
     ap.add_argument("--api", default=API)
     ap.add_argument("--out-dir", default="./ads")
+    ap.add_argument("--allow-frozen", action="store_true", help="cut a take even if its picture freezes before the sound ends")
     a = ap.parse_args()
+    import avcheck
+    print("0) frozen-take check:")
+    avcheck.require_ok(a.take, a.allow_frozen)
 
     meta = json.load(open(a.meta))
     if "takes" in meta:
