@@ -1,6 +1,6 @@
 {
   "name": "Talking heads · results + services · Nov 2026",
-  "note": "The GJJW jiu-jitsu ad retake (Meta lead form, main + 20s in one take), then My Story plus ten talking heads on client results (AZ Adventures, Rogue Island, SLG Masterworks, all cleared to name) and what Sammy does (A to C, SEO/AEO/GEO, month to month). Script text is spoken words only: the Clipper aligns burned-in captions to it, so delivery notes live in 'note', never in 'script'. Every number is in that script's 'source'. The same material is in the 50·5·3 tab as four Ready sets for the Reel Lab. Brief: shoots/2026-11-results-and-services.md",
+  "note": "The GJJW jiu-jitsu ad retake (Meta lead form, main + 20s in one take), then My Story plus ten talking heads on client results (AZ Adventures, Rogue Island, SLG Masterworks, all cleared to name) and what Sammy does (A to C, SEO/AEO/GEO, month to month). Script text is spoken words only: the Clipper aligns burned-in captions to it, so delivery notes live in 'note', never in 'script'. Every number is in that script's 'source'. The same material is in the 50·5·3 tab as four Ready sets for the Reel Lab. Brief: shoots/2026-11-results-and-services.md Plus 4 Skool scripts (ids skool-*): the A to C Builders welcome and the three First Page Live lessons, for Dec 8-14.",
   "scripts": [
     {
       "id": "bjj-visibility",
@@ -109,6 +109,42 @@
       "source": "Panicci offer in memory: full-suite SEO · AEO · GEO plus websites, branding and analytics. Month to month after the build, no lock-in (same line as My Story).",
       "script": "Month to month. No lock-in.\nHere's why I do it that way.\n\nAfter the build, there's no contract.\nIf I'm not moving your numbers… you shouldn't keep paying me.\nSo every month you get the real numbers.\nCalls. Clicks. Where you rank on the map.\nNot impressions.\n\nIf your phone should be ringing more than it is…\ngrab your free website grade at panicciventures.com/grade.",
       "caption": "Month to month. No lock-in. Here's why.\n\nAfter the build, there's no contract. If I'm not moving your numbers, you shouldn't keep paying me. So every month you get the real numbers: calls, clicks and where you rank on the map. Not impressions.\n\nIf your phone should be ringing more than it is, grab your free website grade at panicciventures.com/grade.\n\nSammy P · The Website Mechanic\nPanicci Ventures · SEO · AEO · GEO · Las Vegas · panicciventures.com\n\n#lasvegasbusiness #vegassmallbusiness #localseo #hendersonnv"
+    },
+    {
+      "id": "skool-welcome",
+      "title": "Skool · A to C Builders welcome (Start Here)",
+      "seconds": 75,
+      "note": "Pinned video in Start Here. Black tee, sand-gold backdrop, eye level. Warm and quick, like you're greeting someone at the door. Record Dec 8-14, not before the Takeover sprint closes.",
+      "source": "Decided 2026-11-07, panicci-os docs/SKOOL.md. Receipt: /build-with-claude/ (39 of 62 changes to panicciventures.com since Aug 21, 2026 written by Claude, counted Oct 23). Hosting per CLAUDE-SITE-SPRINT-OFFER.md: Cloudflare Pages or Netlify, never Vercel Hobby for a business site.",
+      "script": "Welcome to A to C Builders. I'm Sammy.\n\nI build websites for a living, and I build almost all of them with Claude. Since August, most of the changes to my own site were written by Claude… then checked and shipped by me. That's the whole method, and that's what this group is.\n\nHere's how it works.\n\nOne: open First Page Live in the Classroom. Three short lessons, and you'll have a homepage on a real link this afternoon.\n\nTwo: post in the Ship Log every week. Even \"I set up my accounts.\" Small ships beat big plans.\n\nThree: stuck? Post the error and a screenshot in Stuck. That's what it's there for.\n\nEvery Monday I post what I shipped. Real projects, real list.\n\nLet's build.",
+      "caption": "Free group: build and run your own website with AI. Comment BUILD and I'll send you the link."
+    },
+    {
+      "id": "skool-lesson-1",
+      "title": "Skool · First Page Live 1: Claude, GitHub, free hosting",
+      "seconds": 90,
+      "note": "To-camera open, then screen recording. Read the open, cut to screen at [SCREEN], read the close at the end. Have a fresh browser profile so they see every click. About 15 minutes total with the screen part.",
+      "source": "Decided 2026-11-07, panicci-os docs/SKOOL.md. Receipt: /build-with-claude/ (39 of 62 changes to panicciventures.com since Aug 21, 2026 written by Claude, counted Oct 23). Hosting per CLAUDE-SITE-SPRINT-OFFER.md: Cloudflare Pages or Netlify, never Vercel Hobby for a business site.",
+      "script": "Lesson one. By the end of this you'll have three accounts set up, and that's the whole job today.\n\nClaude writes your site. GitHub holds your files, so nothing ever gets lost. And free hosting puts it on the internet. Cloudflare Pages or Netlify. Both are free for a business site.\n\nThe only real cost is Claude. A paid plan, about twenty bucks a month. Your domain is about ten to twenty a year, and you probably already own it.\n\n[SCREEN] Follow along click for click. Pause me whenever you need to.\n\n[CLOSE] That's it. Three accounts, done. Post \"accounts set up\" in the Ship Log, and I'll see you in lesson two, where Claude learns to sound like you.",
+      "caption": ""
+    },
+    {
+      "id": "skool-lesson-2",
+      "title": "Skool · First Page Live 2: your brand brief",
+      "seconds": 90,
+      "note": "To-camera open, then screen: fill in the brand brief live for a real example business (use your own, Panicci). Show one before/after: the same prompt without the brief, then with it.",
+      "source": "Decided 2026-11-07, panicci-os docs/SKOOL.md. Receipt: /build-with-claude/ (39 of 62 changes to panicciventures.com since Aug 21, 2026 written by Claude, counted Oct 23). Hosting per CLAUDE-SITE-SPRINT-OFFER.md: Cloudflare Pages or Netlify, never Vercel Hobby for a business site.",
+      "script": "Lesson two is the one most people skip, and it's why their site sounds like a robot wrote it.\n\nBefore Claude writes a single line, you give it a brand brief. One page. Who you serve, what you sell, how you talk, your colors, your rules. I use the same brief on every client build.\n\nWatch this. Same prompt, twice. First without the brief… generic. Now with it… that sounds like a real business.\n\n[SCREEN] Fill yours in with me. Fifteen minutes.\n\n[CLOSE] Save it in your project as CLAUDE.md. Claude reads it every time, so you never explain your business twice. Post your one-line business description in the Ship Log. Lesson three, we build the homepage.",
+      "caption": ""
+    },
+    {
+      "id": "skool-lesson-3",
+      "title": "Skool · First Page Live 3: homepage on a preview link",
+      "seconds": 90,
+      "note": "To-camera open, then screen: ask Claude for the homepage from the brief, fix one thing on phone width, push, open the preview link on your phone on camera. End on the phone.",
+      "source": "Decided 2026-11-07, panicci-os docs/SKOOL.md. Receipt: /build-with-claude/ (39 of 62 changes to panicciventures.com since Aug 21, 2026 written by Claude, counted Oct 23). Hosting per CLAUDE-SITE-SPRINT-OFFER.md: Cloudflare Pages or Netlify, never Vercel Hobby for a business site.",
+      "script": "Lesson three. This is the fun one. Homepage, live, on a real link.\n\nYou've got your accounts and your brief. Now you ask Claude for the page, check it on your phone, fix what's off, and push it live.\n\nThe part nobody shows you is the last step. Getting the code onto the internet. That's the gap where most people quit with four hundred lines of code and nowhere to put it. Not you.\n\n[SCREEN] Build it with me.\n\n[CLOSE] There it is, on my phone, on a real link. Drop yours in the Ship Log. When you want it on your own domain with every page, ranking on Google, in thirty days… that's the Site Sprint. Details are pinned.",
+      "caption": ""
     }
   ]
 }
