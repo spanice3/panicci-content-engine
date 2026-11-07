@@ -86,6 +86,27 @@ def identify(meta, words, api):
     }
 
 
+def scripted_matrix(meta):
+    """A Ready 50-5-3 set (adsSet.meatsScripted) is read word for word, so every HOOK, MEAT and ADCTA segment is a
+    module as filmed, in the set's order: the first meat and first CTA lead round 1. No API call, no studio key."""
+    pad = lambda i: str(i).zfill(2)
+    def ends(t, k=6):
+        w = t.replace("\u2026", " ").split()
+        return " ".join(w[:k]), " ".join(w[-k:])
+    seg = lambda t: [s for s in meta.get("segments", []) if s["type"] == t and (s.get("question") or "").strip()]
+    hooks = [{"id": "H" + pad(i + 1), "seg": s["n"], "text": s["question"].strip(), "source": "read", "on": True}
+             for i, s in enumerate(seg("HOOK"))]
+    meats = []
+    for i, s in enumerate(seg("MEAT")):
+        a, b = ends(s["question"].strip())
+        meats.append({"id": "M%d" % (i + 1), "seg": s["n"], "title": " ".join(s["question"].split()[:5]),
+                      "startQuote": a, "endQuote": b, "on": True})
+    ctas = [{"id": "C%d" % (i + 1), "seg": s["n"], "text": s["question"].strip(), "on": True}
+            for i, s in enumerate(seg("ADCTA"))]
+    return {"method": "hormozi-50-5-3", "model": "scripted-set", "hooks": hooks, "meats": meats, "ctas": ctas,
+            "reshoot": []}
+
+
 def snap(item, kind, meta, words):
     """Set item['in'], item['out'] from Whisper words. Falls back to the
     browser's approximate start/end, then the whole segment."""
@@ -158,6 +179,9 @@ def main():
     print(f"   {len(words)} words")
 
     mx = json.load(open(a.matrix)) if a.matrix else meta.get("adMatrix")
+    if not mx and (meta.get("adsSet") or {}).get("meatsScripted"):
+        print("2) scripted Ready set: every hook / meat / CTA is a module as read (no API call)")
+        mx = scripted_matrix(meta)
     if not mx:
         print("2) no adMatrix in the json, asking the studio to identify hooks / meats / CTAs...")
         mx = identify(meta, words, a.api)
