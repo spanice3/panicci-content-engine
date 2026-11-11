@@ -3,6 +3,10 @@
 
   python3 bjj_gjjw_v2.py --cut main --take clean_take3.mp4 --words take3.words.json --assets <dir> --out-dir out
   python3 bjj_gjjw_v2.py --cut 20s  --take clean_take1.mp4 --words take1.words.json --assets <dir> --out-dir out
+  python3 bjj_gjjw_v2.py --cut nov11-main --take clean_take5.mp4 --words ads/bjj-gjjw/take5-nov11.words.json --assets ads/bjj-gjjw
+  python3 bjj_gjjw_v2.py --cut nov11-20s  --take clean_take5.mp4 --words ads/bjj-gjjw/take5-nov11.words.json --assets ads/bjj-gjjw
+    (take 5 = bjj-visibility-recording-2026-11-11_13-29-44-take5.mp4; its words file has two onsets moved off
+     Whisper's stretched timings: #96 "and" 35.52 s, #164 "My" 59.40 s, so the pauses before them get cut)
 
 What changed from v1 (bjj_gjjw_ads.py), per Brian:
   - Sammy's face stays on screen start to finish. No full-screen slides and no end card.
@@ -53,6 +57,45 @@ CUTS = {
 }
 ZOOM = {"hook", "problem", "offer", "cta"}   # punch in on the talking beats, wide when a card is up
 
+# Nov 11 retake (take 5, 1920x1080 webcam). Sammy read the pre-refresh script, so its cards carry the dated sources
+# for what he says (116 vs 130 reviews on Oct 26; +46% search appearances in the stored Aug 18 vs Nov 2 GBP
+# snapshots). Founder photo law: a person-segmentation pass put his shirt at x 524-1365 for the whole cut, so the
+# camera windows are 1080 (9:16) and 1060 (4:5) source px wide with ~110 px clear past each shoulder, no punch-in.
+CUTS["nov11-main"] = dict(
+    blocks=[("hook", 0, 11), ("problem", 12, 38), ("map", 39, 53), ("scan", 54, 66), ("reviews", 67, 84),
+            ("growth", 85, 95), ("ai", 96, 113), ("offer", 114, 142), ("cta", 143, 151)],
+    fix={10: "gym?", 11: "Visibility.", 64: "one.", 65: "All", 77: "reviews.", 82: "Still", 84: "one.", 85: "Since",
+         95: "searches.", 96: "And", 128: "guaranteed.", 144: "Apply"},
+    facts="nov11-read", zoom=False, terms=True,
+    xshift={"map": -65, "scan": -65})   # he points up and swings his arm out on "Gracie Jiu-Jitsu Warwick": give that side room
+CUTS["nov11-20s"] = dict(   # the short read, with the main read's offer line ("30% more Google traffic…")
+    blocks=[("hook", 152, 163), ("map", 164, 179), ("scan", 180, 184), ("reviews", 185, 193), ("offer", 120, 128),
+            ("cta", 204, 206)],
+    fix={162: "gym?", 163: "Visibility.", 165: "client", 128: "guaranteed.", 205: "Apply"},
+    facts="nov11-read", zoom=False, terms=True)
+for _c in ("nov11-main", "nov11-20s"):
+    CROP[_c] = {"9x16": (405, 180, 1080, 900), "4x5": (415, 0, 1060, 1080)}
+# 9:16 camera window for the Nov 11 take: 1080x900 (wider than the 4:5 default so both shoulders clear the sides)
+LAYOUT_BY_CUT = {c: {"9x16": dict(box=(0, 640, 1080, 900), zone=(470, 850))} for c in ("nov11-main", "nov11-20s")}
+
+# What each card says, per read. "current" = the refreshed Ready script (Nov 11); "nov11-read" = what take 5 says.
+FACTS = {
+    "current": dict(
+        scan_foot="Search Atlas map scan · 39 spots, 5 mi · Nov 9, 2026",
+        reviews=("on 117 reviews vs. a rival’s 132", "Google review counts · Search Atlas map scan · Nov 2, 2026"),
+        growth=("+42%", "more Google searches showed their gym’s profile",
+                "Search Atlas GBP search appearances · 1,578 → 2,238 · 60 days to Aug 18 vs. Nov 7")),
+    "nov11-read": dict(
+        scan_foot="Search Atlas map scan · 39 spots, 5 mi · Nov 9, 2026",
+        reviews=("on 116 reviews vs. a rival’s 130", "Google review counts · Search Atlas map scan · Oct 26, 2026"),
+        growth=("+46%", "more Google searches showed their gym’s profile",
+                "Search Atlas GBP snapshots · search appearances 1,444 → 2,106 · 60 days to Aug 18 vs. Nov 2")),
+}
+TERMS = ("90-Day Growth Guarantee",
+         "30% more qualified traffic in 90 days, or I keep working free until you get there.",
+         ["Qualified traffic = non-branded Google clicks + AI-assistant visits,",
+          "vs. the 90 days before we start. Retainers only. Terms apply."])
+
 
 def let_words_land(take, segs, words, floor=0.012, cap=0.6):
     """Whisper ends a word early (it heard "visibility" stop ~0.2 s before the sound did, which is the clip Brian
@@ -76,7 +119,7 @@ def let_words_land(take, segs, words, floor=0.012, cap=0.6):
     return out
 
 
-def card_img(kind, assets, k=1.0):
+def card_img(kind, assets, k=1.0, facts="current"):
     """One proof card (RGBA), sized for the card zone. Ink ground, gold kicker, cream footnote."""
     pad, maxw = round(26 * k), round(936 * k)
     fk, fn = font("Bold", 30 * k), font("Regular", 20 * k)
@@ -125,18 +168,32 @@ def card_img(kind, assets, k=1.0):
         return im
 
     A = lambda f: os.path.join(assets, f)
+    F = FACTS[facts]
+    if kind == "terms":
+        kick, line, foot = TERMS
+        fb, ff = font("SemiBold", 36 * k), font("Regular", 21 * k)
+        tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
+        bl = wrap(tmp, line, fb, maxw - 2 * pad)
+        w = round(max(tmp.textlength(l, font=fb) for l in bl))
+        h = round(len(bl) * 46 * k + 10 * k + len(foot) * 28 * k)
+        body = Image.new("RGBA", (max(w, round(max(tmp.textlength(l, font=ff) for l in foot))), h), (0, 0, 0, 0))
+        d = ImageDraw.Draw(body); y = 0
+        for l in bl:
+            d.text((0, y), l, font=fb, fill=WHITE + (255,)); y += 46 * k
+        y += 10 * k
+        for l in foot:
+            d.text((0, y), l, font=ff, fill=CREAM + (200,)); y += 28 * k
+        return frame(body, kick, "")
     if kind == "map":
         return frame(shot(A("gjjw-map-pack.webp"), keep=(0, 0, 800, 372), boxes=[(22, 104, 778, 360)]),
                      "#1 on Google Maps · “kids jiu-jitsu”", "Unedited Google Maps screenshot · Warwick, RI · Oct 12, 2026")
     if kind == "scan":
         return frame(stat("39/39", "map spots ranking #1 for “kids jiu-jitsu”", 120), "Gracie Jiu-Jitsu Warwick",
-                     "Search Atlas map scan · 39 spots, 5 mi · Nov 9, 2026")
+                     F["scan_foot"])
     if kind == "reviews":
-        return frame(stat("#1", "on 117 reviews vs. a rival’s 132"), "Fewer reviews. Still #1.",
-                     "Google review counts · Search Atlas map scan · Nov 2, 2026")
+        return frame(stat("#1", F["reviews"][0]), "Fewer reviews. Still #1.", F["reviews"][1])
     if kind == "growth":
-        return frame(stat("+42%", "more Google searches showed their gym’s profile"), "Since August",
-                     "Search Atlas GBP search appearances · 1,578 → 2,238 · 60 days to Aug 18 vs. Nov 7")
+        return frame(stat(F["growth"][0], F["growth"][1]), "Since August", F["growth"][2])
     tool, f, keep, boxes = {
         "ai0": ("ChatGPT", "crop-chatgpt.png", (20, 520, 760, 715), [(10, 78, 398, 128)]),
         "ai1": ("Perplexity", "crop-perplexity.png", None, [(196, 154, 510, 196)]),
@@ -180,7 +237,7 @@ def header(lay, path):
     img.save(path); return path
 
 
-def cut(take, segs, blocks, lay, crop, tmp):
+def cut(take, segs, blocks, lay, crop, tmp, zoom=True, xshift=None):
     """One ffmpeg pass: each kept stretch cropped to the face window (tighter on talking beats), scaled into the
     camera box on an ink canvas; audio from the take with tiny fades at every join."""
     W, H = lay["W"], lay["H"]; bx, by, bw, bh = lay["box"]
@@ -190,7 +247,8 @@ def cut(take, segs, blocks, lay, crop, tmp):
     labels = ""
     for i, (s, e, bi, _) in enumerate(segs):
         x0, y0, cw, ch = crop
-        if blocks[bi][0] in ZOOM:
+        x0 = max(0, x0 + (xshift or {}).get(blocks[bi][0], 0))
+        if zoom and blocks[bi][0] in ZOOM:
             z = 1.1; nw, nh = round(cw / z / 2) * 2, round(ch / z / 2) * 2
             x0, y0, cw, ch = x0 + (cw - nw) // 2, y0 + round((ch - nh) * 0.35), nw, nh
         d = e - s
@@ -205,6 +263,20 @@ def cut(take, segs, blocks, lay, crop, tmp):
     return out
 
 
+def timeline_any(segs):
+    """Like v1.timeline, but segs may be out of source order (the 20 s cut borrows the main read's offer line)."""
+    starts, acc = [], 0.0
+    for s, e, _, _ in segs:
+        starts.append(acc); acc += e - s
+    def O(t):
+        for (s, e, _, _), a in zip(segs, starts):
+            if s - 1e-3 <= t <= e + 1e-3:
+                return round(a + max(0.0, t - s), 3)
+        later = [(s, a) for (s, e, _, _), a in zip(segs, starts) if s > t]
+        return round(min(later)[1], 3) if later else round(acc, 3)
+    return O, acc
+
+
 def caption_chunks(words, segs, O, fix):
     """Captions from the kept words, in house style: jiu-jitsu lowercase unless it starts a line or names GJJW."""
     toks = []
@@ -215,6 +287,7 @@ def caption_chunks(words, segs, O, fix):
         if toks and (w.startswith("-") or w == "%" or w.startswith("%")):
             toks[-1] = (toks[-1][0], e, toks[-1][2] + w); continue
         toks.append((s, e, w))
+    toks.sort(key=lambda x: x[0])
     out = []
     for j, (s, e, w) in enumerate(toks):
         core, tail = w.rstrip(".,?!"), w[len(w.rstrip(".,?!")):]
@@ -265,18 +338,19 @@ def compose(base, dur, overlays, out):
 
 
 def build(name, take, words, assets, ratio, outdir):
-    lay = LAYOUT[ratio]; spec = CUTS[name]; blocks = spec["blocks"]
+    lay = dict(LAYOUT[ratio], **LAYOUT_BY_CUT.get(name, {}).get(ratio, {}))
+    spec = CUTS[name]; blocks = spec["blocks"]; facts = spec.get("facts", "current")
     tmp = os.path.join(outdir, f".tmp_{name}_{ratio}"); os.makedirs(tmp, exist_ok=True)
     segs = let_words_land(take, plan(words, blocks, vend=10 ** 6), words)
-    O, dur = timeline(segs)
-    base = cut(take, segs, blocks, lay, CROP[name][ratio], tmp)
+    O, dur = timeline_any(segs)
+    base = cut(take, segs, blocks, lay, CROP[name][ratio], tmp, zoom=spec.get("zoom", True), xshift=spec.get("xshift"))
     blk = {n: (a, b) for n, a, b in blocks}
     st = lambda i: O(words[i][0])
     k = 1.0 if lay["H"] > 1500 else 0.74
     ov = [(header(lay, f"{tmp}/header.png"), 0, dur)]
 
     def pop(kind, t0, t1):
-        card = card_img(kind, assets, k)
+        card = card_img(kind, assets, k, facts)
         f = 1 / 30
         ov.extend([(place(card, lay, f"{tmp}/{kind}_p1.png", 0.86, 0.35), t0, t0 + f),
                    (place(card, lay, f"{tmp}/{kind}_p2.png", 0.95, 0.8), t0 + f, t0 + 2 * f),
@@ -286,6 +360,8 @@ def build(name, take, words, assets, ratio, outdir):
     for kind in ("map", "scan", "reviews", "growth"):
         if kind in blk:
             pop(kind, st(blk[kind][0]), nxt(kind) - 0.05)
+    if spec.get("terms") and "offer" in blk:
+        pop("terms", st(blk["offer"][0]), dur - 0.05)
     if "ai" in blk:
         a, b = blk["ai"]; s0, s1 = st(a), nxt("ai") - 0.05; step = (s1 - s0) / 3
         for i in range(3):
