@@ -692,12 +692,13 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
     <!-- 50·5·3 ad builder pane -->
     <div class="modePane" id="pane-ads">
-      <p class="hint"><b>Hormozi 50·5·3:</b> 50 hooks, 5 meats, 3 CTAs in one sitting. Load the Panicci set, hit Start, and go — <b>Discovery</b> (talk it through), <b>Interview</b> (your answers become the meats), <b>Hooks</b> (read, hit N), <b>CTAs</b> (read, hit N). When you stop, hit <b>🎯 Find hooks · meats · CTAs</b>.</p>
+      <p class="hint"><b>Hormozi 50·5·3:</b> 50 hooks, 5 meats, 3 CTAs in one sitting. Load the Panicci set, hit Start, and go — <b>Discovery</b> (talk it through), <b>Interview</b> (your answers become the meats), <b>Hooks</b> (read, hit N), <b>CTAs</b> (read, hit N). A <b>📼 Ready set</b> has written bodies instead of questions: read them your way, keep every number exact. When you stop, hit <b>🎯 Find hooks · meats · CTAs</b>.</p>
       <div class="mxReady" id="mxReady">
         <div class="mxReadyTitle" id="mxReadyTitle">No shoot loaded</div>
         <div class="mxReadyMeta" id="mxReadyMeta"></div>
         <div class="row" style="justify-content:flex-start;gap:8px;margin-top:8px;">
           <button id="mxLoadPvBtn" class="primary">⚡ Load Panicci Ventures 50·5·3</button>
+          <select id="mxSetSelect" title="Ready-to-record 50·5·3 sets with written bodies" style="display:none;max-width:260px;"><option value="">📼 Ready 50·5·3 sets…</option></select>
           <button id="mxCustomBtn">Customize / build a new set</button>
           <label class="mxLiveLbl" title="Chrome/Edge: captures what you say so Claude can find the hooks, meats and CTAs right after you stop"><input id="mxLive" type="checkbox" checked> Live transcript</label>
         </div>
@@ -1336,11 +1337,12 @@ OU | AI website builders — overrated or underrated?"></textarea>
       const same = questions.filter((x) => x.type === q.type);
       const k = questions.slice(0, currentQ + 1).filter((x) => x.type === q.type).length;
       const cue = q.type === "DISC" ? "Discovery — talk it through, no wrong answers"
-        : q.type === "MEAT" ? "Interview — answer like you're talking to one client"
+        : q.type === "MEAT" ? (mxScripted() ? "Body — read it your way, keep every number exact, then N" : "Interview — answer like you're talking to one client")
         : q.type === "HOOK" ? "Read it like you mean it, then N" : "Read it, then N";
-      icQnum.textContent = `${typeInfo(q.type).label} ${k} of ${same.length} · ${cue}`;
+      const lbl = q.type === "MEAT" && mxScripted() ? "Body → Meat" : typeInfo(q.type).label;
+      icQnum.textContent = `${lbl} ${k} of ${same.length} · ${cue}`;
     }
-    icBadge.innerHTML = `<span class="typeBadge ${ti.cls}">${ti.label}</span>`;
+    icBadge.innerHTML = `<span class="typeBadge ${ti.cls}">${adsMode && q.type === "MEAT" && mxScripted() ? "Body → Meat" : ti.label}</span>`;
     icQuestion.textContent = q.text;
     // Scale question text to length
     const len = q.text.length;
@@ -2003,6 +2005,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
 
     const editingBrief = adsMode
       ? "Hormozi 50·5·3 shoot. DISC segments open the session (discovery on the topic) and can hold meats and hooks too. MEAT segments are interview answers: cut the best 15-60s standalone stretches as meats. HOOK segments are read hook lines (one per segment). ADCTA segments are read CTAs. Every hook must butt-join onto every meat, then every CTA. See adMatrix for the picked modules and video/adbuild.py to cut + stitch."
+        + (mxScripted() ? " In this set the MEAT segments are written bodies read off the prompter: keep each one whole as a meat." : "")
       : mode === "interview"
       ? "Cut each segment as its own standalone clip. Use segment.question as the on-screen opening hook/caption. Keep NICHE answers value-first for LinkedIn; push HOT and OU (overrated/underrated) quick-fire segments to TikTok/Reels first — they're the scroll-stoppers. Trim dead air at each segment's start/end, add burned-in captions, and export one file per platform per segment using platformTargets."
       : "Cut around the markers/suggestedClips. Add burned-in captions and export per platform using platformTargets.";
@@ -2012,7 +2015,7 @@ OU | AI website builders — overrated or underrated?"></textarea>
       recordedAt: new Date().toISOString(),
       mode: mode,
       take: takes.length + 1,
-      file: `${readyScript && mode === "script" ? readyScript.id + "-" : ""}recording-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
+      file: `${readyScript && mode === "script" ? readyScript.id + "-" : (adsMode && mxSetId() ? mxSetId() + "-" : "")}recording-${tsStamp()}-take${takes.length + 1}.${lastExt}`,
       container: lastExt,
       codec: codecNote,
       durationSeconds: dur,
@@ -2027,6 +2030,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
       platformTargets,                 // how to cut for IG / TikTok / FB / LinkedIn
       editingBrief,                    // plain-English instructions for the editor (Claude)
       adsShoot: adsMode,               // 50·5·3 ad shoot (DISC / MEAT / HOOK / ADCTA segments)
+      adsSet: adsMode && mxSetId()     // 📼 Ready 50·5·3 set it came from (presets/553-sets.json)
+        ? { id: mxSetId(), name: lsGet(MX_NAME_KEY) || "", meatsScripted: mxScripted() } : null,
       liveTranscript: takeChunks,      // [{start, end, text}] browser speech capture (approximate timing)
       adMatrix: null,                  // filled by 🎯 Find hooks · meats · CTAs
       script: scriptEl.value || "",
@@ -2332,13 +2337,18 @@ OU | AI website builders — overrated or underrated?"></textarea>
   }
   const mxCustom = $("mxCustom"), mxReadyTitle = $("mxReadyTitle"), mxReadyMeta = $("mxReadyMeta");
   const MX_NAME_KEY = "pce_553_name_v1";
+  // A 📼 Ready set tags its takes with its id and marks its meats as written bodies (read, not answered).
+  // Plain function declarations so the cue card and take metadata can call them from anywhere.
+  function mxSetId() { return lsGet("pce_553_setid_v1") || ""; }
+  function mxScripted() { return lsGet("pce_553_scripted_v1") === "1"; }
+  function mxMarkSet(id, scripted) { lsSet("pce_553_setid_v1", id || ""); lsSet("pce_553_scripted_v1", scripted ? "1" : ""); }
   function renderReady() {
     const d = lines(mxDisc).length, q = lines(mxQs).length, h = lines(mxHooks).length, c = lines(mxCtas).length;
     const loaded = d + q + h + c > 0;
     const name = lsGet(MX_NAME_KEY) || "Custom set";
     mxReadyTitle.textContent = loaded ? `✓ ${name} — ready to record` : "No shoot loaded";
     mxReadyMeta.textContent = loaded
-      ? `${d} discovery · ${q} interview · ${h} hooks · ${c} CTAs · ${d + q + h + c} segments, roughly ${Math.round((d + q) * 1.2 + (h + c) * 0.3)} min on camera${$("mxTopic").value ? " · Topic: " + $("mxTopic").value : ""}`
+      ? `${d} discovery · ${q} ${mxScripted() ? "written bodies" : "interview"} · ${h} hooks · ${c} CTAs · ${d + q + h + c} segments, roughly ${Math.max(1, Math.round(d * 1.2 + q * (mxScripted() ? 0.5 : 1.2) + (h + c) * 0.3))} min on camera${$("mxTopic").value ? " · Topic: " + $("mxTopic").value : ""}`
       : "Load the Panicci Ventures set to start recording right away, or build your own below.";
     startBtn.disabled = adsMode && !loaded;
   }
@@ -2348,6 +2358,10 @@ OU | AI website builders — overrated or underrated?"></textarea>
     fill("mxAudience", pre.audience); fill("mxProof", pre.proof); fill("mxCta", pre.cta);
     fill("mxDisc", pre.discovery); fill("mxQs", pre.interview); fill("mxHooks", pre.hooks); fill("mxCtas", pre.ctas);
     if (pre.hooks) $("mxNH").value = Math.max(5, Math.min(60, pre.hooks.length));
+    $("mxNM").value = pre.meatsScripted && pre.interview ? Math.max(1, Math.min(8, pre.interview.length)) : 5;
+    $("mxNC").value = pre.ctas ? Math.max(1, Math.min(5, pre.ctas.length)) : 3;
+    mxMarkSet(pre.id, pre.meatsScripted);
+    $("mxSetSelect").value = pre.id || "";   // by id: this can run before the picker below is wired
     lsSet(MX_NAME_KEY, pre.name || "Custom set");
     saveMx();
   }
@@ -2369,6 +2383,40 @@ OU | AI website builders — overrated or underrated?"></textarea>
     }
   }
   $("mxLoadPvBtn").addEventListener("click", loadPanicciPreset);
+
+  // ---------- 📼 Ready 50·5·3 sets (presets/553-sets.json) ----------
+  // Short scripted sets (written bodies + hooks + CTAs) the Reel Lab tests as trial reels. One take per set:
+  // its Drive folder is "<date> <set name>" and its files start with the set id.
+  const mxSetSelect = $("mxSetSelect");
+  let mxSets = [];
+  (async function loadMxSets() {
+    try {
+      const r = await fetch("presets/553-sets.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      mxSets = (await r.json()).sets || [];
+      mxSets.forEach((x) => {
+        const o = document.createElement("option");
+        o.value = x.id;
+        o.textContent = `${x.name} · ${x.hooks.length} hooks`;
+        mxSetSelect.appendChild(o);
+      });
+      mxSetSelect.style.display = mxSets.length ? "" : "none";
+      mxSetSelect.value = mxSets.some((x) => x.id === mxSetId()) ? mxSetId() : "";
+    } catch (_) {
+      mxSetSelect.style.display = "none";   // file:// or offline: the picker just isn't there
+    }
+  })();
+  mxSetSelect.addEventListener("change", () => {
+    const pick = mxSets.find((x) => x.id === mxSetSelect.value);
+    if (!pick) { mxSetSelect.value = mxSetId(); return; }
+    const had = lines(mxDisc).length + lines(mxQs).length + lines(mxHooks).length + lines(mxCtas).length;
+    const name = lsGet(MX_NAME_KEY) || "";
+    const fromPreset = /Panicci/.test(name) || mxSets.some((x) => x.name === name);
+    if (had && !fromPreset && !confirm(`Replace the current shoot list with “${pick.name}”?`)) { mxSetSelect.value = mxSetId(); return; }
+    applyPreset(pick);
+    mxCustom.classList.remove("active");
+    toast(`“${pick.name}” loaded — read the bodies, then hooks and CTAs. Hit Start`);
+  });
   $("mxCustomBtn").addEventListener("click", () => mxCustom.classList.toggle("active"));
   (function restoreMx() {
     try {
@@ -2377,7 +2425,11 @@ OU | AI website builders — overrated or underrated?"></textarea>
     } catch (_) {}
     updateMxCounts();
   })();
-  MX_FIELDS.forEach((id) => $(id).addEventListener("input", () => { lsSet(MX_NAME_KEY, "Custom set"); saveMx(); }));
+  MX_FIELDS.forEach((id) => $(id).addEventListener("input", () => {
+    lsSet(MX_NAME_KEY, "Custom set");
+    if (mxSetId()) { lsSet("pce_553_setid_v1", ""); mxSetSelect.value = ""; }   // edited: no longer the ready set (bodies stay written)
+    saveMx();
+  }));
 
   // Shoot order: discovery on the topic first (warms you up), then interview, hooks, CTAs.
   function adsShootList() {
@@ -2419,6 +2471,8 @@ OU | AI website builders — overrated or underrated?"></textarea>
       mxQs.value = (data.interview || []).map((q) => q.text).join("\n");
       mxHooks.value = (data.hooks || []).map((h) => h.text).join("\n");
       mxCtas.value = (data.ctas || []).map((c) => c.text).join("\n");
+      mxMarkSet("", false);
+      mxSetSelect.value = "";
       lsSet(MX_NAME_KEY, "Custom set");
       saveMx();
       setMxStatus(`✓ ${(data.discovery || []).length} discovery · ${data.interview.length} interview questions · ${data.hooks.length} hooks · ${data.ctas.length} CTAs. Edit anything, then Start.`, "ok");
