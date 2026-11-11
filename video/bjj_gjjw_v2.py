@@ -8,13 +8,14 @@ What changed from v1 (bjj_gjjw_ads.py), per Brian:
   - Sammy's face stays on screen start to finish. No full-screen slides and no end card.
   - One title sits above his head for the whole video: "Jiu-jitsu gym owners: get to the top of Google."
   - Proof pops up as small cards just above his head, on the line it backs up: the real Google Maps result,
-    the 39-spot scan, the reviews, +46% searches, then Sammy's own ChatGPT / Perplexity / DeepSeek recordings.
+    the 39-spot scan, the reviews, +42% searches, then Sammy's own ChatGPT / Perplexity / DeepSeek recordings.
   - "Five miles around the gym" is cut out of the read. "Visibility" is never clipped.
 
 The Nov 6 retakes are 16:9 webcam frames with little headroom, so the 9:16 build is a brand-ink header (title)
 over a 4:5 window of the camera, and the cards sit across the seam, right above the cap.
 
-Sources for every number: panicciventures social/ads-oct26/bjj-visible/video-script.md. --assets holds
+Sources for every number: the bjj-visibility entry in presets/talking-heads.json (refreshed Nov 11 2026) and
+panicciventures social/ads-oct26/bjj-visible/video-script.md. Every card footnote names its tool and date. --assets holds
 crop-chatgpt.png, crop-perplexity.png, crop-deepseek.png (video/ads/bjj-gjjw/) and gjjw-map-pack.webp
 (panicciventures repo root: unedited Google Maps screenshot, "kids jiu-jitsu", Warwick RI, Oct 12 2026).
 
@@ -129,20 +130,20 @@ def card_img(kind, assets, k=1.0):
                      "#1 on Google Maps · “kids jiu-jitsu”", "Unedited Google Maps screenshot · Warwick, RI · Oct 12, 2026")
     if kind == "scan":
         return frame(stat("39/39", "map spots ranking #1 for “kids jiu-jitsu”", 120), "Gracie Jiu-Jitsu Warwick",
-                     "Search Atlas map scan · Oct 26, 2026")
+                     "Search Atlas map scan · 39 spots, 5 mi · Nov 9, 2026")
     if kind == "reviews":
-        return frame(stat("#1", "on 116 reviews vs. a rival’s 130"), "Fewer reviews. Still #1.",
-                     "Search Atlas map scan · Oct 26, 2026")
+        return frame(stat("#1", "on 117 reviews vs. a rival’s 132"), "Fewer reviews. Still #1.",
+                     "Google review counts · Search Atlas map scan · Nov 2, 2026")
     if kind == "growth":
-        return frame(stat("+46%", "more Google searches showing their gym"), "Since August",
-                     "Google Business Profile · 1,444 → 2,106 · 60 days to Aug 18 vs. Nov 2")
+        return frame(stat("+42%", "more Google searches showed their gym’s profile"), "Since August",
+                     "Search Atlas GBP search appearances · 1,578 → 2,238 · 60 days to Aug 18 vs. Nov 7")
     tool, f, keep, boxes = {
         "ai0": ("ChatGPT", "crop-chatgpt.png", (20, 520, 760, 715), [(10, 78, 398, 128)]),
         "ai1": ("Perplexity", "crop-perplexity.png", None, [(196, 154, 510, 196)]),
         "ai2": ("DeepSeek", "crop-deepseek.png", None, [(12, 80, 580, 118)]),
     }[kind]
     return frame(shot(A(f), keep, boxes), f"Ask {tool}: best kids self-defense near Warwick, RI",
-                 "Screen recording · Nov 3, 2026")
+                 "Screen recording Nov 3 · #1 in Search Atlas AI tracking, 30 days to Nov 11")
 
 
 def place(card, lay, path, scale=1.0, alpha=1.0):
