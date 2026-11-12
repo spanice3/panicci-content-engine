@@ -6,7 +6,8 @@
 Each <take>.mp4 in raw_dir needs its Script data <take>.json beside it (the studio uploads both).
   - 50-5-3 takes ("adsShoot": true): adbuild.py --render test --brand 9x16 (round 1 hook test + every module).
     Ready sets (adsSet.meatsScripted) build their own ad matrix; other shoots ask the studio (needs STUDIO_API_KEY).
-  - every other take: run.py with the take's own script for exact captions, 9x16 + 1x1.
+  - every other take: run.py with the take's own script for exact captions, 9x16 + 1x1, each with the animated
+    open/close cards and a <name>_<ratio>_cover.png still for the Reels cover.
 Cuts land in cuts_dir/<take>/, logs in cuts_dir/../logs/<take>.log (kept out of the Drive push).
 A take that fails doesn't stop the others. Exit code 0 when at least one take was cut, 1 when none were.
 """
@@ -30,7 +31,7 @@ def plan(raw, cuts, logs):
                    "--out-dir", out]
             kind = "50-5-3"
         else:
-            cmd = [sys.executable, "run.py", mp4, "--formats", "9x16,1x1", "--out-dir", out]
+            cmd = [sys.executable, "run.py", mp4, "--formats", "9x16,1x1", "--out-dir", out, "--meta", meta]
             script = "\n".join(l for l in (m.get("script") or "").splitlines() if l.strip() != "|").strip()
             if script:
                 sp = os.path.join(logs, base + ".script.txt")
@@ -56,6 +57,7 @@ def run(job):
     files = sorted(os.path.relpath(p, job["out"]) for p in glob.glob(os.path.join(job["out"], "**", "*.mp4"),
                                                                        recursive=True))
     res["videos"] = len(files)
+    res["covers"] = len(glob.glob(os.path.join(job["out"], "*_cover.png")))
     if job["kind"] == "50-5-3":
         man = os.path.join(job["out"], "manifest.csv")
         res["ads"] = sum(1 for _ in csv.DictReader(open(man))) if os.path.exists(man) else 0

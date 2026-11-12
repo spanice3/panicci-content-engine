@@ -2,9 +2,30 @@
 
 Turns raw teleprompter recordings into seamless, on-brand social videos:
 cuts the teleprompter-wait pauses, removes flubbed retakes, adds Panicci
-branding (intro card, name lower-third, logo bug, burned-in captions, outro
-CTA), and exports per platform with every overlay inside the platform safe
-zones.
+branding (animated open card, name lower-third, logo bug, burned-in captions,
+animated closing card), and exports per platform with every overlay inside the
+platform safe zones.
+
+Three rules the editor keeps on its own (Sammy, Nov 11):
+
+- **Never cover the face.** `face.py` finds Sammy's face every half second; the
+  crop centres on it and every caption goes where it touches neither the face
+  nor the lower third/bug (usual spot, else just under the beard, else above
+  the head, shrinking the type if it has to).
+- **Never cut a word early.** Cut ends come from the sound itself (`cutlib.Env`):
+  a cut waits until the last word has stopped sounding (soft "s", trailing vowel),
+  never reaching into the next word. Whisper alone ends words early: on the
+  Nov 6 AZ take, 7 of 13 Whisper-timed cut points were still mid-word.
+- **Open and close with life.** Both cards are a clean smiling shot of Sammy
+  (`assets/sammy-smile.jpg`, both shoulders whole), a big hook and a play
+  button. The open's first frame is the cover (also saved as
+  `*_<ratio>_cover.png` for the Reels/Shorts cover): the gold word catches a
+  sheen, the play button pulses, gets tapped, and the card irises open into the
+  footage. The close collapses the footage back into the play button, rises the
+  call to action in word by word and keeps the button pulsing. The words come
+  from the script's first line (hook) and last line (call to action), or from a
+  `cover` object in the Script data: `{"kicker", "hook", "emphasis",
+  "closeKicker", "close", "closeEmphasis"}`.
 
 This is a standalone tooling directory. It is not part of the Vercel deploy
 (see `.vercelignore`).
@@ -40,9 +61,14 @@ python3 run.py TAKE.mp4 [MORE_TAKES.mp4 ...] \
 - `--formats` any of `9x16` (Reels/TikTok/Shorts), `1x1` (feed), `16x9`
   (YouTube/LinkedIn).
 - `--no-dedupe` skips the retake-collapse step.
+- `--meta TAKE.json` reads the Script data (its `cover` words win over the script).
+- `--hook "..."` overrides the big words on the open card; `--no-cards` skips both cards.
 
-Outputs land in `--out-dir`: `seamless.mp4`, `captions.json`, and one
-`*_<ratio>.mp4` per format.
+Outputs land in `--out-dir`: `seamless.mp4`, `captions.json`, and per format
+one `*_<ratio>.mp4` plus its `*_<ratio>_cover.png`.
+
+Preview the cards for a script without cutting anything:
+`python3 opener.py script.txt ./covers 9x16,1x1`.
 
 ## 50·5·3 ads (`adbuild.py`)
 
@@ -98,16 +124,22 @@ Resumable uploads in 8 MB chunks, resuming from whatever Drive confirms it kept.
 ## Steps
 
 1. **Silence jump-cut** — removes dead air; threshold auto-set ~12 dB below
-   the take's mean level so quiet speech is preserved.
+   the take's mean level so quiet speech is preserved. Each kept stretch then
+   runs until its last word has really finished and starts where its first
+   word really begins.
 2. **Retake collapse** (best-effort) — when a line is re-recorded within the
    same take, keeps the last clean pass and drops earlier attempts. It prints
    what it cut; review the result, and re-run with `--no-dedupe` if a real
    line was caught.
-3. **Captions** — transcribes with `faster-whisper`; with `--script`, aligns
-   caption text to the script wording while timing comes from the audio.
-4. **Brand** — `brandkit.py` composites the cards, lower-third, bug, and
-   captions, with per-ratio safe-zone insets (9:16 tuned to TikTok: right
-   action rail, top tabs, bottom caption/music/nav).
+3. **Captions** — transcribes with `faster-whisper` (one pass serves the
+   retake scan and the captions); with `--script`, aligns caption text to the
+   script wording while timing comes from the audio. A line stays up until its
+   last word is done.
+4. **Brand** — `brandkit.py`, one ffmpeg pass: face-centred crop, lower-third,
+   bug, captions placed off the face, then the open/close cards (`opener.py`,
+   streamed in as lossless video with alpha) laid over the footage, with a soft
+   tap and pop. Per-ratio safe-zone insets (9:16 tuned to TikTok: right action
+   rail, top tabs, bottom caption/music/nav).
 
 ## Brand system
 
@@ -125,6 +157,10 @@ Sourced from the `panicci-deliverables` skill (`brand.json`): deep green
 | `cutlib.py` | silence detection, jump-cut, retake detection |
 | `captions.py` | transcription + script alignment |
 | `brandkit.py` | safe-zone branded renderer (importable + CLI) |
+| `face.py` | finds the face (YuNet through onnxruntime, already installed with faster-whisper) |
+| `opener.py` | animated open/close cards + cover still |
+| `assets/face_detection_yunet_2023mar.onnx` | YuNet face detector, OpenCV Zoo, MIT, 230 KB |
+| `assets/sammy-smile.jpg` | the smiling shot on every card (shoulders whole: see the repo CLAUDE.md photo law) |
 | `run.py` | orchestrator |
 | `adbuild.py` | 50·5·3 ad modules + combos |
 | `clip_batch.py` | the Clipper's cut step: every take in a folder, two at a time, routed to `run.py` or `adbuild.py`, one JSON summary |

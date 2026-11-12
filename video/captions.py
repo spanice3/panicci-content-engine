@@ -37,6 +37,15 @@ def asr_words(mp4):
             W.append((w.start, w.end, w.word.strip()))
     return W
 
+def transcribe(mp4):
+    """One Whisper pass -> (sentences, words). Use it instead of asr_sentences + asr_words on the same clip."""
+    segs, _ = _model().transcribe(_audio(mp4), vad_filter=True, word_timestamps=True)
+    S, W = [], []
+    for s in segs:
+        S.append((s.start, s.end, s.text.strip()))
+        W += [(w.start, w.end, w.word.strip()) for w in (s.words or [])]
+    return S, W
+
 def asr_sentences(mp4):
     segs, _ = _model().transcribe(_audio(mp4), vad_filter=True)
     return [(s.start, s.end, s.text.strip()) for s in segs]
@@ -50,11 +59,11 @@ def _chunks_from_script(script, W):
     an = [_norm(w[2]) for w in W]
     sm = difflib.SequenceMatcher(a=sn, b=an, autojunk=False)
     for t in toks:
-        t["t"] = None
+        t["t"] = None; t["te"] = None
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
         if tag == "equal":
             for kk in range(i2 - i1):
-                toks[i1 + kk]["t"] = W[j1 + kk][0]
+                toks[i1 + kk]["t"], toks[i1 + kk]["te"] = W[j1 + kk][0], W[j1 + kk][1]
         elif tag == "replace":
             span = W[j1:j2]
             for k in range(i1, i2):
@@ -74,7 +83,8 @@ def _chunks_from_script(script, W):
     def flush():
         if not cur:
             return
-        s = cur[0]["t"]; e = max(cur[-1]["t"] + 0.5, s + 0.5)
+        s = cur[0]["t"]                                   # hold the line until its last word is done
+        e = max(cur[-1]["t"] + 0.5, (cur[-1]["te"] or 0) + 0.3, s + 0.5)
         txt = re.sub(r"\s+([,.!?])", r"\1", " ".join(x["disp"] for x in cur))
         caps.append({"start": round(s, 2), "end": round(e, 2), "text": txt})
     for t in toks:
@@ -89,7 +99,7 @@ def _chunks_from_asr(W):
     def flush():
         if cur:
             caps.append({"start": round(cur[0][0], 2),
-                         "end": round(max(cur[-1][1], cur[0][0] + 0.5), 2),
+                         "end": round(max(cur[-1][1] + 0.3, cur[0][0] + 0.5), 2),
                          "text": re.sub(r"\s+([,.!?])", r"\1", " ".join(x[2] for x in cur))})
     for w in W:
         cur.append(w)
@@ -114,8 +124,8 @@ def _postprocess(caps):
             out.append(dict(c))
     return out
 
-def build_captions(mp4, script=None, out_json=None):
-    W = asr_words(mp4)
+def build_captions(mp4, script=None, out_json=None, words=None):
+    W = words if words is not None else asr_words(mp4)
     caps = _chunks_from_script(script, W) if script else _chunks_from_asr(W)
     caps = _postprocess(caps)
     if out_json:
