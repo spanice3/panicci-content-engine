@@ -262,15 +262,17 @@ def title_screen(lay, path):
     """The opening frame: a clean title screen, nothing else on it (no face, captions or cards). Ink ground, Panicci
     dot texture, the gold kicker and the title big and centred. The read's audio runs underneath it."""
     W, H, k = lay["W"], lay["H"], (1.0 if lay["H"] > 1500 else 0.8)
-    img = Image.new("RGBA", (W, H), INK + (255,)); d = ImageDraw.Draw(img)
+    img = Image.new("RGBA", (W, H), INK + (255,))
+    dots = Image.new("RGBA", (W, H), (0, 0, 0, 0)); dd = ImageDraw.Draw(dots)
     for y in range(11, H, 22):
         for x in range(11, W, 22):
-            d.ellipse((x - 1.4, y - 1.4, x + 1.4, y + 1.4), fill=(246, 241, 232, 18))
+            dd.ellipse((x - 1.4, y - 1.4, x + 1.4, y + 1.4), fill=(246, 241, 232, 18))
+    img.alpha_composite(dots); d = ImageDraw.Draw(img)   # blended, so the screen stays fully opaque
     fk, maxw = font("Bold", 46 * k), W - 2 * lay["side"] - 40
     size = 132 * k
-    while True:
+    while True:          # two lines if it can stay big (no orphan word), else up to three
         ft = font("Bold", size); lines = wrap(d, TITLE[1], ft, maxw)
-        if len(lines) <= 3 or size < 70 * k: break
+        if len(lines) <= 2 or (size < 96 * k and len(lines) <= 3) or size < 70 * k: break
         size -= 4
     lh, gap, rule = size * 1.08, 34 * k, 8 * k
     block = 46 * k + gap + rule + gap + len(lines) * lh
