@@ -4,6 +4,8 @@ time, a title band up top, and the real bid (names blurred) popping up as cards 
 backs up. Same engine and look as the BJJ v3 ad (bjj_gjjw_v2.py).
 
   python3 word_doc_bid.py --take seamless.mp4 --captions captions.json --assets <dir> --crop9 X,Y,W,H --crop45 X,Y,W,H
+  python3 word_doc_bid.py --cut dont --take seamless.mp4 --captions captions.json --assets <dir> \\
+      --crop9 260,0,1400,1080 --crop45 260,0,1400,1080          # electrician-dont take 7 (Nov 12)
 
 --take / --captions: the Clipper's seamless.mp4 and captions.json for word-doc-bid take 1 (Nov 11 2026); the pauses
 are already cut, so this pass only frames, captions and lays the cards over it.
@@ -15,6 +17,8 @@ this public repo: they are a real contractor's paperwork.
 --crop9 / --crop45: the camera window in source px. Founder photo law: both shoulders whole, with clear space past
 each one; check a few frames before rendering. Take 1 (1920x1080): the shirt runs x 590-1355 at the bottom row in every
 frame checked, so --crop9 432,180,1080,900 --crop45 442,0,1060,1080 leave ~150 px clear past each shoulder (Nov 12 v1).
+electrician-dont take 7 (black tee, no cap, framed closer, leans): the shirt reaches x ~390 left and ~1537 right at the
+bottom row, so the window is 1400 px wide (x 260-1660), scaled to 1080: ~100 px clear past each shoulder.
 
 Every number on a card comes from the paperwork: the bid (Sept 23, 2026: Base Bid $11,500.00, 296 devices across
 its 19 line items, the GC-bid-form exclusion, the printed X signature line, 100% upon completion) and invoice #3721
@@ -53,6 +57,35 @@ BEATS = [
     ("review", "and asks for", "If your proposals"),
     ("cta", "If your proposals", None),
 ]
+CTA = ("Proposals still living in Word?", "DM me \u201cPROPOSAL\u201d", "I'll show you yours, rebuilt.")
+TRIM_LEAD = False      # cut dead air before the first word
+NAME = "word-doc-bid"
+
+# Each cut: its title, cards, layout and close. --cut picks one; the functions below read these names at run time.
+CUTS = {
+    "word-doc": dict(name=NAME, title=TITLE, drop=DROP, beats=BEATS, layout=LAYOUT, cta=CTA, trim_lead=False),
+    # Ready script electrician-dont (Brian's story rescript, Nov 12), take 7. Fewer cards than the word-doc cut, one per
+    # idea, and none on "I still hired him. Most homeowners won't." so his face carries the turn. Sammy sits bigger in
+    # this frame and leans, so the camera window is wider (scaled down) and lower; see the crop note in the docstring.
+    "dont": dict(
+        name="electrician-dont",
+        title=("ELECTRICIANS", "Don't do what this guy did."),
+        drop=[],
+        beats=[("quote", "Swap every", "Five days"),
+               ("doc", "Five days", "No photos"),
+               ("lump", "No photos", "To say yes"),
+               ("sign", "To say yes", "I still hired"),
+               ("rebuilt", "Here's what easy", "Before you leave"),
+               ("link", "Before you leave", "Your logo"),
+               ("options", "Your logo", "They sign"),
+               ("signed", "They sign", "When the job"),
+               ("paybtn", "When the job", "If your quotes"),
+               ("cta", "If your quotes", None)],
+        layout={"9x16": dict(W=1080, H=1920, top=250, bottom=480, side=72, box=(0, 760, 1080, 833), zone=(430, 880)),
+                "4x5": dict(W=1080, H=1350, top=56, bottom=110, side=64, box=(0, 517, 1080, 833), zone=(190, 655))},
+        cta=("Quotes still going out as Word docs?", "DM me \u201cQUOTE\u201d", "I'll rebuild one of yours."),
+        trim_lead=True),
+}
 REAL = "The real bid · Sept 23, 2026 · names blurred"
 DEMO = "Demo of the fix · sample customer"
 
@@ -119,6 +152,8 @@ def card_img(kind, assets, k=1.0):
     if kind == "lump":
         return frame(shot(A("crop-02-lump-sum.png"), keep=(0, 0, 560, 82), boxes=[(16, 10, 300, 74)], maxh=120, paper=True),
                      "One price for the whole job. No options. No photos.", REAL)
+    if kind == "quote":
+        return frame(stat("$11,500", "to swap every outlet and switch in my house", 130), "The quote", REAL)
     if kind == "count":
         return frame(stat("296", "outlets, switches and lights. One price."), "The scope",
                      "Counted from the bid's 19 line items")
@@ -152,7 +187,7 @@ def card_img(kind, assets, k=1.0):
         body.alpha_composite(a, (0, lh)); body.alpha_composite(b, (a.width + gap, lh))
         ax = a.width + gap // 2; ay = lh + max(a.height, b.height) // 2
         d.polygon([(ax - 16 * k, ay - 22 * k), (ax + 18 * k, ay), (ax - 16 * k, ay + 22 * k)], fill=GOLD + (255,))
-        return frame(body, "Here's the fix. Start with the paper.", "Same $11,500 bid, rebuilt on one page by Sammy P \u00b7 names blurred")
+        return frame(body, "Same bid. One clean page.", "Same $11,500 bid, rebuilt on one page by Sammy P \u00b7 names blurred")
     if kind == "link":
         return frame(phone("p-link.png", (40, 236, 616, 690)), "The fix: a link before you leave the driveway", DEMO)
     if kind == "options":
@@ -166,12 +201,12 @@ def card_img(kind, assets, k=1.0):
     if kind == "cta":
         fb, fs = font("Bold", 92 * k), font("SemiBold", 40 * k)
         tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
-        a, b = "DM me “PROPOSAL”", "I'll show you yours, rebuilt."
+        kick, a, b = CTA
         w = round(max(tmp.textlength(a, font=fb), tmp.textlength(b, font=fs))); h = round(150 * k)
         body = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(body)
         d.text(((w - tmp.textlength(a, font=fb)) / 2, -6 * k), a, font=fb, fill=WHITE + (255,))
         d.text(((w - tmp.textlength(b, font=fs)) / 2, 100 * k), b, font=fs, fill=CREAM + (230,))
-        return frame(body, "Proposals still living in Word?", "Sammy P · panicciventures.com")
+        return frame(body, kick, "Sammy P · panicciventures.com")
     raise KeyError(kind)
 
 
@@ -188,8 +223,10 @@ def header(lay, path):
     k = 1.0 if H > 1500 else 0.8
     y = lay["top"] + 18 * k
     d.text((lay["side"], y), TITLE[0], font=font("Bold", 34 * k), fill=GOLD + (255,)); y += 48 * k
-    for l in wrap(d, TITLE[1], font("Bold", 74 * k), W - 2 * lay["side"]):
-        d.text((lay["side"], y), l, font=font("Bold", 74 * k), fill=WHITE + (255,)); y += 80 * k
+    size = 74 * k
+    while d.textlength(TITLE[1], font=font("Bold", size)) > W - 2 * lay["side"] and size > 40 * k:
+        size -= 2          # shrink to one line, so the cards below never meet a second title line
+    d.text((lay["side"], y), TITLE[1], font=font("Bold", size), fill=WHITE + (255,))
     img.save(path); return path
 
 
@@ -239,6 +276,8 @@ def drop_sentences(take, caps, dur):
     """Kept stretches of the take with the DROP sentences cut out at the quietest point either side, and the
     captions moved onto the new timeline."""
     keep, t = [], 0.0
+    if TRIM_LEAD and caps and caps[0]["start"] > 0.6:
+        t = quiet_point(take, max(0.0, caps[0]["start"] - 0.5), caps[0]["start"] - 0.05)
     for i, c in enumerate(caps):
         if any(c["text"].startswith(p) for p in DROP):
             prev_end = caps[i - 1]["end"] if i else 0.0
@@ -268,7 +307,7 @@ def build(take, caps, assets, ratio, crop, outdir, tag="v1"):
                (place(card, lay, f"{tmp}/{kind}.png"), t0 + 2 * f, t1)]
     for i, c in enumerate(split_captions(caps)):
         p = f"{tmp}/cap{i:02d}.png"; caption_png(c["text"], lay, p); ov.append((p, c["start"], c["end"]))
-    out = os.path.join(outdir, f"panicci-word-doc-bid-{tag}_{ratio}.mp4")
+    out = os.path.join(outdir, f"panicci-{NAME}-{tag}_{ratio}.mp4")
     compose(base, dur, ov, out)
     print(f"{out}: {dur:.1f}s")
     return out
@@ -282,7 +321,11 @@ if __name__ == "__main__":
     ap.add_argument("--crop45", required=True, help="X,Y,W,H camera window for 4:5")
     ap.add_argument("--ratios", default="9x16,4x5"); ap.add_argument("--tag", default="v1")
     ap.add_argument("--cards-only", action="store_true", help="write each card as a PNG and stop (no footage needed)")
+    ap.add_argument("--cut", default="word-doc", choices=list(CUTS))
     a = ap.parse_args(); os.makedirs(a.out_dir, exist_ok=True)
+    spec = CUTS[a.cut]
+    NAME, TITLE, DROP, BEATS, LAYOUT, CTA, TRIM_LEAD = (spec["name"], spec["title"], spec["drop"], spec["beats"],
+                                                       spec["layout"], spec["cta"], spec["trim_lead"])
     if a.cards_only:
         for kind, *_ in BEATS:
             card_img(kind, a.assets).save(os.path.join(a.out_dir, f"card-{kind}.png"))
