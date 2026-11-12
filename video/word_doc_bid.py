@@ -8,27 +8,32 @@ backs up. Same engine and look as the BJJ v3 ad (bjj_gjjw_v2.py).
 --take / --captions: the Clipper's seamless.mp4 and captions.json for word-doc-bid take 1 (Nov 11 2026); the pauses
 are already cut, so this pass only frames, captions and lays the cards over it.
 --assets: proposal crops blurred from the bid .docx (crop-01-header-date.png, crop-02-lump-sum.png,
-crop-04-gc-boilerplate.png, crop-05-sign-the-x.png), the demo phone screens (p-link.png, p-options.png,
-p-signed.png, p-invoice.png, p-review.png) and, when Sammy sends it, invoice.png (blurred). Without invoice.png the
-invoice beat shows the amount only. The assets stay out of this public repo: they are a real contractor's paperwork.
+crop-04-gc-boilerplate.png, crop-05-sign-the-x.png), the blurred invoice page (invoice.png, from Inv 3721 .docx) and
+the demo phone screens (p-link.png, p-options.png, p-signed.png, p-invoice.png, p-review.png). The assets stay out of
+this public repo: they are a real contractor's paperwork.
 --crop9 / --crop45: the camera window in source px. Founder photo law: both shoulders whole, with clear space past
 each one; check a few frames before rendering.
 
-Every number on a card comes from the bid itself (Sept 23, 2026): Base Bid $11,500.00, 296 devices across its 19
-line items, the GC-bid-form exclusion, the printed X signature line and 100% upon completion. $12K+ for the invoice
-is Sammy's account until the invoice image is in --assets. The phone screens are a demo with a sample customer.
+Every number on a card comes from the paperwork: the bid (Sept 23, 2026: Base Bid $11,500.00, 296 devices across
+its 19 line items, the GC-bid-form exclusion, the printed X signature line, 100% upon completion) and invoice #3721
+(Oct 23, 2026: total $11,685.00, due on receipt, the "Reference Proposal:" line left blank, no pay link in the file).
+The take says "Twelve grand and change", which the invoice doesn't back, so DROP cuts that sentence out of the audio.
+The phone screens are a demo with a sample customer.
 """
-import argparse, json, os
+import argparse, json, os, subprocess
+import numpy as np
 from PIL import Image, ImageDraw
 
 from bjj_gjjw_ads import font, wrap, caption_png, INK, CREAM, GOLD, WHITE
-from bjj_gjjw_v2 import cut, compose, place
+from bjj_gjjw_v2 import cut, compose, place, timeline_any
 
 LAYOUT = {
     "9x16": dict(W=1080, H=1920, top=250, bottom=480, side=72, box=(0, 640, 1080, 900), zone=(450, 860)),
     "4x5":  dict(W=1080, H=1350, top=56, bottom=110, side=64, box=(0, 250, 1080, 1100), zone=(236, 540)),
 }
 TITLE = ("ELECTRICIANS", "The $11,500 Word doc.")
+# Sentences cut out of the read (first words of the caption chunk). The invoice total is $11,685, not "twelve grand".
+DROP = ["Twelve grand"]
 
 # (card, first words of the caption it opens on, first words of the caption it closes before). None = runs to the end.
 BEATS = [
@@ -121,10 +126,18 @@ def card_img(kind, assets, k=1.0):
         return frame(shot(A("crop-05-sign-the-x.png"), boxes=[(10, 10, 606, 104), (212, 296, 532, 354)], maxh=250, paper=True),
                      "To say yes: print it, sign the X, send it back", "No e-sign. No deposit. 100% due on completion.")
     if kind == "invoice":
-        if os.path.exists(A("invoice.png")):
-            return frame(shot(A("invoice.png"), maxh=300, paper=True), "Then the invoice: a generic Word template",
-                         "The real invoice · names blurred")
-        return frame(stat("$12K+", "on a generic Word template invoice"), "Then the invoice", "")
+        page = shot(A("invoice.png"), boxes=[(966, 1486, 1288, 1542), (244, 798, 506, 846)], maxh=300, paper=True)
+        fb, fl, fs = font("Bold", 96 * k), font("SemiBold", 34 * k), font("Regular", 26 * k)
+        lines = [("$11,685", fb, GOLD, 104), ("Due on receipt.", fl, WHITE, 46), ("\u201cReference Proposal:\u201d", fl, WHITE, 42),
+                 ("left blank.", fl, WHITE, 52), ("No pay link on it.", fs, CREAM, 34)]
+        tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
+        tw = round(max(tmp.textlength(t, font=f) for t, f, _, _ in lines)); gap = round(32 * k)
+        th = round(sum(h for *_, h in lines) * k)
+        body = Image.new("RGBA", (page.width + gap + tw, max(page.height, th)), (0, 0, 0, 0))
+        body.alpha_composite(page, (0, 0)); d = ImageDraw.Draw(body); y = (body.height - th) / 2 - 10 * k
+        for t, f, c, h in lines:
+            d.text((page.width + gap, y), t, font=f, fill=c + (255,)); y += h * k
+        return frame(body, "Then the invoice: a generic Word template", "The real invoice #3721 \u00b7 Oct 23, 2026 \u00b7 names blurred")
     if kind == "link":
         return frame(phone("p-link.png", (40, 236, 616, 690)), "The fix: a link before you leave the driveway", DEMO)
     if kind == "options":
@@ -197,11 +210,40 @@ def beat_times(caps, dur):
     return [(kind, at(a), (at(b) - 0.05) if b else dur - 0.05) for kind, a, b in BEATS]
 
 
+def quiet_point(take, a, b):
+    """The quietest 10 ms inside [a, b] of the take's audio, so a cut never clips a word."""
+    pcm = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{a:.3f}", "-t", f"{max(0.02, b - a):.3f}", "-i", take,
+                          "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True, check=True).stdout
+    x = np.frombuffer(pcm, np.float32)
+    if len(x) < 320: return (a + b) / 2
+    rms = np.sqrt(np.convolve(x ** 2, np.ones(160) / 160, mode="valid"))[::160]
+    return a + int(np.argmin(rms)) * 0.01 + 0.005
+
+
+def drop_sentences(take, caps, dur):
+    """Kept stretches of the take with the DROP sentences cut out at the quietest point either side, and the
+    captions moved onto the new timeline."""
+    keep, t = [], 0.0
+    for i, c in enumerate(caps):
+        if any(c["text"].startswith(p) for p in DROP):
+            prev_end = caps[i - 1]["end"] if i else 0.0
+            nxt = caps[i + 1]["start"] if i + 1 < len(caps) else dur
+            a = quiet_point(take, prev_end, c["start"]); b = quiet_point(take, c["end"], nxt)
+            keep.append((t, a)); t = b
+    keep.append((t, dur))
+    segs = [(s, e, 0, True) for s, e in keep if e - s > 0.05]
+    O, new_dur = timeline_any(segs)
+    inside = lambda c: any(s - 1e-3 <= c["start"] and c["end"] <= e + 1e-3 for s, e, _, _ in segs)
+    kept = [dict(c, start=O(c["start"]), end=O(c["end"])) for c in caps if inside(c)]
+    return segs, kept, new_dur
+
+
 def build(take, caps, assets, ratio, crop, outdir, tag="v1"):
     lay = LAYOUT[ratio]
     tmp = os.path.join(outdir, f".tmp_{ratio}"); os.makedirs(tmp, exist_ok=True)
     dur = float(os.popen(f"ffprobe -v error -show_entries format=duration -of csv=p=0 '{take}'").read().strip())
-    base = cut(take, [(0.0, dur, 0, True)], [("all", 0, 0)], lay, crop, tmp, zoom=False)
+    segs, caps, dur = drop_sentences(take, caps, dur)
+    base = cut(take, segs, [("all", 0, 0)], lay, crop, tmp, zoom=False)
     k = 1.0 if lay["H"] > 1500 else 0.74
     ov = [(header(lay, f"{tmp}/header.png"), 0, dur)]
     for kind, t0, t1 in beat_times(caps, dur):
