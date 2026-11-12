@@ -10,10 +10,11 @@ are already cut, so this pass only frames, captions and lays the cards over it.
 --assets: proposal crops blurred from the bid .docx (crop-01-header-date.png, crop-02-lump-sum.png,
 crop-04-gc-boilerplate.png, crop-05-sign-the-x.png), the blurred invoice page (invoice.png, from Inv 3721 .docx) and
 the demo phone screens (p-link.png, p-options.png, p-signed.png, p-invoice.png, p-review.png), plus the bid's
-Word page 1 (wordp1.png) and the same bid laid out on one clean page (rebuilt.png, Sept 30, 2026), both blurred. The assets stay out of
+Word page 1 (wordp1.png) and the same bid rebuilt by Sammy on one clean page (rebuilt.png, Sept 30, 2026), both blurred. The assets stay out of
 this public repo: they are a real contractor's paperwork.
 --crop9 / --crop45: the camera window in source px. Founder photo law: both shoulders whole, with clear space past
-each one; check a few frames before rendering.
+each one; check a few frames before rendering. Take 1 (1920x1080): the shirt runs x 590-1355 at the bottom row in every
+frame checked, so --crop9 432,180,1080,900 --crop45 442,0,1060,1080 leave ~150 px clear past each shoulder (Nov 12 v1).
 
 Every number on a card comes from the paperwork: the bid (Sept 23, 2026: Base Bid $11,500.00, 296 devices across
 its 19 line items, the GC-bid-form exclusion, the printed X signature line, 100% upon completion) and invoice #3721
@@ -147,11 +148,11 @@ def card_img(kind, assets, k=1.0):
         body = Image.new("RGBA", (a.width + gap + b.width, lh + max(a.height, b.height)), (0, 0, 0, 0))
         d = ImageDraw.Draw(body)
         d.text((0, 0), "Sent: Word doc, 2 pages", font=fl, fill=CREAM + (200,))
-        d.text((a.width + gap, 0), "Same bid, one page", font=fl, fill=GOLD + (255,))
+        d.text((a.width + gap, 0), "Same bid, rebuilt", font=fl, fill=GOLD + (255,))
         body.alpha_composite(a, (0, lh)); body.alpha_composite(b, (a.width + gap, lh))
         ax = a.width + gap // 2; ay = lh + max(a.height, b.height) // 2
         d.polygon([(ax - 16 * k, ay - 22 * k), (ax + 18 * k, ay), (ax - 16 * k, ay + 22 * k)], fill=GOLD + (255,))
-        return frame(body, "Here's the fix. Start with the paper.", "Same $11,500 bid, same numbers \u00b7 names blurred")
+        return frame(body, "Here's the fix. Start with the paper.", "Same $11,500 bid, rebuilt on one page by Sammy P \u00b7 names blurred")
     if kind == "link":
         return frame(phone("p-link.png", (40, 236, 616, 690)), "The fix: a link before you leave the driveway", DEMO)
     if kind == "options":
