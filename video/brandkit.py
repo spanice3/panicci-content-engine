@@ -41,10 +41,12 @@ def _area(a, b):
     return max(0, min(a[2], b[2]) - max(a[0], b[0])) * max(0, min(a[3], b[3]) - max(a[1], b[1]))
 
 
-def render(SRC, CAPS, RATIO, OUT, intro=True, outro=True, texts=None, cover=None):
+def render(SRC, CAPS, RATIO, OUT, intro=True, outro=True, texts=None, cover=None, inserts=None):
     """intro/outro=False for paid ads (adbuild.py): an ad has to open on the hook.
     texts: opener.texts_from(...) for the open/close cards (derived from the captions when None).
-    cover: where to save the cover still (default <OUT>_cover.png; only written when intro is on)."""
+    cover: where to save the cover still (default <OUT>_cover.png; only written when intro is on).
+    inserts: [(video_with_alpha, start_s)] full-frame cards laid over the footage at start_s of SRC's own
+    timeline (proof cards, chapter cards). They sit above the captions and under the open/close cards."""
     W, H = DIMS[RATIO]; S = SAFE[RATIO]; k = W / 1080.0
     mark = "data:image/png;base64," + base64.b64encode(open(os.path.join(BUILD, "mark_cream.png"), "rb").read()).decode()
     fontb = os.path.join(BUILD, "PVSGBold.ttf")
@@ -198,6 +200,10 @@ def render(SRC, CAPS, RATIO, OUT, intro=True, outro=True, texts=None, cover=None
     for i, c in enumerate(capmeta):
         fc.append(f"[{3+i}:v]format=rgba[p{i}];[{cur}][p{i}]overlay={c['x']}:{c['y']}:enable='between(t,{c['start']},{c['end']})'[vc{i}];"); cur = f"vc{i}"
     nxt = 3 + len(capmeta)
+    for j, (path, t0) in enumerate(inserts or []):
+        inp += ["-i", path]
+        fc.append(f"[{nxt}:v]format=rgba,setpts=PTS+{t0:.3f}/TB[ins{j}];[{cur}][ins{j}]overlay=0:0:eof_action=pass[vi{j}];")
+        cur = f"vi{j}"; nxt += 1
     tail = []
     if not intro: tail.append("fade=t=in:st=0:d=0.15")
     if not outro: tail.append(f"fade=t=out:st={dmain-0.30:.2f}:d=0.30")
