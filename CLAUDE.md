@@ -19,3 +19,10 @@ or right edge of the frame, a box, a circle or a mask, and never ends in a strai
 - Never repair a sliced shoulder by generating, outpainting, stretching or mirroring. His likeness
   stays his real photo.
 - Before shipping, render it and look at both shoulders.
+
+## Title screen rule
+Every talking-head cut (Clipper cuts, proof-card cuts, reels, ads) opens on a clean title screen (Sammy, 2026-11-12).
+Frame one is the title alone: ink ground, dot texture, gold kicker, a short gold rule, the title big and centred, and
+nothing else (no face, captions, cards or logo bug). The read keeps playing underneath, so the hook is never delayed.
+It holds through the first spoken sentence (1.2 to 3 s), then hard-cuts to Sammy on camera. Reference build:
+`video/word_doc_bid.py` (`title_screen`, `title_hold`).
