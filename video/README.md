@@ -128,6 +128,7 @@ Sourced from the `panicci-deliverables` skill (`brand.json`): deep green
 | `run.py` | orchestrator |
 | `adbuild.py` | 50·5·3 ad modules + combos |
 | `clip_batch.py` | the Clipper's cut step: every take in a folder, two at a time, routed to `run.py` or `adbuild.py`, one JSON summary |
+| `word_doc_bid.py` | "The $11,500 Word doc" recut (Sammy's notes, Nov 12): opens and closes on the same title + play-button frame (end frame adds DM me PROPOSAL), captions in a band under the camera window, never on his face, window wide enough that both shoulders clear the sides. Word timings in `ads/word-doc-bid/` |
 | `bjj_gjjw_v2.py` | Jiu-jitsu gym owner ads v2 (Brian's review, Nov 6): face on camera the whole time, title above the head, proof cards popping up above the head, no end card |
 | `bjj_gjjw_ads.py` | Jiu-jitsu gym owner Meta ads (Nov 2026): on-camera hook, then voice-over proof scenes with real GJJW numbers and the AI answer screen recordings. Inputs in `ads/bjj-gjjw/` |
 | `assets/brand-mark.svg` | the P/V shield |
