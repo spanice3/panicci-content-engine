@@ -121,33 +121,49 @@ def render(SRC, CAPS, RATIO, OUT, intro=True, outro=True, texts=None, cover=None
                 cur = w
         if cur: lines.append(cur)
         return lines
-    def spots(pw, ph, fz):
-        x0 = cxc - pw // 2; yield (x0, bottom_edge - ph, x0 + pw, bottom_edge)           # the usual spot
-        if fz:
-            y0 = int(fz[3]) + gap
-            if y0 + ph <= bottom_edge: yield (x0, y0, x0 + pw, y0 + ph)
-            y1 = int(fz[1]) - gap
-            if y1 - ph >= S["top"]: yield (x0, y1 - ph, x0 + pw, y1)                      # above the head
-            yield (x0, S["top"] + gap, x0 + pw, S["top"] + gap + ph)
-            lim = H - int(S["bottom"] * 0.55)                                               # last resort: low
-            if y0 + ph <= lim: yield (x0, y0, x0 + pw, y0 + ph)
+    lim = H - int(S["bottom"] * 0.55)          # lowest a caption may reach when the face sits low in the frame
+    # One steady line under the beard for the whole take: top edge just below where the face usually reaches.
+    bots = sorted(z[3] for _, z in zones)
+    steady = int(bots[int(len(bots) * 0.9) - 1 if len(bots) > 1 else 0]) + gap if bots else None
+    def low_spots(pw, ph, fz, prefer_steady):
+        x0 = cxc - pw // 2
+        usual = (x0, bottom_edge - ph, x0 + pw, bottom_edge)
+        st = (x0, steady, x0 + pw, steady + ph) if steady and steady + ph <= lim else None
+        for r in ([st, usual] if prefer_steady else [usual, st]):
+            if r: yield r
+        if fz and int(fz[3]) + gap + ph <= lim:                                           # under this line's face
+            yield (x0, int(fz[3]) + gap, x0 + pw, int(fz[3]) + gap + ph)
+    def high_spots(pw, ph, fz):
+        x0 = cxc - pw // 2
+        if fz and int(fz[1]) - gap - ph >= S["top"]:                                      # above the head
+            yield (x0, int(fz[1]) - gap - ph, x0 + pw, int(fz[1]) - gap)
+        yield (x0, S["top"] + gap, x0 + pw, S["top"] + gap + ph)
     base_size = 58 if RATIO == "9x16" else int(54 * k)
+    # When the usual spot would hit the face on a good share of the lines, every line takes the steady spot
+    # instead, so captions don't hop up and down between lines.
+    def usual_hits(c):
+        fz = face_at(c["start"], c["end"]); ph1 = int(base_size * 1.18) + 2 * int(22 * k)
+        return bool(fz) and fz[3] > bottom_edge - ph1
+    prefer_steady = bool(steady) and sum(usual_hits(c) for c in caps) > 0.25 * max(1, len(caps))
     capmeta, moved = [], 0
     for i, c in enumerate(caps):
         fz = face_at(c["start"], c["end"])
         obst = [r for r, a, b in OBST if a < c["end"] and b > c["start"]]
         best = None
-        for scale in (1.0, 0.86, 0.74):
-            fsize = int(base_size * scale); font = ImageFont.truetype(fontb, fsize)
-            padx = int(40*k*scale); pady = int(22*k*scale); lh_ = int(fsize*1.18)
-            lines = wrap(c["text"], font, padx); tw = max(d0.textlength(ln, font=font) for ln in lines)
-            pw = int(tw) + 2*padx; ph = lh_*len(lines) + 2*pady
-            for r in spots(pw, ph, fz):
-                cost = (_area(r, fz) if fz else 0) * 1000 + sum(_area(r, o) for o in obst)
-                if best is None or cost < best[0]:
-                    best = (cost, r, font, lines, padx, pady, lh_, scale)
-                if cost == 0: break
-            if best[0] == 0: break
+        # low spots first at every size, then above the head: a caption leaves the chest only as a last resort
+        for gen in (lambda pw, ph: low_spots(pw, ph, fz, prefer_steady), lambda pw, ph: high_spots(pw, ph, fz)):
+            for scale in (1.0, 0.86, 0.74):
+                fsize = int(base_size * scale); font = ImageFont.truetype(fontb, fsize)
+                padx = int(40*k*scale); pady = int(22*k*scale); lh_ = int(fsize*1.18)
+                lines = wrap(c["text"], font, padx); tw = max(d0.textlength(ln, font=font) for ln in lines)
+                pw = int(tw) + 2*padx; ph = lh_*len(lines) + 2*pady
+                for r in gen(pw, ph):
+                    cost = (_area(r, fz) if fz else 0) * 1000 + sum(_area(r, o) for o in obst)
+                    if best is None or cost < best[0]:
+                        best = (cost, r, font, lines, padx, pady, lh_, scale)
+                    if cost == 0: break
+                if best and best[0] == 0: break
+            if best and best[0] == 0: break
         cost, (x0, y0, x1, y1), font, lines, padx, pady, lh_, scale = best
         if (x0, y1) != (cxc - (x1 - x0) // 2, bottom_edge) or scale < 1: moved += 1
         if cost >= 1000: print(f"   warning: caption {i} still touches the face ({c['text'][:30]})")
