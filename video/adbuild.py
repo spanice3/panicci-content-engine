@@ -107,9 +107,11 @@ def scripted_matrix(meta):
             "reshoot": []}
 
 
-def snap(item, kind, meta, words):
+def snap(item, kind, meta, words, env=None):
     """Set item['in'], item['out'] from Whisper words. Falls back to the
-    browser's approximate start/end, then the whole segment."""
+    browser's approximate start/end, then the whole segment. Whisper ends words
+    early, so with env (cutlib.Env of the take) the out point waits until the
+    last word has actually stopped sounding, and the in point catches a soft onset."""
     win = seg_window(meta, item["seg"]) or (item.get("start", 0), item.get("end", 0))
     lo, hi = win[0] - 1.0, win[1] + 0.5
     if kind == "meats":
@@ -121,7 +123,16 @@ def snap(item, kind, meta, words):
         m = find_span(words, item["text"], lo, hi)
         s, e = (m[0], m[1]) if m else (item.get("start", win[0]), item.get("end", win[1]))
         how = "whisper" if m else "approx"
-    item["in"], item["out"], item["timing"] = round(max(0, s - 0.08), 2), round(e + 0.18, 2), how
+    i_, o_ = max(0, s - 0.08), e + 0.18
+    if env is not None:                       # never reach into the neighbouring words
+        nx = [w[0] for w in words if w[0] > e + 0.01]; nxt = min(nx) if nx else None
+        pv = [w[1] for w in words if w[1] < s - 0.01]; prv = max(pv) if pv else None
+        lim = nxt - 0.03 if nxt is not None else None
+        o_ = max(min(o_, lim) if lim else o_, env.land(e, cap=0.7, limit=lim) + 0.08)
+        if lim:
+            o_ = min(o_, max(lim, e + 0.05))
+        i_ = max(0, min(i_, env.rise(s, cap=0.25, limit=(prv + 0.02) if prv is not None else None) - 0.03))
+    item["in"], item["out"], item["timing"] = round(i_, 2), round(o_, 2), how
     return item
 
 
@@ -199,9 +210,10 @@ def main():
 
     print("3) snapping cuts + cutting modules:")
     files = {}
+    env = cutlib.Env(a.take)
     for kind, lst in (("hooks", H), ("meats", M), ("ctas", C)):
         for it in lst:
-            snap(it, kind, meta, words)
+            snap(it, kind, meta, words, env)
             f = os.path.join(mods, f"{it['id']}.mp4")
             cut_module(a.take, it, f)
             files[it["id"]] = f
